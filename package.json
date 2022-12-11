@@ -1,0 +1,25 @@
+{
+  "name": "node-live-project-backend-sq012-ilearn",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/decadevs/node-live-project-backend-sq012-ilearn.git",
+  "author": "Oluwaseyi <oluwaseyi.makinde@decagon.dev>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon dist/app.js",
+    "compile": "tsc -w"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "http-errors": "^2.0.0",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.20"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/http-errors": "^2.0.1",
+    "@types/morgan": "^1.9.3",
+    "typescript": "^4.9.4"
+  }
+}
