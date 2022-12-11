@@ -1,6 +1,19 @@
 import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
+import { db } from "./Config/index";
+import dotenv from "dotenv";
+dotenv.config();
+
+
+//sequelize connection
+db.sync({})
+  .then(() => {
+    console.log("Db connected successfuly");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 const app = express();
 
