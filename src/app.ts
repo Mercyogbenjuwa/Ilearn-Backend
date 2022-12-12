@@ -2,9 +2,10 @@ import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 import { db } from "./Config/index";
-import dotenv from "dotenv";
-dotenv.config();
 
+import * as dotenv from "dotenv";
+dotenv.config();
+const app = express();
 
 //sequelize connection
 db.sync({})
@@ -14,8 +15,6 @@ db.sync({})
   .catch((err) => {
     console.log(err);
   });
-
-const app = express();
 
 app.use(express.json());
 app.use(logger("dev"));
