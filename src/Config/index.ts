@@ -8,6 +8,3 @@ export const db = new Sequelize("postgres", "postgres", "1234", {
   dialect: "postgres",
   logging: false,
 });
-
-export const dbPassword = process.env.DB_PASSWORD;
-export const authToken = process.env.AUTHTOKEN;
