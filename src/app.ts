@@ -1,6 +1,9 @@
 import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
+
+import usersRouter from './routes/usersroute';
+
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
 dotenv.config();
@@ -14,10 +17,12 @@ app.use(express.json());
 app.use(logger("dev"));
 app.use(cookieParser());
 
-const port = 4000;
+app.use('/users', usersRouter);
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+const PORT = 4000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 export default app;
