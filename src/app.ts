@@ -6,6 +6,11 @@ import usersRouter from "./routes/usersroute";
 
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
+import {
+  appError,
+  errorHandler,
+  notFound,
+} from "./Middlewares/errorMiddleware";
 dotenv.config();
 
 // this calls the database connection
@@ -19,6 +24,13 @@ app.use(cookieParser());
 
 //routes
 app.use("/users", usersRouter);
+
+// not found error handler
+app.use(notFound);
+
+// error handler
+app.use(errorHandler);
+// app.use(appError);
 
 const PORT = 4000;
 
