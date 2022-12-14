@@ -2,7 +2,7 @@ import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 
-import usersRouter from './routes/usersroute';
+import usersRouter from "./routes/usersroute";
 
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
@@ -17,7 +17,8 @@ app.use(express.json());
 app.use(logger("dev"));
 app.use(cookieParser());
 
-app.use('/users', usersRouter);
+//routes
+app.use("/users", usersRouter);
 
 const PORT = 4000;
 
