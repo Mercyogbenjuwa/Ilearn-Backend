@@ -61,7 +61,7 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
       next();
     } catch (error) {
       //   console.log(error)
-      res.status(401).send({ error, message: "authentication gone wrong" });
+      res.status(401).send({ error, message: "you are not a valid user" });
 
       return;
       //   throw new Error(`${error}`)
