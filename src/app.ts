@@ -2,10 +2,15 @@ import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 
-import usersRouter from './routes/usersroute';
+import usersRouter from "./routes/usersroute";
 
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
+import {
+  appError,
+  errorHandler,
+  notFound,
+} from "./Middlewares/errorMiddleware";
 dotenv.config();
 
 // this calls the database connection
@@ -17,9 +22,17 @@ app.use(express.json());
 app.use(logger("dev"));
 app.use(cookieParser());
 
-app.use('/users', usersRouter);
+//routes
+app.use("/users", usersRouter);
 
-const PORT = 4000;
+// not found error handler
+app.use(notFound);
+
+// error handler
+app.use(errorHandler);
+// app.use(appError);
+
+const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
