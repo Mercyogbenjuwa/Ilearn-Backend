@@ -1,5 +1,6 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
+import { courseInstance } from "./courses";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -85,3 +86,12 @@ UserInstance.init(
     tableName: "user",
   }
 );
+UserInstance.hasMany(courseInstance, {
+  foreignKey: "id",
+  as: "course",
+})
+
+courseInstance.belongsTo(UserInstance, {
+  foreignKey: "id",
+  as: "user",
+});
