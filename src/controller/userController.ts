@@ -68,7 +68,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
       // send Email to user
       const html = emailHtml(otp);
       // await mailSent(FromAdminMail, email, userSubject, html);
-      //
+
       //check if user exist
       const User = await UserInstance.findOne({
         where: { email: email },
