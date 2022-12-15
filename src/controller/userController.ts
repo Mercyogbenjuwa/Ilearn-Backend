@@ -1,17 +1,27 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import {
+  forgotPasswordSchema,
   GeneratePassword,
   GenerateSalt,
   GenerateSignature,
   loginSchema,
   option,
   registerSchema,
+  resetPasswordSchema,
   validatePassword,
 } from "../utils/utility";
-import { emailHtml, GenerateOTP, mailSent } from "../utils/notification";
-import { FromAdminMail, userSubject } from "../Config";
+import {
+  emailHtml,
+  emailHtml2,
+  GenerateOTP,
+  mailSent,
+  mailSent2,
+} from "../utils/notification";
+import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -151,4 +161,124 @@ const Login = async (req: Request, res: Response) => {
   }
 };
 
-export { Login, Register, getAllUsers };
+/**=========================== Resend Password ============================== **/
+
+/*export*/ const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const validateResult = forgotPasswordSchema.validate(req.body, option);
+    if (validateResult.error) {
+      return res.status(400).json({
+        Error: validateResult.error.details[0].message,
+      });
+    }
+    //check if the User exist
+    const oldUser = (await UserInstance.findOne({
+      where: { email: email },
+    })) as unknown as UserAttributes;
+    //console.log(oldUser);
+    if (!oldUser) {
+      return res.status(400).json({
+        message: "user not found",
+      });
+    }
+    const secret = APP_SECRET + oldUser.password;
+    const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
+      expiresIn: "1d",
+    });
+    const link = `http://localhost:4000/users/resetpassword/${oldUser.id}/${token}`;
+    if (oldUser) {
+      const html = emailHtml2(link);
+      await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
+      return res.status(200).json({
+        message: "password reset link sent to email",
+        link,
+      });
+    }
+    //console.log(link);
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/forgot-password",
+    });
+  }
+};
+
+//On clicking the email link ,
+
+/*export*/ const resetPasswordGet = async (req: Request, res: Response) => {
+  const { id, token } = req.params;
+  const oldUser = (await UserInstance.findOne({
+    where: { id: id },
+  })) as unknown as UserAttributes;
+  if (!oldUser) {
+    return res.status(400).json({
+      message: "User Does Not Exist",
+    });
+  }
+  const secret = APP_SECRET + oldUser.password;
+  console.log(secret)
+  try {
+    const verify = jwt.verify(token, secret);
+    return res.status(200).json({
+      email: oldUser.email,
+      verify,
+    });
+   
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server Error",
+      route: "/resetpassword/:id/:token",
+    });
+  }
+};
+
+// Page for filling the new password and condfirm password
+
+const resetPasswordPost = async (req: Request, res: Response) => {
+  const { id, token } = req.params;
+  const { password } = req.body;
+  const oldUser = (await UserInstance.findOne({
+    where: { id: id },
+  })) 
+  const validateResult = resetPasswordSchema.validate(req.body, option);
+  if (validateResult.error) {
+    return res.status(400).json({
+      Error: validateResult.error.details[0].message,
+    });
+  }
+  if (!oldUser) {
+    return res.status(400).json({
+      message: "user does not exist",
+    });
+  }
+  const secret = APP_SECRET + oldUser.password;
+  try {
+    const verify = jwt.verify(token, secret);
+    const encryptedPassword = await bcrypt.hash(password, oldUser.salt);
+    const updatedPassword = (await UserInstance.update(
+      {
+        password: encryptedPassword,
+      },
+      { where: { id: id } }
+    )) as unknown as UserAttributes;
+    return res.status(200).json({
+      message: "you have succesfully changed your password",
+      updatedPassword,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server Error",
+      route: "/resetpassword/:id/:token",
+    });
+  }
+};
+
+export {
+  Login,
+  Register,
+  getAllUsers,
+  forgotPassword,
+  resetPasswordGet,
+  resetPasswordPost,
+};
