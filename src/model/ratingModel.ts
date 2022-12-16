@@ -49,7 +49,7 @@ RatingInstance.init(
       allowNull: false,
     },
 
-    ratingValue: {
+    value: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },
