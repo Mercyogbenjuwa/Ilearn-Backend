@@ -9,7 +9,6 @@ export interface RatingAttributes {
   courseId: string;
   studentId: string;
   ratingValue: number;
-  
 }
 
 export class RatingInstance extends Model<RatingAttributes> {
@@ -19,7 +18,6 @@ export class RatingInstance extends Model<RatingAttributes> {
   declare courseId: string;
   declare studentId: string;
   declare ratingValue: number;
-  
 }
 
 RatingInstance.init(
@@ -27,38 +25,34 @@ RatingInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      // defaultValue: DataTypes.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
     title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-    
-      },
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
 
     description: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      
     },
     courseId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
-      
     },
-    
+
     studentId: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      type: DataTypes.UUID,
+      allowNull: false,
     },
 
     ratingValue: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
-    
   },
 
   {
