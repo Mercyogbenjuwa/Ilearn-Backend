@@ -2,7 +2,8 @@ import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 
-import usersRouter from "./routes/usersroute";
+import usersRouter from "./routes/usersRoutes";
+import coursesRouter from "./routes/coursesRoutes";
 
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
@@ -24,6 +25,7 @@ app.use(cookieParser());
 
 //routes
 app.use("/users", usersRouter);
+app.use("/courses", coursesRouter);
 app.use("/", (req, res) => {
   res.status(200).send("api is running");
 });

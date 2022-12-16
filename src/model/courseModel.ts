@@ -6,20 +6,19 @@ export interface courseAttributes {
   id: string;
   title: string;
   description: string;
-  tutor_Id: string;
+  tutorId: string;
   pricing: string;
   category: string;
-  updated: boolean;
 }
 
 export class courseInstance extends Model<courseAttributes> {
   declare id: string;
   declare title: string;
   declare description: string;
-  declare tutor_Id: string;
+  declare tutorId: string;
   declare pricing: string;
   declare category: string;
-  declare updated: boolean;
+  declare image: string;
 }
 
 courseInstance.init(
@@ -27,8 +26,8 @@ courseInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      // defaultValue: DataTypes.UUIDV4,
-      allowNull: false,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: true,
     },
     title: {
       type: DataTypes.STRING,
@@ -38,27 +37,23 @@ courseInstance.init(
     description: {
       type: DataTypes.STRING,
       allowNull: false,
-      
     },
-    tutor_Id: {
+    image: {
       type: DataTypes.STRING,
-      allowNull: true,
-    },
-    updated: {
-      type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false,
+    },
+    tutorId: {
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     pricing: {
       type: DataTypes.STRING,
       allowNull: false,
-      
     },
     category: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
-    
   },
 
   {

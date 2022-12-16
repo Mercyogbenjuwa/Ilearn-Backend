@@ -1,21 +1,21 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 
-export interface courseRequestAttributes {
+interface courseRequestAttributes {
   [x: string]: any;
   id: string;
   status: string;
-  course_Id: string;
-  tutor_Id: string;
+  courseId: string;
+  tutorId: string;
   studentId: string;
 }
 
 export class courseRequestInstance extends Model<courseRequestAttributes> {
   declare id: string;
   declare status: string;
-  declare tutor_Id: string;
+  declare tutorId: string;
   declare studentId: string;
-  declare course_Id: string;
+  declare courseId: string;
 }
 
 courseRequestInstance.init(
@@ -26,30 +26,28 @@ courseRequestInstance.init(
       // defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    
-    tutor_Id: {
-      type: DataTypes.STRING,
+
+    tutorId: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
-    course_Id: {
-      type: DataTypes.STRING,
+    courseId: {
+      type: DataTypes.UUID,
       allowNull: true,
     },
     status: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
+      type: DataTypes.ENUM,
+      values: ["pending", "accepted", "declined"],
+      defaultValue: "pending",
     },
     studentId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
-      
     },
-    
   },
 
   {
     sequelize: db,
-    tableName: "courses",
+    tableName: "course_requests",
   }
 );
