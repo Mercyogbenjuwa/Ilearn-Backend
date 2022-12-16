@@ -30,7 +30,7 @@ const getAllUsers = async (req: Request, res: Response) => {
     });
     // console.log(req.user && req.user.toJSON());
 
-    res.status(200).send(users);
+    res.status(200).json(users);
   } catch (error) {
     res.status(401).send("An error occurred");
   }
@@ -78,7 +78,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
       // send Email to user
       const html = emailHtml(otp);
       // await mailSent(FromAdminMail, email, userSubject, html);
-      //
+
       //check if user exist
       const User = await UserInstance.findOne({
         where: { email: email },

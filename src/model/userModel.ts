@@ -1,5 +1,6 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
+import { courseInstance } from "./courseModel";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -29,7 +30,7 @@ UserInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      // defaultValue: DataTypes.UUIDV4,
+      //defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
     email: {
@@ -85,3 +86,14 @@ UserInstance.init(
     tableName: "user",
   }
 );
+UserInstance.hasMany(courseInstance, {
+  foreignKey: "tutorId",
+  as: "course",
+});
+
+//
+
+courseInstance.hasOne(UserInstance, {
+  foreignKey: "tutorId",
+  as: "user",
+});
