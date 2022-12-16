@@ -217,14 +217,13 @@ const Login = async (req: Request, res: Response) => {
     });
   }
   const secret = APP_SECRET + oldUser.password;
-  console.log(secret)
+  console.log(secret);
   try {
     const verify = jwt.verify(token, secret);
     return res.status(200).json({
       email: oldUser.email,
       verify,
     });
-   
   } catch (error) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -238,15 +237,17 @@ const Login = async (req: Request, res: Response) => {
 const resetPasswordPost = async (req: Request, res: Response) => {
   const { id, token } = req.params;
   const { password } = req.body;
-  const oldUser = (await UserInstance.findOne({
-    where: { id: id },
-  })) 
+  console.log(req.body);
+
   const validateResult = resetPasswordSchema.validate(req.body, option);
   if (validateResult.error) {
     return res.status(400).json({
       Error: validateResult.error.details[0].message,
     });
   }
+  const oldUser = await UserInstance.findOne({
+    where: { id: id },
+  });
   if (!oldUser) {
     return res.status(400).json({
       message: "user does not exist",

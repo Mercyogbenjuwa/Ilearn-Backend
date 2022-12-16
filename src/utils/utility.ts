@@ -57,13 +57,19 @@ export const validatePassword = async (
   return (await GeneratePassword(enteredPassword, salt)) === savedPassword;
 };
 
-
 //schema for reset Password
 export const forgotPasswordSchema = Joi.object().keys({
-  email:Joi.string().required()
-})
+  email: Joi.string().required(),
+});
 export const resetPasswordSchema = Joi.object().keys({
   password: Joi.string().regex(/[a-zA-Z0-9]{3,30}/),
   //.pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
-  confirm_password: Joi.any().equal(Joi.ref('password')).required().label('confirm password').messages({'any.only':'passwords do not match'})
-})
+  confirm_password: Joi.any()
+    .equal(Joi.ref("password"))
+    .required()
+    .label("Confirm password")
+    .messages({
+      "any.only": "passwords does not match",
+      "any.required": "You need to add a confirm password",
+    }),
+});
