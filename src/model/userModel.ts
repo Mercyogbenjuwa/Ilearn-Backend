@@ -15,6 +15,9 @@ export interface UserAttributes {
 }
 
 export class UserInstance extends Model<UserAttributes> {
+  static getCourses() {
+    throw new Error("Method not implemented.");
+  }
   declare id: string;
   declare email: string;
   declare name: string;
