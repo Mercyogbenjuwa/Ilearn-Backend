@@ -1,6 +1,7 @@
 import { Express, Request, Response } from "express";
 import { courseInstance } from "../model/courseModel";
 import { UserInstance } from "../model/userModel";
+import { courseRequestInstance } from "../model/courseRequestsModel";
 
 const addCourse = async (req: Request, res: Response) => {
   try {
