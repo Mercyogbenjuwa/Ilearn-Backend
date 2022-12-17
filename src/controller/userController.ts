@@ -22,6 +22,7 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
+import { courseRequestInstance } from "../model/courseRequestsModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -275,6 +276,23 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
+const requestTutor = async (req: Request, res: Response) => {
+  try {
+    const studentId = req.user?.id;
+    const { courseId, tutorId } = req.body;
+    console.log({ ...req.body, studentId });
+
+    await courseRequestInstance.create({
+      studentId,
+      courseId,
+      tutorId,
+    });
+    res.status(201).send({ message: "Request has been sent successfully" });
+  } catch (error) {
+    res.status(400).send({ message: "tutor can not be requested", error });
+  }
+};
+
 export {
   Login,
   Register,
@@ -282,4 +300,5 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
+  requestTutor,
 };
