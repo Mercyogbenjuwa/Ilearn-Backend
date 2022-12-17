@@ -25,18 +25,19 @@
     "pg": "^8.8.0",
     "sequelize": "^6.27.0",
     "uuid": "^9.0.0"
+
   },
   "devDependencies": {
+   "@types/nodemailer": "^6.4.6",
+    "@types/uuidv4": "^5.0.0",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/http-errors": "^2.0.1",
     "@types/jest": "^29.2.4",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/morgan": "^1.9.3",
-    "@types/nodemailer": "^6.4.6",
-    "@types/pg": "^8.6.5",
     "@types/uuid": "^9.0.0",
-    "@types/uuidv4": "^5.0.0",
+    "@types/pg": "^8.6.5",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.46.0",
     "eslint": "^8.29.0",

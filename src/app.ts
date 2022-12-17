@@ -20,13 +20,15 @@ connectDB();
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(logger("dev"));
 app.use(cookieParser());
 
 //routes
 app.use("/users", usersRouter);
 app.use("/courses", coursesRouter);
+app.use("/", (req, res) => {
+  res.status(200).send("api is running");
+});
 
 // not found error handler
 app.use(notFound);
