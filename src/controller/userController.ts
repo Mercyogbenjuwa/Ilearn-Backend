@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+import {ReminderInstance} from "../model/reminderModel";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -232,7 +233,7 @@ const Login = async (req: Request, res: Response) => {
   }
 };
 
-// Page for filling the new password and condfirm password
+// Page for filling the new password and confirm password
 
 const resetPasswordPost = async (req: Request, res: Response) => {
   const { id, token } = req.params;
@@ -371,7 +372,26 @@ const coursesHistory =[
 //   }
 // }
 
+/**=========================== Get all Reminders============================== **/
 
+const getAllReminders = async (req: Request, res: Response) => {
+  try {
+    
+    const reminders = await ReminderInstance.findAndCountAll({
+      
+    });
+    return res.status(200).json({
+      message: "You have successfully retrieved all reminders",
+      Count: reminders.count,
+      Users: reminders.rows,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/get-all-reminders",
+    });
+  }
+};
 
 
 export {
@@ -381,5 +401,6 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
+  getAllReminders,
   // getStudentHistory,
 };
