@@ -4,7 +4,6 @@ import {
   getAllUsers,
   Login,
   Register,
-  requestTutor,
   resetPasswordGet,
   resetPasswordPost,
 } from "../controller/userController";
@@ -23,6 +22,6 @@ router.get("/", protect, getAllUsers);
 router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
-router.post("/request", protect, requestTutor);
+//router.post("/request", protect, requestTutor);
 
 export default router;

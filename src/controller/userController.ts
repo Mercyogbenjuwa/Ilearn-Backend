@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+import { ReminderInstance } from "../model/reminderModel";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -240,7 +241,7 @@ const resetPasswordGet = async (req: Request, res: Response) => {
   }
 };
 
-// Page for filling the new password and condfirm password
+// Page for filling the new password and confirm password
 
 const resetPasswordPost = async (req: Request, res: Response) => {
   const { id, token } = req.params;
@@ -283,21 +284,21 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
-/// send a request a to a tutor
-const requestTutor = async (req: Request, res: Response) => {
-  try {
-    const studentId = req.user?.id;
-    const { courseId, tutorId } = req.body;
-    console.log({ ...req.body, studentId });
+/**=========================== Get all Reminders============================== **/
 
-    await courseRequestInstance.create({
-      studentId,
-      courseId,
-      tutorId,
+const getAllReminders = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const reminders = await ReminderInstance.findAll({ where: { id: userId } });
+    return res.status(200).json({
+      message: "You have successfully retrieved all reminders",
+      reminders: reminders,
     });
-    res.status(201).send({ message: "Request has been sent successfully" });
-  } catch (error) {
-    res.status(400).send({ message: "tutor can not be requested", error });
+  } catch (err) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/get-all-reminders",
+    });
   }
 };
 
@@ -308,5 +309,6 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
-  requestTutor,
+  getAllReminders,
+  // getStudentHistory,
 };

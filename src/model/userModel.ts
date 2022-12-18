@@ -1,6 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
+import { ReminderInstance } from "./reminderModel";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -15,6 +16,9 @@ export interface UserAttributes {
 }
 
 export class UserInstance extends Model<UserAttributes> {
+  static getCourses() {
+    throw new Error("Method not implemented.");
+  }
   declare id: string;
   declare email: string;
   declare name: string;
@@ -99,7 +103,10 @@ UserInstance.hasMany(courseInstance, {
   as: "course",
 });
 
-//
+UserInstance.hasMany(ReminderInstance, {
+  foreignKey: "userId",
+  as: "reminder",
+});
 
 courseInstance.hasOne(UserInstance, {
   foreignKey: "tutorId",
