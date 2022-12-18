@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -12,6 +12,7 @@ import {
   option,
   registerSchema,
   resetPasswordSchema,
+  updateTutorSchema,
   validatePassword,
 } from "../utils/utility";
 import {
@@ -22,6 +23,8 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
+import { TutorInstance } from "../model/tutorModel";
+import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -71,6 +74,8 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
+        image: "",
+        totalCourses: ""
       });
 
       //console.log("create user is ", createUser)
@@ -274,6 +279,57 @@ const resetPasswordPost = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**=========================== updateTutorProfile ============================== **/
+
+export const updateTutorProfile = async(req: JwtPayload, res: Response) => {
+  try {
+    const {id} = req.user
+    console.log(id);
+    
+    const {image, name} = req.body
+    const joiValidateTutor = updateTutorSchema.validate(req.body, option)
+    if(joiValidateTutor.error){
+        return res.status(400).json({
+            Error: joiValidateTutor.error.details[0].message
+        })
+    }
+
+    const courses = await courseInstance.findAndCountAll({
+      where: { tutorId: id },
+    });
+
+    const totalCourses = courses.count.toString()
+
+    const Tutor = await UserInstance.findOne({where:{id}});
+    if(!Tutor){
+        return res.status(400).json({
+            Error: "You are not authorized to update your profile"
+        })
+    }
+    
+    const updateTutor = await UserInstance.update({
+        image: req.file.path, name, totalCourses
+    }, {where: {id}});
+
+    if(updateTutor){
+        const Tutor = await UserInstance.findOne({where:{id}});
+        return res.status(200).json({
+            message: "You have successfully updated your account",
+            Tutor
+        })
+    }
+
+    return res.status(400).json({
+        Error: "There's an error"
+    })
+} catch (error) {
+    return res.status(500).json({
+        Error: "Internal server error",
+        route: "/vendor/update-profile"
+    })
+}
+}
 
 /**=========================== Get Student History ============================== **/
 

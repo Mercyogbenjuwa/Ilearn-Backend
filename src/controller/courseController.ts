@@ -20,7 +20,7 @@ const addCourse = async (req: Request, res: Response) => {
     const courses = await courseInstance.findAll();
     console.log(courses);
 
-    //jggj
+  
 
     res.send(courses);
   } catch (error) {

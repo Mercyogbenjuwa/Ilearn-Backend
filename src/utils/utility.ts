@@ -73,3 +73,8 @@ export const resetPasswordSchema = Joi.object().keys({
       "any.required": "You need to add a confirm password",
     }),
 });
+
+export const updateTutorSchema = Joi.object().keys({
+  name: Joi.string(),
+  image: Joi.string(),
+})
