@@ -30,7 +30,7 @@ ReminderInstance.init(
       unique: true,
     },
 
-    todo: {
+    description: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
