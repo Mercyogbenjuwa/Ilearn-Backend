@@ -80,7 +80,7 @@ UserInstance.init(
       allowNull: false,
       validate: {
         customValidator: (value: any) => {
-          const enums = ["Tutor", "Student"];
+          const enums = ["Tutor", "Student"]; // to be changed to small letter
           if (!enums.includes(value)) {
             throw new Error("value should be a Student or a Tutor");
           }

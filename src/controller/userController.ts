@@ -155,6 +155,9 @@ const Login = async (req: Request, res: Response) => {
           name: User.name,
         });
       }
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
     }
   } catch (err) {
     res.status(500).json({
@@ -180,6 +183,7 @@ const forgotPassword = async (req: Request, res: Response) => {
     const oldUser = await UserInstance.findOne({
       where: { email: email },
     });
+
     //console.log(oldUser);
     if (!oldUser) {
       return res.status(400).json({
@@ -190,7 +194,7 @@ const forgotPassword = async (req: Request, res: Response) => {
     const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
       expiresIn: "1d",
     });
-    const link = `${process.env.BASE_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
+    const link = `${process.env.CLIENT_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
     if (oldUser) {
       const html = emailHtml2(link);
       await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
