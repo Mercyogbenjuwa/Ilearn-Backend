@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import {ReminderInstance} from "../model/reminderModel";
+import { ReminderInstance } from "../model/reminderModel";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -23,6 +23,7 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
+import { courseRequestInstance } from "../model/courseRequestsModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -63,7 +64,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     //Create User
 
     if (!User) {
-      const createUser = await UserInstance.create({
+      await UserInstance.create({
         id: uuiduser,
         email,
         password: userPassword,
@@ -78,7 +79,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
       // send Email to user
       const html = emailHtml(otp);
-      // await mailSent(FromAdminMail, email, userSubject, html);
+      await mailSent(FromAdminMail, email, userSubject, html);
 
       //check if user exist
       const User = await UserInstance.findOne({
@@ -123,9 +124,15 @@ const Login = async (req: Request, res: Response) => {
       });
     }
     //check if the user exist
-    const User = (await UserInstance.findOne({
+    const User = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
+    if (!User) {
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
+    }
     console.log(User.toJSON());
 
     if (User.verified === false) {
@@ -133,7 +140,7 @@ const Login = async (req: Request, res: Response) => {
         password,
         User.password,
         User.salt
-      ); /*can equally use bcrypt.compare() */
+      );
       if (validation) {
         //Generate signature for the user
         let signature = await GenerateSignature({
@@ -149,10 +156,10 @@ const Login = async (req: Request, res: Response) => {
           name: User.name,
         });
       }
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
     }
-    res.status(400).json({
-      Error: "Wrong Username or password",
-    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -164,7 +171,7 @@ const Login = async (req: Request, res: Response) => {
 
 /**=========================== Resend Password ============================== **/
 
-/*export*/ const forgotPassword = async (req: Request, res: Response) => {
+const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const validateResult = forgotPasswordSchema.validate(req.body, option);
@@ -174,9 +181,10 @@ const Login = async (req: Request, res: Response) => {
       });
     }
     //check if the User exist
-    const oldUser = (await UserInstance.findOne({
+    const oldUser = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
     //console.log(oldUser);
     if (!oldUser) {
       return res.status(400).json({
@@ -187,7 +195,7 @@ const Login = async (req: Request, res: Response) => {
     const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
       expiresIn: "1d",
     });
-    const link = `http://localhost:4000/users/resetpassword/${oldUser.id}/${token}`;
+    const link = `${process.env.CLIENT_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
     if (oldUser) {
       const html = emailHtml2(link);
       await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
@@ -207,11 +215,11 @@ const Login = async (req: Request, res: Response) => {
 
 //On clicking the email link ,
 
-/*export*/ const resetPasswordGet = async (req: Request, res: Response) => {
+const resetPasswordGet = async (req: Request, res: Response) => {
   const { id, token } = req.params;
-  const oldUser = (await UserInstance.findOne({
+  const oldUser = await UserInstance.findOne({
     where: { id: id },
-  })) as unknown as UserAttributes;
+  });
   if (!oldUser) {
     return res.status(400).json({
       message: "User Does Not Exist",
@@ -278,78 +286,81 @@ const resetPasswordPost = async (req: Request, res: Response) => {
 
 /**=========================== Get Student History ============================== **/
 
-const coursesHistory =[
+const coursesHistory = [
   {
-  id:1,
-  name: "chally",
-  title:"Introduction to programming",
-  description:"This course is an introduction to programming",
-  price: 200,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 1,
-  Rating_id: 7,
-  scheduled_time: "2021-08-437T00:00:00.000Z",
-  comment: "This course is awesome",
-  courseID: "3920-498389-4839483",
-  category: "Programming",
-  status : "Completed"
+    id: 1,
+    name: "chally",
+    title: "Introduction to programming",
+    description: "This course is an introduction to programming",
+    price: 200,
+    image:
+      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
+    studentID: 1,
+    Rating_id: 7,
+    scheduled_time: "2021-08-437T00:00:00.000Z",
+    comment: "This course is awesome",
+    courseID: "3920-498389-4839483",
+    category: "Programming",
+    status: "Completed",
   },
   {
-  id:2,
-  name: "Rose",
-  title:"Chemistry",
-  description:"This course is an introduction to programming",
-  price: 100,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID:1,
-  Rating_id: 8,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: "This course is very interesting",
-  courseID: "3920-498389-4839483",
-  category: "Science",
-  status : "Completed"
-
+    id: 2,
+    name: "Rose",
+    title: "Chemistry",
+    description: "This course is an introduction to programming",
+    price: 100,
+    image:
+      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
+    studentID: 1,
+    Rating_id: 8,
+    scheduled_time: "2021-08-30T00:00:00.000Z",
+    comment: "This course is very interesting",
+    courseID: "3920-498389-4839483",
+    category: "Science",
+    status: "Completed",
   },
   {
-  id:3,
-  name: "Tovia",
-  title:"Mathematics",
-  description:"This course is an introduction to Data Structures and Algorithms",
-  price: 100,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 2,
-  Rating_id: 9,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: "This course ",
-  courseID: "3920-498389-4839483",
-  category: "Mathematics",
-  status: "not completed"
-
+    id: 3,
+    name: "Tovia",
+    title: "Mathematics",
+    description:
+      "This course is an introduction to Data Structures and Algorithms",
+    price: 100,
+    image:
+      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
+    studentID: 2,
+    Rating_id: 9,
+    scheduled_time: "2021-08-30T00:00:00.000Z",
+    comment: "This course ",
+    courseID: "3920-498389-4839483",
+    category: "Mathematics",
+    status: "not completed",
   },
   {
-  id:4,
-  name: "Acton",
-  title:"Data Structures and Algorithms",
-  description:"This course is an introduction to Data Structures and Algorithms",
-  price: 800,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 2,
-  Rating_id: 9,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: " This course is very interesting",
-  courseID: "3920-498389-4839483",
-  category: "Mathematics",
-  status: "completed"
-  
-    },
-]
+    id: 4,
+    name: "Acton",
+    title: "Data Structures and Algorithms",
+    description:
+      "This course is an introduction to Data Structures and Algorithms",
+    price: 800,
+    image:
+      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
+    studentID: 2,
+    Rating_id: 9,
+    scheduled_time: "2021-08-30T00:00:00.000Z",
+    comment: " This course is very interesting",
+    courseID: "3920-498389-4839483",
+    category: "Mathematics",
+    status: "completed",
+  },
+];
 
 // const getStudentHistory =  (req: Request, res: Response) => {
 //   try{
 //     const studentID = req.params.id as string;
 
 //     let courses: any = []
-    
+
 //     coursesHistory.forEach((x) => {
 //       x.studentID === Number(studentID) ? courses.push(x) : null})
 //     if(courses.length > 0){
@@ -376,10 +387,7 @@ const coursesHistory =[
 
 const getAllReminders = async (req: Request, res: Response) => {
   try {
-    
-    const reminders = await ReminderInstance.findAndCountAll({
-      
-    });
+    const reminders = await ReminderInstance.findAndCountAll({});
     return res.status(200).json({
       message: "You have successfully retrieved all reminders",
       Count: reminders.count,
@@ -392,7 +400,6 @@ const getAllReminders = async (req: Request, res: Response) => {
     });
   }
 };
-
 
 export {
   Login,
