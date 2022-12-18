@@ -42,5 +42,5 @@ const errorHandler = (
   });
   next();
 };
-//export { notFoundError, appError }
+
 export { appError, notFound, errorHandler };
