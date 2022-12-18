@@ -1,7 +1,5 @@
-import { Express, Request, Response } from "express";
+import { Request, Response } from "express";
 import { courseInstance } from "../model/courseModel";
-import { UserInstance } from "../model/userModel";
-import { courseRequestInstance } from "../model/courseRequestsModel";
 
 const addCourse = async (req: Request, res: Response) => {
   try {
@@ -18,8 +16,6 @@ const addCourse = async (req: Request, res: Response) => {
 
     const courses = await courseInstance.findAll();
     console.log(courses);
-
-    //jggj
 
     res.send(courses);
   } catch (error) {

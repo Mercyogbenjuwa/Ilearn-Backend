@@ -77,7 +77,15 @@ UserInstance.init(
     },
     userType: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+      validate: {
+        customValidator: (value: any) => {
+          const enums = ["Tutor", "Student"];
+          if (!enums.includes(value)) {
+            throw new Error("value should be a Student or a Tutor");
+          }
+        },
+      },
     },
   },
 

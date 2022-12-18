@@ -63,7 +63,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     //Create User
 
     if (!User) {
-      const createUser = await UserInstance.create({
+      await UserInstance.create({
         id: uuiduser,
         email,
         password: userPassword,
@@ -78,7 +78,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
       // send Email to user
       const html = emailHtml(otp);
-      // await mailSent(FromAdminMail, email, userSubject, html);
+      await mailSent(FromAdminMail, email, userSubject, html);
 
       //check if user exist
       const User = await UserInstance.findOne({
@@ -123,9 +123,15 @@ const Login = async (req: Request, res: Response) => {
       });
     }
     //check if the user exist
-    const User = (await UserInstance.findOne({
+    const User = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
+    if (!User) {
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
+    }
     console.log(User.toJSON());
 
     if (User.verified === false) {
@@ -133,7 +139,7 @@ const Login = async (req: Request, res: Response) => {
         password,
         User.password,
         User.salt
-      ); /*can equally use bcrypt.compare() */
+      );
       if (validation) {
         //Generate signature for the user
         let signature = await GenerateSignature({
@@ -150,9 +156,6 @@ const Login = async (req: Request, res: Response) => {
         });
       }
     }
-    res.status(400).json({
-      Error: "Wrong Username or password",
-    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -164,7 +167,7 @@ const Login = async (req: Request, res: Response) => {
 
 /**=========================== Resend Password ============================== **/
 
-/*export*/ const forgotPassword = async (req: Request, res: Response) => {
+const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const validateResult = forgotPasswordSchema.validate(req.body, option);
@@ -174,9 +177,9 @@ const Login = async (req: Request, res: Response) => {
       });
     }
     //check if the User exist
-    const oldUser = (await UserInstance.findOne({
+    const oldUser = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
     //console.log(oldUser);
     if (!oldUser) {
       return res.status(400).json({
@@ -187,7 +190,7 @@ const Login = async (req: Request, res: Response) => {
     const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
       expiresIn: "1d",
     });
-    const link = `http://localhost:4000/users/resetpassword/${oldUser.id}/${token}`;
+    const link = `${process.env.BASE_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
     if (oldUser) {
       const html = emailHtml2(link);
       await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
@@ -207,11 +210,11 @@ const Login = async (req: Request, res: Response) => {
 
 //On clicking the email link ,
 
-/*export*/ const resetPasswordGet = async (req: Request, res: Response) => {
+const resetPasswordGet = async (req: Request, res: Response) => {
   const { id, token } = req.params;
-  const oldUser = (await UserInstance.findOne({
+  const oldUser = await UserInstance.findOne({
     where: { id: id },
-  })) as unknown as UserAttributes;
+  });
   if (!oldUser) {
     return res.status(400).json({
       message: "User Does Not Exist",
@@ -276,6 +279,7 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
+/// send a request a to a tutor
 const requestTutor = async (req: Request, res: Response) => {
   try {
     const studentId = req.user?.id;
