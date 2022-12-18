@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
 import {ReminderInstance} from "../model/reminderModel";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -374,16 +374,13 @@ const coursesHistory =[
 
 /**=========================== Get all Reminders============================== **/
 
-const getAllReminders = async (req: Request, res: Response) => {
+const getAllReminders = async (req:JwtPayload, res: Response) => {
   try {
-    
-    const reminders = await ReminderInstance.findAndCountAll({
-      
-    });
+    const userId = req.user.id;
+    const reminders = await ReminderInstance.findAll({ where: {id:userId} });
     return res.status(200).json({
       message: "You have successfully retrieved all reminders",
-      Count: reminders.count,
-      Users: reminders.rows,
+      reminders: reminders,
     });
   } catch (err) {
     return res.status(500).json({
