@@ -284,114 +284,15 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
-/**=========================== Get Student History ============================== **/
-
-const coursesHistory = [
-  {
-    id: 1,
-    name: "chally",
-    title: "Introduction to programming",
-    description: "This course is an introduction to programming",
-    price: 200,
-    image:
-      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-    studentID: 1,
-    Rating_id: 7,
-    scheduled_time: "2021-08-437T00:00:00.000Z",
-    comment: "This course is awesome",
-    courseID: "3920-498389-4839483",
-    category: "Programming",
-    status: "Completed",
-  },
-  {
-    id: 2,
-    name: "Rose",
-    title: "Chemistry",
-    description: "This course is an introduction to programming",
-    price: 100,
-    image:
-      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-    studentID: 1,
-    Rating_id: 8,
-    scheduled_time: "2021-08-30T00:00:00.000Z",
-    comment: "This course is very interesting",
-    courseID: "3920-498389-4839483",
-    category: "Science",
-    status: "Completed",
-  },
-  {
-    id: 3,
-    name: "Tovia",
-    title: "Mathematics",
-    description:
-      "This course is an introduction to Data Structures and Algorithms",
-    price: 100,
-    image:
-      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-    studentID: 2,
-    Rating_id: 9,
-    scheduled_time: "2021-08-30T00:00:00.000Z",
-    comment: "This course ",
-    courseID: "3920-498389-4839483",
-    category: "Mathematics",
-    status: "not completed",
-  },
-  {
-    id: 4,
-    name: "Acton",
-    title: "Data Structures and Algorithms",
-    description:
-      "This course is an introduction to Data Structures and Algorithms",
-    price: 800,
-    image:
-      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-    studentID: 2,
-    Rating_id: 9,
-    scheduled_time: "2021-08-30T00:00:00.000Z",
-    comment: " This course is very interesting",
-    courseID: "3920-498389-4839483",
-    category: "Mathematics",
-    status: "completed",
-  },
-];
-
-// const getStudentHistory =  (req: Request, res: Response) => {
-//   try{
-//     const studentID = req.params.id as string;
-
-//     let courses: any = []
-
-//     coursesHistory.forEach((x) => {
-//       x.studentID === Number(studentID) ? courses.push(x) : null})
-//     if(courses.length > 0){
-//       return res.status(200).json({
-//         message: "User found",
-//         courses,
-//       });
-//     }else{
-//       return res.status(400).json({
-//         message: "User not found",
-//       });
-//     }
-//   }
-//   catch(err){
-//     res.status(500).json({
-//       Error: "Internal server Error",
-//       route: "/users/studenthistory",
-//       err,
-//     });
-//   }
-// }
-
 /**=========================== Get all Reminders============================== **/
 
 const getAllReminders = async (req: Request, res: Response) => {
   try {
-    const reminders = await ReminderInstance.findAndCountAll({});
+    const userId = req.user?.id;
+    const reminders = await ReminderInstance.findAll({ where: { id: userId } });
     return res.status(200).json({
       message: "You have successfully retrieved all reminders",
-      Count: reminders.count,
-      Users: reminders.rows,
+      reminders: reminders,
     });
   } catch (err) {
     return res.status(500).json({
