@@ -14,6 +14,7 @@ import {
   registerSchema,
   resetPasswordSchema,
   validatePassword,
+  validateReminder,
 } from "../utils/utility";
 import {
   emailHtml,
@@ -284,6 +285,46 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== Create a new Reminders============================== **/
+const createReminder = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { title, description, startTime, endTime } = req.body;
+    const { error } = validateReminder(req.body);
+
+    if (error) return res.status(400).send({ Error: error.details[0].message });
+
+    const startDate: Date = new Date(startTime);
+
+    // calculate current date time that is one hour behind
+    const currentDate =
+      new Date().getTime() - new Date().getTimezoneOffset() * 60 * 1000;
+
+    // check if the time is not in the past
+    if (startDate.getTime() < currentDate) {
+      res.status(405).send({
+        Error: "Please choose a more current time",
+      });
+      return;
+    }
+    // create the reminder
+    await ReminderInstance.create({
+      title,
+      description,
+      startTime,
+      endTime,
+      userId,
+    });
+    res.status(200).send({
+      message: "Reminder created sucessfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: error,
+    });
+  }
+};
+
 /**=========================== Get all Reminders============================== **/
 
 const getAllReminders = async (req: Request, res: Response) => {
@@ -310,5 +351,5 @@ export {
   resetPasswordGet,
   resetPasswordPost,
   getAllReminders,
-  // getStudentHistory,
+  createReminder,
 };

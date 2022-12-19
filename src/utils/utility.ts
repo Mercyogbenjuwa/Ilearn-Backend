@@ -74,3 +74,29 @@ export const resetPasswordSchema = Joi.object().keys({
       "any.required": "You need to add a confirm password",
     }),
 });
+
+// validate schema for creating of reminders
+
+export const validateReminder = (input: {}) => {
+  const schema = Joi.object({
+    title: Joi.string()
+      .min(3)
+      .required()
+      .messages({ "any.required": "A title is required" }),
+
+    description: Joi.string().min(30).required().messages({
+      "any.only": "Description should not be more than 30 characters",
+      "any.required": "You need to add a description",
+    }),
+    startTime: Joi.string().isoDate().required().messages({
+      "any.required": "You need to add a start time",
+      "any.isoDate": "Start time should be an ISO Date",
+    }),
+
+    endTime: Joi.string().isoDate().required().messages({
+      "any.required": "You need to add an End time",
+      "any.isoDate": "End time should be an ISO Date",
+    }),
+  });
+  return schema.validate(input);
+};

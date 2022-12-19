@@ -7,7 +7,6 @@ export interface ReminderAttributes {
   title: string;
   description: string;
   startTime: Date;
-  duration: number;
   endTime: Date;
   userId: string;
 }
@@ -17,7 +16,6 @@ export class ReminderInstance extends Model<ReminderAttributes> {
   declare title: string;
   declare description: string;
   declare startTime: Date;
-  declare duration: number;
   declare endTime: Date;
   declare userId: string;
 }
