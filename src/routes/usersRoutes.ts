@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  createReminder,
   forgotPassword,
   getAllUsers,
   Login,
@@ -22,6 +23,7 @@ router.get("/", protect, getAllUsers);
 router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
+router.post("/reminders", protect, createReminder);
 //router.post("/request", protect, requestTutor);
 
 export default router;
