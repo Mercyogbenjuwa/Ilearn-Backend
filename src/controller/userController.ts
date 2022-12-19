@@ -25,6 +25,7 @@ import {
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 import { courseRequestInstance } from "../model/courseRequestsModel";
+import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -343,6 +344,34 @@ const getAllReminders = async (req: Request, res: Response) => {
   }
 };
 
+
+/**==================== Get all recmmended courses================**/
+const getRecommendedCourses = async (req: Request, res: Response) =>
+{
+  try {
+    const  category  = req.params.category;
+    // const id = req.user?.id
+    
+
+    const recommendedCourse = await courseInstance.findAll({
+      where: {
+       category
+      },
+    });
+    if (!recommendedCourse) {
+      return res.status(400).json({ message: "No recommended courses found" });
+    }
+    res.status(200).json({
+      message: "Recommended courses found",
+      recommendedCourse
+    });
+  } catch (error: any) {
+    res.status(500).json({ Error: error.message });
+
+  
+  }
+};
+
 export {
   Login,
   Register,
@@ -352,4 +381,5 @@ export {
   resetPasswordPost,
   getAllReminders,
   createReminder,
+  getRecommendedCourses,
 };

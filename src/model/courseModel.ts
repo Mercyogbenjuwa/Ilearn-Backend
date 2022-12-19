@@ -12,6 +12,7 @@ export interface courseAttributes {
 }
 
 export class courseInstance extends Model<courseAttributes> {
+  
   declare id: string;
   declare title: string;
   declare description: string;

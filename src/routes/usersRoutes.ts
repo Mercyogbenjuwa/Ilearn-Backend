@@ -3,6 +3,7 @@ import {
   createReminder,
   forgotPassword,
   getAllUsers,
+  getRecommendedCourses,
   Login,
   Register,
   resetPasswordGet,
@@ -25,5 +26,6 @@ router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
 //router.post("/request", protect, requestTutor);
+router.get('/recommended/:category', protect, getRecommendedCourses)
 
 export default router;
