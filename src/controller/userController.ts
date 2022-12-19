@@ -23,7 +23,6 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { TutorInstance } from "../model/tutorModel";
 import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -285,32 +284,37 @@ const resetPasswordPost = async (req: Request, res: Response) => {
 export const updateTutorProfile = async(req: JwtPayload, res: Response) => {
   try {
     const {id} = req.user
-    console.log(id);
     
-    const {image, name} = req.body
+    const {image, name, areaOfInterest} = req.body
     const joiValidateTutor = updateTutorSchema.validate(req.body, option)
     if(joiValidateTutor.error){
         return res.status(400).json({
             Error: joiValidateTutor.error.details[0].message
         })
     }
-
+    console.log(name);
+    
     const courses = await courseInstance.findAndCountAll({
       where: { tutorId: id },
     });
 
     const totalCourses = courses.count.toString()
-
+    
     const Tutor = await UserInstance.findOne({where:{id}});
-    if(!Tutor){
+    if(Tutor === null){
         return res.status(400).json({
             Error: "You are not authorized to update your profile"
         })
     }
     
-    const updateTutor = await UserInstance.update({
-        image: req.file.path, name, totalCourses
-    }, {where: {id}});
+    await Tutor.update({
+        image: req.file.path, name, totalCourses, areaOfInterest
+    });
+
+    const updateTutor = await Tutor.save()
+    // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
+    // this is for saving some fields
+  
 
     if(updateTutor){
         const Tutor = await UserInstance.findOne({where:{id}});
@@ -331,104 +335,28 @@ export const updateTutorProfile = async(req: JwtPayload, res: Response) => {
 }
 }
 
-/**=========================== Get Student History ============================== **/
+/**=========================== get Tutor Details ============================== **/
 
-const coursesHistory =[
-  {
-  id:1,
-  name: "chally",
-  title:"Introduction to programming",
-  description:"This course is an introduction to programming",
-  price: 200,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 1,
-  Rating_id: 7,
-  scheduled_time: "2021-08-437T00:00:00.000Z",
-  comment: "This course is awesome",
-  courseID: "3920-498389-4839483",
-  category: "Programming",
-  status : "Completed"
-  },
-  {
-  id:2,
-  name: "Rose",
-  title:"Chemistry",
-  description:"This course is an introduction to programming",
-  price: 100,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID:1,
-  Rating_id: 8,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: "This course is very interesting",
-  courseID: "3920-498389-4839483",
-  category: "Science",
-  status : "Completed"
+export const getTutorDetails = async(req: Request, res: Response) => {
+  try {
+    const tutorid = req.params.tutorid
 
-  },
-  {
-  id:3,
-  name: "Tovia",
-  title:"Mathematics",
-  description:"This course is an introduction to Data Structures and Algorithms",
-  price: 100,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 2,
-  Rating_id: 9,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: "This course ",
-  courseID: "3920-498389-4839483",
-  category: "Mathematics",
-  status: "not completed"
-
-  },
-  {
-  id:4,
-  name: "Acton",
-  title:"Data Structures and Algorithms",
-  description:"This course is an introduction to Data Structures and Algorithms",
-  price: 800,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 2,
-  Rating_id: 9,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: " This course is very interesting",
-  courseID: "3920-498389-4839483",
-  category: "Mathematics",
-  status: "completed"
-  
-    },
-]
-
-// const getStudentHistory =  (req: Request, res: Response) => {
-//   try{
-//     const studentID = req.params.id as string;
-
-//     let courses: any = []
-    
-//     coursesHistory.forEach((x) => {
-//       x.studentID === Number(studentID) ? courses.push(x) : null})
-//     if(courses.length > 0){
-//       return res.status(200).json({
-//         message: "User found",
-//         courses,
-//       });
-//     }else{
-//       return res.status(400).json({
-//         message: "User not found",
-//       });
-//     }
-//   }
-//   catch(err){
-//     res.status(500).json({
-//       Error: "Internal server Error",
-//       route: "/users/studenthistory",
-//       err,
-//     });
-//   }
-// }
-
-
-
+    const tutorDetails = await UserInstance.findOne({where:{id:tutorid}})
+    if(tutorDetails !== null){
+      return res.status(200).json({
+        message: tutorDetails
+      })
+    }
+    return res.status(400).json({
+      Error: "Tutor does not exist"
+    })
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile"
+  })
+  }
+}
 
 export {
   Login,
@@ -437,5 +365,4 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
-  // getStudentHistory,
 };

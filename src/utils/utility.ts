@@ -77,4 +77,5 @@ export const resetPasswordSchema = Joi.object().keys({
 export const updateTutorSchema = Joi.object().keys({
   name: Joi.string(),
   image: Joi.string(),
+  areaOfInterest: Joi.string()
 })
