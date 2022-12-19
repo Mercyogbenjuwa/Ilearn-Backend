@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { forgotPassword, getAllUsers, Login, Register, resetPasswordGet, resetPasswordPost } from "../controller/userController";
+import { forgotPassword, getAllUsers, Login, Register, resetPasswordGet, resetPasswordPost, verifyUser } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 
 const router = express.Router();
@@ -11,6 +11,7 @@ const router = express.Router();
 // });
 router.post("/signup", Register);
 router.post("/login", Login);
+router.get("/verify/:signature", verifyUser);
 router.get("/", protect, getAllUsers);
 router.post('/forgot-password', forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);

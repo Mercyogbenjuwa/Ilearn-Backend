@@ -26,6 +26,7 @@ export class UserInstance extends Model<UserAttributes> {
   declare userType: string;
   declare verified: boolean;
   declare salt: string;
+ 
 }
 
 UserInstance.init(
@@ -82,6 +83,7 @@ UserInstance.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    
   },
 
   {

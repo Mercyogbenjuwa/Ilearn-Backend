@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -13,15 +13,18 @@ import {
   registerSchema,
   resetPasswordSchema,
   validatePassword,
+  verifySignature,
 } from "../utils/utility";
 import {
   emailHtml,
   emailHtml2,
+  emailHtml3,
   GenerateOTP,
   mailSent,
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
+import { link } from "joi";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -54,9 +57,6 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     const salt = await GenerateSalt();
     const userPassword = await GeneratePassword(password, salt);
 
-    //Generate OTP
-    const { otp, expiry } = GenerateOTP();
-
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
     //Create User
@@ -73,28 +73,31 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         salt,
       });
 
-      //console.log("create user is ", createUser)
-
-      // send Email to user
-      const html = emailHtml(otp);
-      // await mailSent(FromAdminMail, email, userSubject, html);
-
-      //check if user exist
       const User = await UserInstance.findOne({
         where: { email: email },
       });
+
+      let signature = await GenerateSignature({
+        id: User!.id,
+        email: User!.email,
+        verified: User!.verified,
+      });
+
+      // send Email to user
+      const link = `Press <a href=http://localhost:4000/users/verify/${signature}> here </a> to verify your account. Thanks.`;
+      const html = emailHtml3(link);
+       await mailSent(FromAdminMail, email, userSubject, html);
+
+      //check if user exist
+      
       if (!User) {
         return res.status(400).json("no user was created");
       }
       // Generate a signature for user
-      let signature = await GenerateSignature({
-        id: User.id,
-        email: User.email,
-        verified: User.verified,
-      });
+    
       return res.status(201).json({
         message:
-          "User created successfully Check your email for OTP verification",
+          "User created successfully Check your email for verification",
         signature,
         verified: User.verified,
       });
@@ -111,8 +114,42 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/**===================================== Login Users ===================================== **/
-const Login = async (req: Request, res: Response) => {
+/**==================== Verify Users ========================**/
+export const verifyUser = async (req: JwtPayload, res: Response) => {
+try{
+  const token = req.params.signature;
+  // Verify the signature
+  const { id, email, verified } = await verifySignature(token);
+  // Find the user with the matching verification token
+  const user = await UserInstance.findOne({ where: { id } });
+  if (!user) {
+    throw new Error('Invalid verification token');
+  }
+
+  // Set the user's verified status to true
+  const User = await UserInstance.update({
+    verified: true
+  },{where:{id}})
+  
+  await user.save();
+
+  
+  // Redirect the user to the login page
+  return res.redirect(301, 'http://127.0.0.1:5173/login');
+  
+  // Send a success response to the client
+  
+  // return res.status(201).json({ message: 'Your email has been verified.' });
+  } catch (err) {
+    res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/verify",
+    });
+  }
+};
+
+/**==================== Login User ========================**/
+ const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const validateResult = loginSchema.validate(req.body, option);
@@ -121,47 +158,48 @@ const Login = async (req: Request, res: Response) => {
         Error: validateResult.error.details[0].message,
       });
     }
-    //check if the user exist
+    //check if user exist
     const User = (await UserInstance.findOne({
       where: { email: email },
     })) as unknown as UserAttributes;
-    console.log(User.toJSON());
 
-    if (User.verified === false) {
+    if (User.verified === true) {
       const validation = await validatePassword(
         password,
         User.password,
         User.salt
-      ); /*can equally use bcrypt.compare() */
+      );
+
       if (validation) {
-        //Generate signature for the user
+        //Regenerate a signature
         let signature = await GenerateSignature({
           id: User.id,
           email: User.email,
           verified: User.verified,
         });
+
         return res.status(200).json({
           message: "You have successfully logged in",
           signature,
           email: User.email,
           verified: User.verified,
-          name: User.name,
+          role: User.role,
         });
       }
     }
-    res.status(400).json({
-      Error: "Wrong Username or password",
+    return res.status(400).json({
+      Error: "Wrong Username or password or not verified",
     });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
       route: "/users/login",
-      err,
     });
   }
 };
 
 /**=========================== Resend Password ============================== **/
+// febic69835@bitvoo.com
 
 /*export*/ const forgotPassword = async (req: Request, res: Response) => {
   try {
