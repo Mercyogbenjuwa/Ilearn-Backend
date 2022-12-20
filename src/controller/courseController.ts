@@ -136,7 +136,7 @@ const getAllCourse = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const { title, description, pricing, category, image, tutorId } = req.body;
-     // const newCourse = ;
+     // updating course 
       const updateCourse = await courseInstance.update({
         title,
         description,
