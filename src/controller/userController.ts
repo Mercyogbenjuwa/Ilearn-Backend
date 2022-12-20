@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import { ReminderInstance } from "../model/reminderModel";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +12,7 @@ import {
   option,
   registerSchema,
   resetPasswordSchema,
+  updateTutorSchema,
   validatePassword,
   validateReminder,
 } from "../utils/utility";
@@ -24,7 +24,8 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { courseRequestInstance } from "../model/courseRequestsModel";
+import { ReminderInstance } from "../model/reminderModel";
+import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -74,6 +75,8 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
+        image: "",
+        totalCourses: "",
       });
 
       //console.log("create user is ", createUser)
@@ -343,6 +346,87 @@ const getAllReminders = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== updateTutorProfile ============================== **/
+
+export const updateTutorProfile = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
+
+    const { name, areaOfInterest } = req.body;
+    const joiValidateTutor = updateTutorSchema.validate(req.body, option);
+    if (joiValidateTutor.error) {
+      return res.status(400).json({
+        Error: joiValidateTutor.error.details[0].message,
+      });
+    }
+
+    const courses = await courseInstance.findAndCountAll({
+      where: { tutorId: id },
+    });
+
+    const totalCourses = courses.count.toString();
+
+    const tutor = await UserInstance.findOne({ where: { id } });
+    if (tutor === null) {
+      return res.status(400).json({
+        Error: "You are not authorized to update your profile",
+      });
+    }
+    // console.log(Tutor);
+
+    await tutor.update({
+      image: req.file?.path,
+      name,
+      totalCourses,
+      areaOfInterest,
+    });
+
+    const updateTutor = await tutor.save();
+    // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
+    // this is for saving some fields
+
+    if (updateTutor) {
+      const tutor = await UserInstance.findOne({ where: { id } });
+      return res.status(200).json({
+        message: "You have successfully updated your account",
+        tutor,
+      });
+    }
+
+    return res.status(400).json({
+      Error: "There's an error",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+      error,
+    });
+  }
+};
+
+/**=========================== get Tutor Details ============================== **/
+
+export const getTutorDetails = async (req: Request, res: Response) => {
+  try {
+    const tutorId = req.params.tutorid;
+
+    const tutorDetails = await UserInstance.findOne({ where: { id: tutorId } });
+    if (tutorDetails !== null) {
+      return res.status(200).json({
+        message: tutorDetails,
+      });
+    }
+    return res.status(400).json({
+      Error: "Tutor does not exist",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+    });
+  }
+};
 export {
   Login,
   Register,
@@ -350,6 +434,6 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
-  getAllReminders,
   createReminder,
+  getAllReminders,
 };
