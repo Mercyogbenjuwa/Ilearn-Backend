@@ -1,5 +1,16 @@
-import express, { Request, Response } from "express";
-import { forgotPassword, getAllUsers, getTutorDetails, Login, Register, resetPasswordGet, resetPasswordPost, updateTutorProfile } from "../controller/userController";
+import express from "express";
+import {
+  createReminder,
+  forgotPassword,
+  getAllUsers,
+  Login,
+  Register,
+  resetPasswordGet,
+  resetPasswordPost,
+  getTutorDetails,
+  updateTutorProfile,
+} from "../controller/userController";
+
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
 
@@ -14,9 +25,16 @@ router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/", protect, getAllUsers);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
-router.put("/updatetutorprofile", protect, upload.single('image'), updateTutorProfile);
-router.post('/forgot-password', forgotPassword);
+router.put(
+  "/updatetutorprofile",
+  protect,
+  upload.single("image"),
+  updateTutorProfile
+);
+router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
-router.post("/resetpassword/:id/:token",resetPasswordPost);
+router.post("/resetpassword/:id/:token", resetPasswordPost);
+router.post("/reminders", protect, createReminder);
+//router.post("/request", protect, requestTutor);
 
 export default router;

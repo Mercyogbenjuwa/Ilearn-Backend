@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -14,6 +14,7 @@ import {
   resetPasswordSchema,
   updateTutorSchema,
   validatePassword,
+  validateReminder,
 } from "../utils/utility";
 import {
   emailHtml,
@@ -23,6 +24,7 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
+import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -64,7 +66,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     //Create User
 
     if (!User) {
-      const createUser = await UserInstance.create({
+      await UserInstance.create({
         id: uuiduser,
         email,
         password: userPassword,
@@ -81,7 +83,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
       // send Email to user
       const html = emailHtml(otp);
-      // await mailSent(FromAdminMail, email, userSubject, html);
+      await mailSent(FromAdminMail, email, userSubject, html);
 
       //check if user exist
       const User = await UserInstance.findOne({
@@ -126,9 +128,15 @@ const Login = async (req: Request, res: Response) => {
       });
     }
     //check if the user exist
-    const User = (await UserInstance.findOne({
+    const User = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
+    if (!User) {
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
+    }
     console.log(User.toJSON());
 
     if (User.verified === false) {
@@ -136,7 +144,7 @@ const Login = async (req: Request, res: Response) => {
         password,
         User.password,
         User.salt
-      ); /*can equally use bcrypt.compare() */
+      );
       if (validation) {
         //Generate signature for the user
         let signature = await GenerateSignature({
@@ -152,10 +160,10 @@ const Login = async (req: Request, res: Response) => {
           name: User.name,
         });
       }
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
     }
-    res.status(400).json({
-      Error: "Wrong Username or password",
-    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -167,7 +175,7 @@ const Login = async (req: Request, res: Response) => {
 
 /**=========================== Resend Password ============================== **/
 
-/*export*/ const forgotPassword = async (req: Request, res: Response) => {
+const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const validateResult = forgotPasswordSchema.validate(req.body, option);
@@ -177,9 +185,10 @@ const Login = async (req: Request, res: Response) => {
       });
     }
     //check if the User exist
-    const oldUser = (await UserInstance.findOne({
+    const oldUser = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
     //console.log(oldUser);
     if (!oldUser) {
       return res.status(400).json({
@@ -190,7 +199,7 @@ const Login = async (req: Request, res: Response) => {
     const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
       expiresIn: "1d",
     });
-    const link = `http://localhost:4000/users/resetpassword/${oldUser.id}/${token}`;
+    const link = `${process.env.CLIENT_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
     if (oldUser) {
       const html = emailHtml2(link);
       await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
@@ -210,11 +219,11 @@ const Login = async (req: Request, res: Response) => {
 
 //On clicking the email link ,
 
-/*export*/ const resetPasswordGet = async (req: Request, res: Response) => {
+const resetPasswordGet = async (req: Request, res: Response) => {
   const { id, token } = req.params;
-  const oldUser = (await UserInstance.findOne({
+  const oldUser = await UserInstance.findOne({
     where: { id: id },
-  })) as unknown as UserAttributes;
+  });
   if (!oldUser) {
     return res.status(400).json({
       message: "User Does Not Exist",
@@ -236,7 +245,7 @@ const Login = async (req: Request, res: Response) => {
   }
 };
 
-// Page for filling the new password and condfirm password
+// Page for filling the new password and confirm password
 
 const resetPasswordPost = async (req: Request, res: Response) => {
   const { id, token } = req.params;
@@ -279,6 +288,64 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== Create a new Reminders============================== **/
+const createReminder = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { title, description, startTime, endTime } = req.body;
+    const { error } = validateReminder(req.body);
+
+    if (error) return res.status(400).send({ Error: error.details[0].message });
+
+    const startDate: Date = new Date(startTime);
+
+    // calculate current date time that is one hour behind
+    const currentDate =
+      new Date().getTime() - new Date().getTimezoneOffset() * 60 * 1000;
+
+    // check if the time is not in the past
+    if (startDate.getTime() < currentDate) {
+      res.status(405).send({
+        Error: "Please choose a more current time",
+      });
+      return;
+    }
+    // create the reminder
+    await ReminderInstance.create({
+      title,
+      description,
+      startTime,
+      endTime,
+      userId,
+    });
+    res.status(200).send({
+      message: "Reminder created sucessfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: error,
+    });
+  }
+};
+
+/**=========================== Get all Reminders============================== **/
+
+const getAllReminders = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const reminders = await ReminderInstance.findAll({ where: { id: userId } });
+    return res.status(200).json({
+      message: "You have successfully retrieved all reminders",
+      reminders: reminders,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/get-all-reminders",
+    });
+  }
+};
+
 /**=========================== updateTutorProfile ============================== **/
 
 export const updateTutorProfile = async (req: Request, res: Response) => {
@@ -292,12 +359,11 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
         Error: joiValidateTutor.error.details[0].message,
       });
     }
-    console.log(name);
 
     const courses = await courseInstance.findAndCountAll({
       where: { tutorId: id },
     });
-    console.log(courses);
+
     const totalCourses = courses.count.toString();
 
     const tutor = await UserInstance.findOne({ where: { id } });
@@ -361,7 +427,6 @@ export const getTutorDetails = async (req: Request, res: Response) => {
     });
   }
 };
-
 export {
   Login,
   Register,
@@ -369,4 +434,6 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
+  createReminder,
+  getAllReminders,
 };

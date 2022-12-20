@@ -1,6 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
+import { ReminderInstance } from "./reminderModel";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -84,7 +85,15 @@ UserInstance.init(
     },
     userType: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+      validate: {
+        customValidator: (value: any) => {
+          const enums = ["Tutor", "Student"]; // to be changed to small letter
+          if (!enums.includes(value)) {
+            throw new Error("value should be a Student or a Tutor");
+          }
+        },
+      },
     },
     image: {
       type: DataTypes.STRING,
@@ -106,7 +115,10 @@ UserInstance.hasMany(courseInstance, {
   as: "course",
 });
 
-//
+UserInstance.hasMany(ReminderInstance, {
+  foreignKey: "userId",
+  as: "reminder",
+});
 
 courseInstance.hasOne(UserInstance, {
   foreignKey: "tutorId",
