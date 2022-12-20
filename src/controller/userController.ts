@@ -74,7 +74,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         verified: false,
         salt,
         image: "",
-        totalCourses: ""
+        totalCourses: "",
       });
 
       //console.log("create user is ", createUser)
@@ -281,82 +281,86 @@ const resetPasswordPost = async (req: Request, res: Response) => {
 
 /**=========================== updateTutorProfile ============================== **/
 
-export const updateTutorProfile = async(req: JwtPayload, res: Response) => {
+export const updateTutorProfile = async (req: Request, res: Response) => {
   try {
-    const {id} = req.user
-    
-    const {image, name, areaOfInterest} = req.body
-    const joiValidateTutor = updateTutorSchema.validate(req.body, option)
-    if(joiValidateTutor.error){
-        return res.status(400).json({
-            Error: joiValidateTutor.error.details[0].message
-        })
+    const id = req.user?.id;
+
+    const { name, areaOfInterest } = req.body;
+    const joiValidateTutor = updateTutorSchema.validate(req.body, option);
+    if (joiValidateTutor.error) {
+      return res.status(400).json({
+        Error: joiValidateTutor.error.details[0].message,
+      });
     }
     console.log(name);
-    
+
     const courses = await courseInstance.findAndCountAll({
       where: { tutorId: id },
     });
+    console.log(courses);
+    const totalCourses = courses.count.toString();
 
-    const totalCourses = courses.count.toString()
-    
-    const Tutor = await UserInstance.findOne({where:{id}});
-    if(Tutor === null){
-        return res.status(400).json({
-            Error: "You are not authorized to update your profile"
-        })
+    const tutor = await UserInstance.findOne({ where: { id } });
+    if (tutor === null) {
+      return res.status(400).json({
+        Error: "You are not authorized to update your profile",
+      });
     }
-    
-    await Tutor.update({
-        image: req.file.path, name, totalCourses, areaOfInterest
+    // console.log(Tutor);
+
+    await tutor.update({
+      image: req.file?.path,
+      name,
+      totalCourses,
+      areaOfInterest,
     });
 
-    const updateTutor = await Tutor.save()
+    const updateTutor = await tutor.save();
     // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
     // this is for saving some fields
-  
 
-    if(updateTutor){
-        const Tutor = await UserInstance.findOne({where:{id}});
-        return res.status(200).json({
-            message: "You have successfully updated your account",
-            Tutor
-        })
-    }
-
-    return res.status(400).json({
-        Error: "There's an error"
-    })
-} catch (error) {
-    return res.status(500).json({
-        Error: "Internal server error",
-        route: "/vendor/update-profile"
-    })
-}
-}
-
-/**=========================== get Tutor Details ============================== **/
-
-export const getTutorDetails = async(req: Request, res: Response) => {
-  try {
-    const tutorid = req.params.tutorid
-
-    const tutorDetails = await UserInstance.findOne({where:{id:tutorid}})
-    if(tutorDetails !== null){
+    if (updateTutor) {
+      const tutor = await UserInstance.findOne({ where: { id } });
       return res.status(200).json({
-        message: tutorDetails
-      })
+        message: "You have successfully updated your account",
+        tutor,
+      });
     }
+
     return res.status(400).json({
-      Error: "Tutor does not exist"
-    })
+      Error: "There's an error",
+    });
   } catch (error) {
     return res.status(500).json({
       Error: "Internal server error",
-      route: "/vendor/update-profile"
-  })
+      route: "/vendor/update-profile",
+      error,
+    });
   }
-}
+};
+
+/**=========================== get Tutor Details ============================== **/
+
+export const getTutorDetails = async (req: Request, res: Response) => {
+  try {
+    const tutorId = req.params.tutorid;
+
+    const tutorDetails = await UserInstance.findOne({ where: { id: tutorId } });
+    if (tutorDetails !== null) {
+      return res.status(200).json({
+        message: tutorDetails,
+      });
+    }
+    return res.status(400).json({
+      Error: "Tutor does not exist",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+    });
+  }
+};
 
 export {
   Login,
