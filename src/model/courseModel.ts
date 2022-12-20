@@ -19,6 +19,7 @@ export class courseInstance extends Model<courseAttributes> {
   declare pricing: string;
   declare category: string;
   declare image: string;
+  pdf: any;
 }
 
 courseInstance.init(
