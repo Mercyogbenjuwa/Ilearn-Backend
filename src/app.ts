@@ -1,11 +1,9 @@
 import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
-import cors from 'cors'
-
+import cors from "cors";
 import usersRouter from "./routes/usersRoutes";
 import coursesRouter from "./routes/coursesRoutes";
-import cors from "cors";
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
 import {
@@ -38,8 +36,6 @@ app.use(notFound);
 // error handler
 app.use(errorHandler);
 // app.use(appError);
-
-
 
 const PORT = process.env.PORT || 4000;
 

@@ -5,8 +5,6 @@ import {
   fromAdminPhone,
   GMAIL_PASS,
   GMAIL_USER,
-  Gmail_Pass, 
-  Gmail_User,
   userSubject,
 } from "../Config";
 import nodemailer from "nodemailer";
@@ -33,8 +31,8 @@ export const onRequestOTP = async (otp: number, toPhoneNumber: string) => {
 const transport = nodemailer.createTransport({
   service: "gmail" /*service and host are the same thing */,
   auth: {
-    user: GMAIL_USER,
-    pass: GMAIL_PASS,
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
   },
   tls: {
     rejectUnauthorized: false,
@@ -115,13 +113,13 @@ export const emailHtml2 = (link: string): string => {
     <p>Hi there, follow the link to reset your password. The link expires in 10 minutes below.</p>
      ${link}
      <h3>DO NOT DISCLOSE TO ANYONE<h3>
-     </div>
+     </div>`;
 
-    return response
-}
+  return response;
+};
 
-export const emailHtml3 = (link:string):string=>{
-    let response =  `
+export const emailHtml3 = (link: string): string => {
+  let response = `
     <div style="max-width:700px;
     margin:auto;
     border:10px solid #ddd;
@@ -139,7 +137,6 @@ export const emailHtml3 = (link:string):string=>{
      ${link}
      <h3>DO NOT DISCLOSE TO ANYONE<h3>
      </div>
-    `
-    return response
-}
-
+    `;
+  return response;
+};
