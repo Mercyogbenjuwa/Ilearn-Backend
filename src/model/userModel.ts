@@ -103,6 +103,7 @@ UserInstance.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    
   },
 
   {
