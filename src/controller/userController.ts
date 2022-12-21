@@ -12,8 +12,10 @@ import {
   option,
   registerSchema,
   resetPasswordSchema,
+  updateTutorSchema,
   validatePassword,
   verifySignature,
+  validateReminder,
 } from "../utils/utility";
 import {
   emailHtml,
@@ -25,6 +27,8 @@ import {
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 import { link } from "joi";
+import { ReminderInstance } from "../model/reminderModel";
+import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -62,7 +66,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     //Create User
 
     if (!User) {
-      const createUser = await UserInstance.create({
+      await UserInstance.create({
         id: uuiduser,
         email,
         password: userPassword,
@@ -71,16 +75,12 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
+        image: "",
+        totalCourses: "",
       });
 
       const User = await UserInstance.findOne({
         where: { email: email },
-      });
-
-      let signature = await GenerateSignature({
-        id: User!.id,
-        email: User!.email,
-        verified: User!.verified,
       });
 
       // send Email to user
@@ -92,14 +92,10 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
       
       if (!User) {
         return res.status(400).json("no user was created");
-      }
-      // Generate a signature for user
-    
+      }   
       return res.status(201).json({
         message:
           "User created successfully Check your email for verification",
-        signature,
-        verified: User.verified,
       });
     }
     return res.status(400).json({
@@ -158,10 +154,16 @@ try{
         Error: validateResult.error.details[0].message,
       });
     }
-    //check if user exist
-    const User = (await UserInstance.findOne({
+    //check if the user exist
+    const User = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
+    if (!User) {
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
+    }
 
     if (User.verified === true) {
       const validation = await validatePassword(
@@ -169,7 +171,6 @@ try{
         User.password,
         User.salt
       );
-
       if (validation) {
         //Regenerate a signature
         let signature = await GenerateSignature({
@@ -186,10 +187,10 @@ try{
           role: User.role,
         });
       }
+      return res.status(400).json({
+        Error: "Wrong Username or password",
+      });
     }
-    return res.status(400).json({
-      Error: "Wrong Username or password or not verified",
-    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -201,7 +202,7 @@ try{
 /**=========================== Resend Password ============================== **/
 // febic69835@bitvoo.com
 
-/*export*/ const forgotPassword = async (req: Request, res: Response) => {
+const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const validateResult = forgotPasswordSchema.validate(req.body, option);
@@ -211,9 +212,10 @@ try{
       });
     }
     //check if the User exist
-    const oldUser = (await UserInstance.findOne({
+    const oldUser = await UserInstance.findOne({
       where: { email: email },
-    })) as unknown as UserAttributes;
+    });
+
     //console.log(oldUser);
     if (!oldUser) {
       return res.status(400).json({
@@ -224,7 +226,7 @@ try{
     const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
       expiresIn: "1d",
     });
-    const link = `http://localhost:4000/users/resetpassword/${oldUser.id}/${token}`;
+    const link = `${process.env.CLIENT_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
     if (oldUser) {
       const html = emailHtml2(link);
       await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
@@ -244,11 +246,11 @@ try{
 
 //On clicking the email link ,
 
-/*export*/ const resetPasswordGet = async (req: Request, res: Response) => {
+const resetPasswordGet = async (req: Request, res: Response) => {
   const { id, token } = req.params;
-  const oldUser = (await UserInstance.findOne({
+  const oldUser = await UserInstance.findOne({
     where: { id: id },
-  })) as unknown as UserAttributes;
+  });
   if (!oldUser) {
     return res.status(400).json({
       message: "User Does Not Exist",
@@ -270,7 +272,7 @@ try{
   }
 };
 
-// Page for filling the new password and condfirm password
+// Page for filling the new password and confirm password
 
 const resetPasswordPost = async (req: Request, res: Response) => {
   const { id, token } = req.params;
@@ -313,105 +315,145 @@ const resetPasswordPost = async (req: Request, res: Response) => {
   }
 };
 
-/**=========================== Get Student History ============================== **/
+/**=========================== Create a new Reminders============================== **/
+const createReminder = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { title, description, startTime, endTime } = req.body;
+    const { error } = validateReminder(req.body);
 
-const coursesHistory =[
-  {
-  id:1,
-  name: "chally",
-  title:"Introduction to programming",
-  description:"This course is an introduction to programming",
-  price: 200,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 1,
-  Rating_id: 7,
-  scheduled_time: "2021-08-437T00:00:00.000Z",
-  comment: "This course is awesome",
-  courseID: "3920-498389-4839483",
-  category: "Programming",
-  status : "Completed"
-  },
-  {
-  id:2,
-  name: "Rose",
-  title:"Chemistry",
-  description:"This course is an introduction to programming",
-  price: 100,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID:1,
-  Rating_id: 8,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: "This course is very interesting",
-  courseID: "3920-498389-4839483",
-  category: "Science",
-  status : "Completed"
+    if (error) return res.status(400).send({ Error: error.details[0].message });
 
-  },
-  {
-  id:3,
-  name: "Tovia",
-  title:"Mathematics",
-  description:"This course is an introduction to Data Structures and Algorithms",
-  price: 100,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 2,
-  Rating_id: 9,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: "This course ",
-  courseID: "3920-498389-4839483",
-  category: "Mathematics",
-  status: "not completed"
+    const startDate: Date = new Date(startTime);
 
-  },
-  {
-  id:4,
-  name: "Acton",
-  title:"Data Structures and Algorithms",
-  description:"This course is an introduction to Data Structures and Algorithms",
-  price: 800,
-  image:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fpremium-vector%2Fprogramming-concept-illustration_1079551.htm&psig=AOvVaw3Z0Z0Z2Z0Z0Z0Z0Z0Z0Z0Z&ust=1630000000000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjX0Z0Z0Z0Z0Z0ZAAAAAdAAAAABAD",
-  studentID: 2,
-  Rating_id: 9,
-  scheduled_time: "2021-08-30T00:00:00.000Z",
-  comment: " This course is very interesting",
-  courseID: "3920-498389-4839483",
-  category: "Mathematics",
-  status: "completed"
-  
-    },
-]
+    // calculate current date time that is one hour behind
+    const currentDate =
+      new Date().getTime() - new Date().getTimezoneOffset() * 60 * 1000;
 
-// const getStudentHistory =  (req: Request, res: Response) => {
-//   try{
-//     const studentID = req.params.id as string;
+    // check if the time is not in the past
+    if (startDate.getTime() < currentDate) {
+      res.status(405).send({
+        Error: "Please choose a more current time",
+      });
+      return;
+    }
+    // create the reminder
+    await ReminderInstance.create({
+      title,
+      description,
+      startTime,
+      endTime,
+      userId,
+    });
+    res.status(200).send({
+      message: "Reminder created sucessfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: error,
+    });
+  }
+};
 
-//     let courses: any = []
-    
-//     coursesHistory.forEach((x) => {
-//       x.studentID === Number(studentID) ? courses.push(x) : null})
-//     if(courses.length > 0){
-//       return res.status(200).json({
-//         message: "User found",
-//         courses,
-//       });
-//     }else{
-//       return res.status(400).json({
-//         message: "User not found",
-//       });
-//     }
-//   }
-//   catch(err){
-//     res.status(500).json({
-//       Error: "Internal server Error",
-//       route: "/users/studenthistory",
-//       err,
-//     });
-//   }
-// }
+/**=========================== Get all Reminders============================== **/
 
+const getAllReminders = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const reminders = await ReminderInstance.findAll({ where: { id: userId } });
+    return res.status(200).json({
+      message: "You have successfully retrieved all reminders",
+      reminders: reminders,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/get-all-reminders",
+    });
+  }
+};
 
+/**=========================== updateTutorProfile ============================== **/
 
+export const updateTutorProfile = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
 
+    const { name, areaOfInterest } = req.body;
+    const joiValidateTutor = updateTutorSchema.validate(req.body, option);
+    if (joiValidateTutor.error) {
+      return res.status(400).json({
+        Error: joiValidateTutor.error.details[0].message,
+      });
+    }
+
+    const courses = await courseInstance.findAndCountAll({
+      where: { tutorId: id },
+    });
+
+    const totalCourses = courses.count.toString();
+
+    const tutor = await UserInstance.findOne({ where: { id } });
+    if (tutor === null) {
+      return res.status(400).json({
+        Error: "You are not authorized to update your profile",
+      });
+    }
+    // console.log(Tutor);
+
+    await tutor.update({
+      image: req.file?.path,
+      name,
+      totalCourses,
+      areaOfInterest,
+    });
+
+    const updateTutor = await tutor.save();
+    // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
+    // this is for saving some fields
+
+    if (updateTutor) {
+      const tutor = await UserInstance.findOne({ where: { id } });
+      return res.status(200).json({
+        message: "You have successfully updated your account",
+        tutor,
+      });
+    }
+
+    return res.status(400).json({
+      Error: "There's an error",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+      error,
+    });
+  }
+};
+
+/**=========================== get Tutor Details ============================== **/
+
+export const getTutorDetails = async (req: Request, res: Response) => {
+  try {
+    const tutorId = req.params.tutorid;
+
+    const tutorDetails = await UserInstance.findOne({ where: { id: tutorId } });
+    if (tutorDetails !== null) {
+      return res.status(200).json({
+        message: tutorDetails,
+      });
+    }
+    return res.status(400).json({
+      Error: "Tutor does not exist",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+    });
+  }
+};
 export {
   Login,
   Register,
@@ -419,5 +461,6 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
-  // getStudentHistory,
+  createReminder,
+  getAllReminders,
 };

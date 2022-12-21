@@ -1,60 +1,65 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 
-export interface RatingAttributes {
+export interface ReminderAttributes {
   [x: string]: any;
   id: string;
   title: string;
   description: string;
-  courseId: string;
-  studentId: string;
-  ratingValue: number;
+  startTime: Date;
+  endTime: Date;
+  userId: string;
 }
 
-export class RatingInstance extends Model<RatingAttributes> {
+export class ReminderInstance extends Model<ReminderAttributes> {
   declare id: string;
   declare title: string;
   declare description: string;
-  declare courseId: string;
-  declare studentId: string;
-  declare ratingValue: number;
+  declare startTime: Date;
+  declare endTime: Date;
+  declare userId: string;
 }
 
-RatingInstance.init(
+ReminderInstance.init(
   {
     id: {
       type: DataTypes.UUID,
-      primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    userId: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
 
     description: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    courseId: {
-      type: DataTypes.UUID,
+
+    startTime: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
 
-    studentId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-    },
+    // duration: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    // },
 
-    value: {
-      type: DataTypes.FLOAT,
+    endTime: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   },
 
   {
     sequelize: db,
-    tableName: "rating",
+    tableName: "reminder",
   }
 );

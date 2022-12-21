@@ -23,7 +23,7 @@ courseRequestInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      // defaultValue: DataTypes.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
 
@@ -36,9 +36,16 @@ courseRequestInstance.init(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM,
-      values: ["pending", "accepted", "declined"],
+      type: DataTypes.STRING,
       defaultValue: "pending",
+      validate: {
+        customValidator: (value: any) => {
+          const enums = ["pending", "accepted", "declined"];
+          if (!enums.includes(value)) {
+            throw new Error("not a valid option");
+          }
+        },
+      },
     },
     studentId: {
       type: DataTypes.UUID,

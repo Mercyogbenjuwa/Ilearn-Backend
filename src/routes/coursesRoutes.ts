@@ -1,8 +1,8 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { addCourse, getAllCourses } from "../controller/courseController";
-import { getAllUsers,  Login, Register } from "../controller/userController";
+import { getAllUsers, Login, Register } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
-import {getStudentHistory} from "../controller/courseController";
+import { getStudentHistory } from "../controller/courseController";
 
 const router = express.Router();
 
