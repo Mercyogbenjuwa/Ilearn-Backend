@@ -12,14 +12,14 @@ export const userSubject = process.env.usersubject as string;
 export const GMAIL_USER = process.env.GMAIL_USER;
 export const GMAIL_PASS = process.env.GMAIL_PASS;
 dotenv.config();
-export const db = new Sequelize(process.env.DB_CONNECTION_STRING!, {
-  logging: false,
-});
-// export const db = new Sequelize("project", "postgres", "root", {
-//   host: "localhost",
-//   dialect: "postgres",
-//   port: 5433,
+// export const db = new Sequelize(process.env.DB_CONNECTION_STRING!, {
+//   logging: false,
 // });
+export const db = new Sequelize("", "postgres", "453622", {
+  host: "localhost",
+  dialect: "postgres",
+  port: 5432,
+});
 
 export const connectDB = async () => {
   try {

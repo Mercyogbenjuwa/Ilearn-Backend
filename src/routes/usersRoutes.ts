@@ -9,6 +9,8 @@ import {
   resetPasswordPost,
   getTutorDetails,
   updateTutorProfile,
+  getAllTutors,
+  tutorRating,
 } from "../controller/userController";
 
 import { protect } from "../Middlewares/authMiddleware";
@@ -35,6 +37,8 @@ router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
+router.get('/all-tutors', getAllTutors)
+router.get('/feature-tutors', tutorRating)
 //router.post("/request", protect, requestTutor);
 
 export default router;

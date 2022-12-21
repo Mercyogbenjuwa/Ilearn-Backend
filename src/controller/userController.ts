@@ -352,7 +352,7 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
   try {
     const id = req.user?.id;
 
-    const { name, areaOfInterest } = req.body;
+    const { name, areaOfInterest, rating } = req.body;
     const joiValidateTutor = updateTutorSchema.validate(req.body, option);
     if (joiValidateTutor.error) {
       return res.status(400).json({
@@ -379,6 +379,7 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
       name,
       totalCourses,
       areaOfInterest,
+      rating
     });
 
     const updateTutor = await tutor.save();
@@ -427,6 +428,57 @@ export const getTutorDetails = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+const getAllTutors = async (req: Request, res: Response, next: NextFunction) => {
+
+  try {
+
+    const findTutor = await UserInstance.findAll({
+      where: { userType: "Tutor" },
+      attributes: ["id", "email", "name", "rating"]
+    })
+    return res.status(200).json({
+      TutorNumber: findTutor.length,
+      findTutor
+    })
+  } catch (error) {
+    console.log(error)
+  }
+
+  // 
+}
+const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let page: any = (req.query.page);
+    let limit: any = (req.query.limit);
+
+    const offset = page ? page * limit : 0;
+
+    const tutorSorted = await UserInstance.findAll({
+      where: { userType: "Tutor" },
+      attributes: ['id', 'email', "name", "image", "rating"],
+      // let highrated 
+      // if(rating) 
+      order: [
+        // ['rating', 'ASC'],
+        ['rating', 'DESC']
+      ],
+      limit: limit,
+      offset: offset,
+
+    })
+    return res.status(200).json({
+      TutorNumber: tutorSorted.length,
+      tutorSorted
+    })
+
+  }
+
+  catch (err) {
+    console.log(err)
+  }
+}
 export {
   Login,
   Register,
@@ -436,4 +488,6 @@ export {
   resetPasswordPost,
   createReminder,
   getAllReminders,
+  tutorRating,
+  getAllTutors
 };

@@ -79,6 +79,7 @@ export const updateTutorSchema = Joi.object().keys({
   name: Joi.string(),
   image: Joi.string(),
   areaOfInterest: Joi.string(),
+  rating: Joi.number()
 });
 // validate schema for creating of reminders
 

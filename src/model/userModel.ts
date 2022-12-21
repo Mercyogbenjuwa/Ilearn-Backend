@@ -14,7 +14,8 @@ export interface UserAttributes {
   verified: boolean;
   salt: string;
   image: string
-  totalCourses: string
+  totalCourses: string,
+  rating: number
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -31,6 +32,8 @@ export class UserInstance extends Model<UserAttributes> {
   declare salt: string;
   declare image: string;
   declare totalCourses: string;
+  declare rating: number
+
 }
 
 UserInstance.init(
@@ -99,6 +102,11 @@ UserInstance.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    rating: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+
     totalCourses: {
       type: DataTypes.STRING,
       allowNull: true,
