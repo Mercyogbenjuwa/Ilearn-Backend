@@ -113,3 +113,4 @@ export const createCourseSchema = Joi.object().keys({
   video: Joi.string().required(),
   file: Joi.string().required(),
 });
+

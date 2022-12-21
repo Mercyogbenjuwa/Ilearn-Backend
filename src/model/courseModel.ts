@@ -6,20 +6,23 @@ export interface courseAttributes {
   id: string;
   title: string;
   description: string;
+  tutor_Name: string;
   tutorId: string;
   pricing: string;
   category: string;
+  pdf: string;
 }
 
 export class courseInstance extends Model<courseAttributes> {
   declare id: string;
   declare title: string;
   declare description: string;
+  declare tutor_Name: string;
   declare tutorId: string;
   declare pricing: string;
   declare category: string;
   declare image: string;
-  pdf: any;
+  declare pdf: string;
 }
 
 courseInstance.init(
@@ -28,7 +31,7 @@ courseInstance.init(
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      allowNull: true,
+      allowNull: false,
     },
     title: {
       type: DataTypes.STRING,
@@ -43,6 +46,10 @@ courseInstance.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    tutor_Name: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     tutorId: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -54,7 +61,11 @@ courseInstance.init(
     category: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
+    }, 
+    pdf: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   },
 
   {
