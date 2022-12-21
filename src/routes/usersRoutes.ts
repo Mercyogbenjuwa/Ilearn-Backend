@@ -1,3 +1,4 @@
+
 import express from "express";
 import {
   createReminder,
@@ -11,8 +12,8 @@ import {
   updateTutorProfile,
   getAllTutors,
   tutorRating,
+  verifyUser
 } from "../controller/userController";
-
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
 
@@ -25,6 +26,7 @@ const router = express.Router();
 // });
 router.post("/signup", Register);
 router.post("/login", Login);
+router.get("/verify/:signature", verifyUser);
 router.get("/", protect, getAllUsers);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 router.put(

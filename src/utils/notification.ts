@@ -5,6 +5,8 @@ import {
   fromAdminPhone,
   GMAIL_PASS,
   GMAIL_USER,
+  Gmail_Pass, 
+  Gmail_User,
   userSubject,
 } from "../Config";
 import nodemailer from "nodemailer";
@@ -76,16 +78,6 @@ export const emailHtml = (otp: number): string => {
   return response;
 };
 
-// const transportForResetPassword = nodemailer.createTransport({
-//     service: "gmail", //service and host are the same thing ---refer to documentation
-//     auth:{
-//         user: GMAIL_USER,
-//         pass: GMAIL_PASS,
-//     },
-//     tls:{
-//         rejectUnauthorized:false
-//     }
-// })
 export const mailSent2 = async (
   from: string,
   to: string,
@@ -104,6 +96,7 @@ export const mailSent2 = async (
     console.log(error);
   }
 };
+
 export const emailHtml2 = (link: string): string => {
   let response = `
     <div style="max-width:700px;
@@ -123,6 +116,30 @@ export const emailHtml2 = (link: string): string => {
      ${link}
      <h3>DO NOT DISCLOSE TO ANYONE<h3>
      </div>
-    `;
-  return response;
-};
+
+    return response
+}
+
+export const emailHtml3 = (link:string):string=>{
+    let response =  `
+    <div style="max-width:700px;
+    margin:auto;
+    border:10px solid #ddd;
+    padding:50px 20px;
+    font-size: 110%;
+    font-style: italics
+    "> 
+    <h2 style="text-align:center;
+    text-transform:uppercase;
+    color:teal;
+    ">
+    iLearn
+    </h2>
+    <p>Hi there, follow the link to verify your account. The link expires in 10 minutes below.</p>
+     ${link}
+     <h3>DO NOT DISCLOSE TO ANYONE<h3>
+     </div>
+    `
+    return response
+}
+

@@ -1,6 +1,7 @@
 import express from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
+import cors from 'cors'
 
 import usersRouter from "./routes/usersRoutes";
 import coursesRouter from "./routes/coursesRoutes";
@@ -12,6 +13,7 @@ import {
   errorHandler,
   notFound,
 } from "./Middlewares/errorMiddleware";
+
 dotenv.config();
 
 // this calls the database connection
@@ -19,7 +21,6 @@ connectDB();
 
 const app = express();
 app.use(cors());
-
 app.use(express.json());
 app.use(logger("dev"));
 app.use(cookieParser());
@@ -37,6 +38,8 @@ app.use(notFound);
 // error handler
 app.use(errorHandler);
 // app.use(appError);
+
+
 
 const PORT = process.env.PORT || 4000;
 
