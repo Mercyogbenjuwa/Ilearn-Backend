@@ -29,6 +29,7 @@ import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
+import { Op } from "sequelize";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -508,7 +509,7 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
     const offset = page ? page * limit : 0;
 
     const tutorSorted = await UserInstance.findAll({
-      where: { userType: "Tutor" },
+      where: { userType: "Tutor", rating: { [Op.gt]: 0 } },
       attributes: ['id', 'email', "name", "image", "rating"],
       // let highrated 
       // if(rating) 
