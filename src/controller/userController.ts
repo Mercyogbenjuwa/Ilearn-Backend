@@ -63,10 +63,16 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
+    if (User) {
+      return res.status(400).json({
+        message: "User already exist!",
+      });
+    }
     //Create User
+    let createdUser;
 
     if (!User) {
-      await UserInstance.create({
+      createdUser = await UserInstance.create({
         id: uuiduser,
         email,
         password: userPassword,
@@ -79,28 +85,34 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         totalCourses: "",
       });
 
-      const User = await UserInstance.findOne({
-        where: { email: email },
+      if (!createdUser) {
+        return res.status(500).send({ message: "unable to create user" });
+      }
+
+      let signature = await GenerateSignature({
+        id: createdUser.id,
+        email: createdUser.email,
+        verified: createdUser.verified,
       });
+      console.log(process.env.fromAdminMail, email, userSubject);
 
       // send Email to user
-      const link = `Press <a href=http://localhost:4000/users/verify/${signature}> here </a> to verify your account. Thanks.`;
+      const link = `Press <a href=${process.env.BASE_URL}/users/verify/${signature}> here </a> to verify your account. Thanks.`;
       const html = emailHtml3(link);
-       await mailSent(FromAdminMail, email, userSubject, html);
+      await mailSent(
+        process.env.fromAdminMail!,
+        email,
+        "Ilearn User Verification",
+        html
+      );
 
       //check if user exist
-      
-      if (!User) {
-        return res.status(400).json("no user was created");
-      }   
+
       return res.status(201).json({
         message:
-          "User created successfully Check your email for verification",
+          "You have registered successfully, Check your email for verification",
       });
     }
-    return res.status(400).json({
-      message: "User already exist!",
-    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -112,30 +124,40 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
 /**==================== Verify Users ========================**/
 export const verifyUser = async (req: JwtPayload, res: Response) => {
-try{
-  const token = req.params.signature;
-  // Verify the signature
-  const { id, email, verified } = await verifySignature(token);
-  // Find the user with the matching verification token
-  const user = await UserInstance.findOne({ where: { id } });
-  if (!user) {
-    throw new Error('Invalid verification token');
-  }
+  try {
+    const token = req.params.signature;
+    // Verify the signature
+    const { id, email, verified } = await verifySignature(token);
+    // Find the user with the matching verification token
+    const user = await UserInstance.findOne({ where: { id } });
+    if (!user) {
+      throw new Error("Invalid verification token");
+    }
 
-  // Set the user's verified status to true
-  const User = await UserInstance.update({
-    verified: true
-  },{where:{id}})
-  
-  await user.save();
+    // Set the user's verified status to true
+    const User = await UserInstance.update(
+      {
+        verified: true,
+      },
+      { where: { id } }
+    );
 
-  
-  // Redirect the user to the login page
-  return res.redirect(301, 'http://127.0.0.1:5173/login');
-  
-  // Send a success response to the client
-  
-  // return res.status(201).json({ message: 'Your email has been verified.' });
+    await user.save();
+
+    // Redirect the user to the login page
+    return res.redirect(301, `${process.env.CLIENT_URL}/login`);
+
+    // res
+    //   .status(200)
+    //   .send({
+    //     message: "user has been verified successfully",
+    //     success: true,
+    //   })
+    //   .redirect(`${process.env.CLIENT_URL}/login`);
+
+    // Send a success response to the client
+
+    // return res.status(201).json({ message: 'Your email has been verified.' });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -145,7 +167,7 @@ try{
 };
 
 /**==================== Login User ========================**/
- const Login = async (req: Request, res: Response) => {
+const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const validateResult = loginSchema.validate(req.body, option);
@@ -158,6 +180,7 @@ try{
     const User = await UserInstance.findOne({
       where: { email: email },
     });
+    console.log(User);
 
     if (!User) {
       return res.status(400).json({
@@ -165,7 +188,7 @@ try{
       });
     }
 
-    if (User.verified === true) {
+    if (User.verified) {
       const validation = await validatePassword(
         password,
         User.password,
@@ -184,13 +207,15 @@ try{
           signature,
           email: User.email,
           verified: User.verified,
-          role: User.role,
         });
       }
       return res.status(400).json({
         Error: "Wrong Username or password",
       });
     }
+    return res.status(400).json({
+      Error: "you have not been verified",
+    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
