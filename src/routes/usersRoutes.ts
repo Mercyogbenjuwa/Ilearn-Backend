@@ -1,3 +1,4 @@
+
 import express from "express";
 import {
   createReminder,
@@ -8,8 +9,12 @@ import {
   Register,
   resetPasswordGet,
   resetPasswordPost,
+  getTutorDetails,
+  updateTutorProfile,
+  verifyUser
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
+import { upload } from "../utils/multer";
 
 const router = express.Router();
 
@@ -20,7 +25,15 @@ const router = express.Router();
 // });
 router.post("/signup", Register);
 router.post("/login", Login);
+router.get("/verify/:signature", verifyUser);
 router.get("/", protect, getAllUsers);
+router.get("/atutordetail/:tutorid", protect, getTutorDetails);
+router.put(
+  "/updatetutorprofile",
+  protect,
+  upload.single("image"),
+  updateTutorProfile
+);
 router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import { ReminderInstance } from "../model/reminderModel";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -13,18 +12,23 @@ import {
   option,
   registerSchema,
   resetPasswordSchema,
+  updateTutorSchema,
   validatePassword,
+  verifySignature,
   validateReminder,
 } from "../utils/utility";
 import {
   emailHtml,
   emailHtml2,
+  emailHtml3,
   GenerateOTP,
   mailSent,
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 import { courseRequestInstance } from "../model/courseRequestsModel";
+import { link } from "joi";
+import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -58,15 +62,18 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     const salt = await GenerateSalt();
     const userPassword = await GeneratePassword(password, salt);
 
-    //Generate OTP
-    const { otp, expiry } = GenerateOTP();
-
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
+    if (User) {
+      return res.status(400).json({
+        message: "User already exist!",
+      });
+    }
     //Create User
+    let createdUser;
 
     if (!User) {
-      await UserInstance.create({
+      createdUser = await UserInstance.create({
         id: uuiduser,
         email,
         password: userPassword,
@@ -75,37 +82,38 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
+        image: "",
+        totalCourses: "",
       });
 
-      //console.log("create user is ", createUser)
+      if (!createdUser) {
+        return res.status(500).send({ message: "unable to create user" });
+      }
+
+      let signature = await GenerateSignature({
+        id: createdUser.id,
+        email: createdUser.email,
+        verified: createdUser.verified,
+      });
+      console.log(process.env.fromAdminMail, email, userSubject);
 
       // send Email to user
-      const html = emailHtml(otp);
-      await mailSent(FromAdminMail, email, userSubject, html);
+      const link = `Press <a href=${process.env.BASE_URL}/users/verify/${signature}> here </a> to verify your account. Thanks.`;
+      const html = emailHtml3(link);
+      await mailSent(
+        process.env.fromAdminMail!,
+        email,
+        "Ilearn User Verification",
+        html
+      );
 
       //check if user exist
-      const User = await UserInstance.findOne({
-        where: { email: email },
-      });
-      if (!User) {
-        return res.status(400).json("no user was created");
-      }
-      // Generate a signature for user
-      let signature = await GenerateSignature({
-        id: User.id,
-        email: User.email,
-        verified: User.verified,
-      });
+
       return res.status(201).json({
         message:
-          "User created successfully Check your email for OTP verification",
-        signature,
-        verified: User.verified,
+          "You have registered successfully, Check your email for verification",
       });
     }
-    return res.status(400).json({
-      message: "User already exist!",
-    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
@@ -115,7 +123,51 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/**===================================== Login Users ===================================== **/
+/**==================== Verify Users ========================**/
+export const verifyUser = async (req: JwtPayload, res: Response) => {
+  try {
+    const token = req.params.signature;
+    // Verify the signature
+    const { id, email, verified } = await verifySignature(token);
+    // Find the user with the matching verification token
+    const user = await UserInstance.findOne({ where: { id } });
+    if (!user) {
+      throw new Error("Invalid verification token");
+    }
+
+    // Set the user's verified status to true
+    const User = await UserInstance.update(
+      {
+        verified: true,
+      },
+      { where: { id } }
+    );
+
+    await user.save();
+
+    // Redirect the user to the login page
+    return res.redirect(301, `${process.env.CLIENT_URL}/login`);
+
+    // res
+    //   .status(200)
+    //   .send({
+    //     message: "user has been verified successfully",
+    //     success: true,
+    //   })
+    //   .redirect(`${process.env.CLIENT_URL}/login`);
+
+    // Send a success response to the client
+
+    // return res.status(201).json({ message: 'Your email has been verified.' });
+  } catch (err) {
+    res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/verify",
+    });
+  }
+};
+
+/**==================== Login User ========================**/
 const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -129,49 +181,52 @@ const Login = async (req: Request, res: Response) => {
     const User = await UserInstance.findOne({
       where: { email: email },
     });
+    console.log(User);
 
     if (!User) {
       return res.status(400).json({
         Error: "Wrong Username or password",
       });
     }
-    console.log(User.toJSON());
 
-    if (User.verified === false) {
+    if (User.verified) {
       const validation = await validatePassword(
         password,
         User.password,
         User.salt
       );
       if (validation) {
-        //Generate signature for the user
+        //Regenerate a signature
         let signature = await GenerateSignature({
           id: User.id,
           email: User.email,
           verified: User.verified,
         });
+
         return res.status(200).json({
           message: "You have successfully logged in",
           signature,
           email: User.email,
           verified: User.verified,
-          name: User.name,
         });
       }
       return res.status(400).json({
         Error: "Wrong Username or password",
       });
     }
+    return res.status(400).json({
+      Error: "you have not been verified",
+    });
   } catch (err) {
     res.status(500).json({
       Error: "Internal server Error",
       route: "/users/login",
-      err,
     });
   }
 };
 
 /**=========================== Resend Password ============================== **/
+// febic69835@bitvoo.com
 
 const forgotPassword = async (req: Request, res: Response) => {
   try {
@@ -344,18 +399,15 @@ const getAllReminders = async (req: Request, res: Response) => {
   }
 };
 
-
 /**==================== Get all recmmended courses================**/
-const getRecommendedCourses = async (req: Request, res: Response) =>
-{
+const getRecommendedCourses = async (req: Request, res: Response) => {
   try {
-    const  category  = req.params.category;
+    const category = req.params.category;
     // const id = req.user?.id
-    
 
     const recommendedCourse = await courseInstance.findAll({
       where: {
-       category
+        category,
       },
     });
     if (!recommendedCourse) {
@@ -363,15 +415,94 @@ const getRecommendedCourses = async (req: Request, res: Response) =>
     }
     res.status(200).json({
       message: "Recommended courses found",
-      recommendedCourse
+      recommendedCourse,
     });
   } catch (error: any) {
     res.status(500).json({ Error: error.message });
-
-  
   }
 };
 
+/**=========================== updateTutorProfile ============================== **/
+
+export const updateTutorProfile = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
+
+    const { name, areaOfInterest } = req.body;
+    const joiValidateTutor = updateTutorSchema.validate(req.body, option);
+    if (joiValidateTutor.error) {
+      return res.status(400).json({
+        Error: joiValidateTutor.error.details[0].message,
+      });
+    }
+
+    const courses = await courseInstance.findAndCountAll({
+      where: { tutorId: id },
+    });
+
+    const totalCourses = courses.count.toString();
+
+    const tutor = await UserInstance.findOne({ where: { id } });
+    if (tutor === null) {
+      return res.status(400).json({
+        Error: "You are not authorized to update your profile",
+      });
+    }
+    // console.log(Tutor);
+
+    await tutor.update({
+      image: req.file?.path,
+      name,
+      totalCourses,
+      areaOfInterest,
+    });
+
+    const updateTutor = await tutor.save();
+    // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
+    // this is for saving some fields
+
+    if (updateTutor) {
+      const tutor = await UserInstance.findOne({ where: { id } });
+      return res.status(200).json({
+        message: "You have successfully updated your account",
+        tutor,
+      });
+    }
+
+    return res.status(400).json({
+      Error: "There's an error",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+      error,
+    });
+  }
+};
+
+/**=========================== get Tutor Details ============================== **/
+
+export const getTutorDetails = async (req: Request, res: Response) => {
+  try {
+    const tutorId = req.params.tutorid;
+
+    const tutorDetails = await UserInstance.findOne({ where: { id: tutorId } });
+    if (tutorDetails !== null) {
+      return res.status(200).json({
+        message: tutorDetails,
+      });
+    }
+    return res.status(400).json({
+      Error: "Tutor does not exist",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/vendor/update-profile",
+    });
+  }
+};
 export {
   Login,
   Register,
@@ -379,7 +510,7 @@ export {
   forgotPassword,
   resetPasswordGet,
   resetPasswordPost,
-  getAllReminders,
   createReminder,
   getRecommendedCourses,
+  getAllReminders,
 };
