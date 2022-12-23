@@ -79,6 +79,7 @@ export const updateTutorSchema = Joi.object().keys({
   name: Joi.string(),
   image: Joi.string(),
   areaOfInterest: Joi.string(),
+  rating: Joi.number()
 });
 // validate schema for creating of reminders
 
@@ -105,3 +106,17 @@ export const validateReminder = (input: {}) => {
   });
   return schema.validate(input);
 };
+
+
+//schema for create_course
+
+export const createCourseSchema = Joi.object().keys({
+  title: Joi.string().required(),
+  description: Joi.string().required(),
+  price: Joi.number().required(),
+  category: Joi.string().required(),
+  image: Joi.string().required(),
+  video: Joi.string().required(),
+  file: Joi.string().required(),
+});
+

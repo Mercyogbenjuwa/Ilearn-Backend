@@ -30,6 +30,7 @@ import { courseRequestInstance } from "../model/courseRequestsModel";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
+import { Op } from "sequelize";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -82,8 +83,8 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
-        image: "",
-        totalCourses: "",
+        image: ""
+
       });
 
       if (!createdUser) {
@@ -172,6 +173,7 @@ const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const validateResult = loginSchema.validate(req.body, option);
+    console.log('bug')
     if (validateResult.error) {
       return res.status(400).json({
         Error: validateResult.error.details[0].message,
@@ -455,6 +457,7 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
       name,
       totalCourses,
       areaOfInterest,
+
     });
 
     const updateTutor = await tutor.save();
@@ -503,6 +506,53 @@ export const getTutorDetails = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+const getAllTutors = async (req: Request, res: Response, next: NextFunction) => {
+
+  try {
+
+    const findTutor = await UserInstance.findAll({
+      where: { userType: "Tutor" },
+      attributes: ["id", "email", "name", "rating"]
+    })
+    return res.status(200).json({
+      TutorNumber: findTutor.length,
+      findTutor
+    })
+  } catch (error) {
+    console.log(error)
+  }
+
+}
+const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let page: any = (req.query.page);
+    let limit: any = (req.query.limit);
+
+    const offset = page ? page * limit : 0;
+
+    const tutorSorted = await UserInstance.findAll({
+      where: { userType: "Tutor", rating: { [Op.gt]: 0 } },
+      attributes: ['id', 'email', "name", "image", "rating"],
+      order: [
+        ['rating', 'DESC']
+      ],
+      limit: limit,
+      offset: offset,
+
+    })
+    return res.status(200).json({
+      TutorNumber: tutorSorted.length,
+      tutorSorted
+    })
+
+  }
+
+  catch (err) {
+    console.log(err)
+  }
+}
 export {
   Login,
   Register,
@@ -513,4 +563,6 @@ export {
   createReminder,
   getRecommendedCourses,
   getAllReminders,
+  tutorRating,
+  getAllTutors
 };
