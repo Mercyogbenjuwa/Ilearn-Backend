@@ -500,7 +500,6 @@ const getAllTutors = async (req: Request, res: Response, next: NextFunction) => 
     console.log(error)
   }
 
-  // 
 }
 const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   try {
