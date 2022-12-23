@@ -14,7 +14,6 @@ export interface UserAttributes {
   verified: boolean;
   salt: string;
   image: string;
-  totalCourses: string;
   rating: number
 }
 
@@ -31,7 +30,6 @@ export class UserInstance extends Model<UserAttributes> {
   declare verified: boolean;
   declare salt: string;
   declare image: string;
-  declare totalCourses: string;
   declare rating: number
 
 }
@@ -104,11 +102,6 @@ UserInstance.init(
     },
     rating: {
       type: DataTypes.FLOAT,
-      allowNull: true,
-    },
-
-    totalCourses: {
-      type: DataTypes.STRING,
       allowNull: true,
     },
 

@@ -82,9 +82,8 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
-        image: "",
-        totalCourses: "",
-        rating: 0
+        image: ""
+
       });
 
       if (!createdUser) {
@@ -407,7 +406,7 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
   try {
     const id = req.user?.id;
 
-    const { name, areaOfInterest, rating } = req.body;
+    const { name, areaOfInterest } = req.body;
     const joiValidateTutor = updateTutorSchema.validate(req.body, option);
     if (joiValidateTutor.error) {
       return res.status(400).json({
@@ -434,7 +433,7 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
       name,
       totalCourses,
       areaOfInterest,
-      rating
+
     });
 
     const updateTutor = await tutor.save();
@@ -513,10 +512,7 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
     const tutorSorted = await UserInstance.findAll({
       where: { userType: "Tutor", rating: { [Op.gt]: 0 } },
       attributes: ['id', 'email', "name", "image", "rating"],
-      // let highrated 
-      // if(rating) 
       order: [
-        // ['rating', 'ASC'],
         ['rating', 'DESC']
       ],
       limit: limit,
