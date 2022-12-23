@@ -2,10 +2,3 @@ node_modules
 .env
 yarn.lock
 dist
-
-
- export const db = new Sequelize("", "postgres", "453622", {
-  host: "localhost",
-  dialect: "postgres",
-  port: 5432,
-});
