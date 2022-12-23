@@ -26,6 +26,7 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
+import { courseRequestInstance } from "../model/courseRequestsModel";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
@@ -82,8 +83,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         userType,
         verified: false,
         salt,
-        image: ""
-
+        image: "",
       });
 
       if (!createdUser) {
@@ -172,7 +172,7 @@ const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const validateResult = loginSchema.validate(req.body, option);
-    console.log('bug')
+    console.log("bug");
     if (validateResult.error) {
       return res.status(400).json({
         Error: validateResult.error.details[0].message,
@@ -400,6 +400,38 @@ const getAllReminders = async (req: Request, res: Response) => {
   }
 };
 
+/**==================== Get all recmmended courses================**/
+const getRecommendedCourses = async (req: Request, res: Response) => {
+  try {
+    const category = req.params.category;
+    // const id = req.user?.id
+
+    const recommendedCourse = await courseInstance.findAll({
+      where: { category, rating: { [Op.gt]: 0 } },
+      attributes: [
+        "id",
+        "title",
+        "course_image",
+        "rating",
+        "pricing",
+        "description",
+        "category",
+      ],
+      order: [["rating", "DESC"]],
+      limit: 10,
+    });
+    if (!recommendedCourse) {
+      return res.status(400).json({ message: "No recommended courses found" });
+    }
+    res.status(200).json({
+      message: "Recommended courses found",
+      recommendedCourse,
+    });
+  } catch (error: any) {
+    res.status(500).json({ Error: error.message });
+  }
+};
+
 /**=========================== updateTutorProfile ============================== **/
 
 export const updateTutorProfile = async (req: Request, res: Response) => {
@@ -433,7 +465,6 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
       name,
       totalCourses,
       areaOfInterest,
-
     });
 
     const updateTutor = await tutor.save();
@@ -483,52 +514,46 @@ export const getTutorDetails = async (req: Request, res: Response) => {
   }
 };
 
-
-const getAllTutors = async (req: Request, res: Response, next: NextFunction) => {
-
+const getAllTutors = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
-      attributes: ["id", "email", "name", "rating"]
-    })
+      attributes: ["id", "email", "name", "rating"],
+    });
     return res.status(200).json({
       TutorNumber: findTutor.length,
-      findTutor
-    })
+      findTutor,
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-
-}
+};
 const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let page: any = (req.query.page);
-    let limit: any = (req.query.limit);
+    let page: any = req.query.page;
+    let limit: any = req.query.limit;
 
     const offset = page ? page * limit : 0;
 
     const tutorSorted = await UserInstance.findAll({
       where: { userType: "Tutor", rating: { [Op.gt]: 0 } },
-      attributes: ['id', 'email', "name", "image", "rating"],
-      order: [
-        ['rating', 'DESC']
-      ],
+      attributes: ["id", "email", "name", "image", "rating"],
+      order: [["rating", "DESC"]],
       limit: limit,
       offset: offset,
-
-    })
+    });
     return res.status(200).json({
       TutorNumber: tutorSorted.length,
-      tutorSorted
-    })
-
+      tutorSorted,
+    });
+  } catch (err) {
+    console.log(err);
   }
-
-  catch (err) {
-    console.log(err)
-  }
-}
+};
 export {
   Login,
   Register,
@@ -537,7 +562,8 @@ export {
   resetPasswordGet,
   resetPasswordPost,
   createReminder,
+  getRecommendedCourses,
   getAllReminders,
   tutorRating,
-  getAllTutors
+  getAllTutors,
 };

@@ -4,6 +4,7 @@ import {
   createReminder,
   forgotPassword,
   getAllUsers,
+  getRecommendedCourses,
   Login,
   Register,
   resetPasswordGet,
@@ -42,5 +43,6 @@ router.post("/reminders", protect, createReminder);
 router.get('/all-tutors', getAllTutors)
 router.get('/feature-tutors', tutorRating)
 //router.post("/request", protect, requestTutor);
+router.get('/recommended/:category', protect, getRecommendedCourses)
 
 export default router;

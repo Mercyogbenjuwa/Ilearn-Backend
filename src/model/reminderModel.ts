@@ -12,6 +12,7 @@ export interface ReminderAttributes {
 }
 
 export class ReminderInstance extends Model<ReminderAttributes> {
+ 
   declare id: string;
   declare title: string;
   declare description: string;
