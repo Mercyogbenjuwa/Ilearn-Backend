@@ -13,8 +13,8 @@ export interface UserAttributes {
   userType: string;
   verified: boolean;
   salt: string;
-  image: string
-  totalCourses: string,
+  image: string;
+  totalCourses: string;
   rating: number
 }
 
@@ -111,7 +111,7 @@ UserInstance.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    
+
   },
 
   {

@@ -84,6 +84,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         salt,
         image: "",
         totalCourses: "",
+        rating: 0
       });
 
       if (!createdUser) {
@@ -172,6 +173,7 @@ const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const validateResult = loginSchema.validate(req.body, option);
+    console.log('bug')
     if (validateResult.error) {
       return res.status(400).json({
         Error: validateResult.error.details[0].message,
