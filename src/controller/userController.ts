@@ -31,6 +31,7 @@ import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
+import { NotificationInstance } from "../model/notificationModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
