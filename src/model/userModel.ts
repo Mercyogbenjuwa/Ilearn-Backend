@@ -1,6 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
+import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
 
 export interface UserAttributes {
@@ -123,4 +124,16 @@ UserInstance.hasMany(ReminderInstance, {
 courseInstance.hasOne(UserInstance, {
   foreignKey: "tutorId",
   as: "user",
+});
+
+courseRequestInstance.belongsToMany(courseInstance, {
+  through: courseRequestInstance,
+  foreignKey: "stundentId", 
+  as: "courses"  
+});
+
+courseInstance.belongsToMany(UserInstance, {
+  through: courseRequestInstance,
+  foreignKey: "courseId",
+  as:   "user"
 });

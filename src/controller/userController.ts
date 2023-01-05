@@ -26,7 +26,7 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { courseRequestInstance } from "../model/courseRequestsModel";
+import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
@@ -566,4 +566,34 @@ export {
   getAllReminders,
   tutorRating,
   getAllTutors,
+};
+
+/**=========================== get User Notifications ============================== **/
+export const getAllNotifications = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const getNotification = await UserInstance.findAll({
+      where: { id: req.user?.id },
+      include: [
+        "courses"
+      ],
+      attributes: ["image", "status","studentId", "courseId"],
+      order:[[
+        "id", "desc"
+      ]]
+    });
+    return res.status(200).json({
+      message: "You have successfully retrieved all notifications",
+      Notification: getNotification.length,
+      getNotification,
+    });
+  } catch(err){
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/get-user-notification",
+    });
+  }
 };
