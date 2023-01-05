@@ -1,5 +1,5 @@
 import express from "express";
-import {  createCourse, deleteCourse, getAllCourse, updateCourse, addCourse} from "../controller/courseController";
+import {  createCourse, deleteCourse, getAllCourse, updateCourse, addCourse, courseRequest} from "../controller/courseController";
 import { getAllUsers, Login, Register } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { getStudentHistory } from "../controller/courseController";
@@ -13,6 +13,7 @@ router.post("/createCourse", protect, upload.fields([{name: 'course_image', maxC
 router.patch("/updateCourse/:id", protect, updateCourse);
 router.delete("/deleteCourse/:id", protect, deleteCourse);
 router.post("/addCourse", addCourse)
+router.post("/requestCourse/:id", protect, courseRequest)
 
 
 
