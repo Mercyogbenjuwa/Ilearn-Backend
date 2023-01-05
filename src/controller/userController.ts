@@ -554,6 +554,34 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
     console.log(err);
   }
 };
+
+/**=========================== get AllNotifications for students ============================== **/
+
+const getUserNotifications = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
+
+    const notifiedUser = await NotificationInstance.findAll({
+      where: {
+        receiver: id,
+      },
+      include: ["sender", "course"],
+    });
+    console.log(notifiedUser, "notified user")
+    
+      return res.status(200).json({
+        message: "Successfully fetched notifications",
+        notifiedUser
+      });
+  
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal Server Error /users/getNotifications",
+      error,
+    });
+  }
+};
+
 export {
   Login,
   Register,
@@ -566,4 +594,5 @@ export {
   getAllReminders,
   tutorRating,
   getAllTutors,
+  getUserNotifications,
 };
