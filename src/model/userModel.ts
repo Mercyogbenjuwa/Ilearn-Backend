@@ -2,6 +2,8 @@ import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
 import { ReminderInstance } from "./reminderModel";
+import { NotificationInstance } from "./notificationModel";
+
 
 export interface UserAttributes {
   [x: string]: any;
@@ -18,7 +20,6 @@ export interface UserAttributes {
 }
 
 export class UserInstance extends Model<UserAttributes> {
-
   declare id: string;
   declare email: string;
   declare name: string;
@@ -102,7 +103,6 @@ UserInstance.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-
   },
 
   {
@@ -114,13 +114,19 @@ UserInstance.hasMany(courseInstance, {
   foreignKey: "tutorId",
   as: "course",
 });
-
 UserInstance.hasMany(ReminderInstance, {
   foreignKey: "userId",
   as: "reminder",
 });
-
 courseInstance.hasOne(UserInstance, {
   foreignKey: "tutorId",
-  as: "user",
+  as: "tutor",
+});
+UserInstance.hasMany(NotificationInstance, {
+  foreignKey: "receiver",
+  as: "receiverNotification"
+});
+UserInstance.hasMany(NotificationInstance, {
+  foreignKey: "sender",
+  as: "senderNotification"
 });

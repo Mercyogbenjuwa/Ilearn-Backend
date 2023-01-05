@@ -155,6 +155,52 @@ const deleteCourse = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== get AllNotifications for students ============================== **/
+
+const courseRequest = async (req: Request, res: Response) => {
+  try {
+//     //student Id requesting the course
+//     const id = req.user?.id;
+//     console.log( "id is ", id)
+//     const courseId = req.params.id;
+//     console.log("courseId is ", courseId)
+//     //First check if that course exist and include the tutor details
+//     const Course = await courseInstance.findOne({
+//       where: {
+//         id: courseId
+//       },include: ["tutor"],
+//     });
+//     console.log("Course is ", Course)
+//     if(!Course) return res.status(400).json({Error: "No such course exist"})
+
+// //Pick the course id, tutor id
+
+// //Create course request
+//     const requestedCourse = await courseRequestInstance.create({
+//       courseId,
+//       tutorId: Course.tutorId,
+//       studentId: id
+//     });
+//     console.log("requested Course is ", requestedCourse)
+   
+//     //Create notification
+
+//     //Return a message, your course request is successful
+//       return res.status(200).json({
+//         // message: `you have successfully requested for ${}`,
+//         Course,
+//         requestedCourse
+//       });
+  
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal Server Error /users/getNotifications",
+      error,
+    });
+  }
+};
+
+
 export {
   getAllCourse,
   getStudentHistory,
@@ -162,4 +208,5 @@ export {
   updateCourse,
   deleteCourse,
   addCourse,
+  courseRequest
 };
