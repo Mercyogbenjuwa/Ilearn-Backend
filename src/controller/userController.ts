@@ -27,6 +27,7 @@ import {
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
+import { NotificationInstance, NotificationAttributes} from "../model/notificationModel";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
@@ -97,7 +98,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
       });
       console.log(process.env.fromAdminMail, email, userSubject);
 
-      // send Email to user
+      //send Email to user
       const link = `Press <a href=${process.env.BASE_URL}/users/verify/${signature}> here </a> to verify your account. Thanks.`;
       const html = emailHtml3(link);
       await mailSent(
@@ -554,6 +555,67 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
     console.log(err);
   }
 };
+
+
+/**=========================== get User Notifications ============================== **/
+const getUserNotifications = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
+
+    const notifiedUser = await NotificationInstance.findAll({
+      where: {
+        receiver: id,
+      },
+      order:[[
+        "createdAt",
+        "DESC"
+      ]],
+    });
+    console.log(notifiedUser, "notified user")
+    
+      return res.status(200).json({
+        message: "Successfully fetched notifications",
+        notifiedUser
+      });
+  
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      Error: "Internal Server Error /users/notifications",
+      error,
+    });
+  }
+};
+
+const readNotification = async (req: Request, res: Response) => {
+  try {
+    const id = req.params?.id;
+
+    const notification = await NotificationInstance.findOne({
+      where: {
+        id,
+      },
+    });
+    if(!notification){
+      return res.status(400).json({
+        message: "Notification does not exist"
+      })
+    }
+    notification.status = "read" 
+    const result = await notification.save()
+      return res.status(200).json({
+        message: "Notification has been read",
+        notification: result
+      });
+
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal Server Error /users/readNotification",
+      error,
+    });
+  }
+};
+
 export {
   Login,
   Register,
@@ -566,34 +628,7 @@ export {
   getAllReminders,
   tutorRating,
   getAllTutors,
-};
+  getUserNotifications,
+  readNotification
 
-/**=========================== get User Notifications ============================== **/
-export const getAllNotifications = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const getNotification = await UserInstance.findAll({
-      where: { id: req.user?.id },
-      include: [
-        "courses"
-      ],
-      attributes: ["image", "status","studentId", "courseId"],
-      order:[[
-        "id", "desc"
-      ]]
-    });
-    return res.status(200).json({
-      message: "You have successfully retrieved all notifications",
-      Notification: getNotification.length,
-      getNotification,
-    });
-  } catch(err){
-    return res.status(500).json({
-      Error: "Internal server Error",
-      route: "/get-user-notification",
-    });
-  }
 };

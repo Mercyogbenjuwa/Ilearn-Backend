@@ -14,7 +14,8 @@ import {
   getAllTutors,
   tutorRating,
   verifyUser,
-  getUserNotification
+  getUserNotifications,
+  readNotification
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -45,6 +46,6 @@ router.get('/all-tutors', getAllTutors)
 router.get('/feature-tutors', tutorRating)
 //router.post("/request", protect, requestTutor);
 router.get('/recommended/:category', protect, getRecommendedCourses)
-router.post("/get-user-notification", protect, getUserNotification);
-
+router.get('/notifications', protect, getUserNotifications)
+router.put('/readNotification/:id', protect, readNotification )
 export default router;

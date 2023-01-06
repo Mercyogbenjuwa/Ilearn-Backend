@@ -15,11 +15,10 @@ export interface UserAttributes {
   verified: boolean;
   salt: string;
   image: string;
-  rating: number
+  rating: number;
 }
 
 export class UserInstance extends Model<UserAttributes> {
-
   declare id: string;
   declare email: string;
   declare name: string;
@@ -29,8 +28,7 @@ export class UserInstance extends Model<UserAttributes> {
   declare verified: boolean;
   declare salt: string;
   declare image: string;
-  declare rating: number
-
+  declare rating: number;
 }
 
 UserInstance.init(
@@ -103,7 +101,6 @@ UserInstance.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-
   },
 
   {
@@ -126,14 +123,14 @@ courseInstance.hasOne(UserInstance, {
   as: "user",
 });
 
-courseRequestInstance.belongsToMany(courseInstance, {
-  through: courseRequestInstance,
-  foreignKey: "stundentId", 
-  as: "courses"  
-});
+// courseRequestInstance.belongsToMany(courseInstance, {
+//   through: courseRequestInstance,
+//   foreignKey: "studentId",
+//   as: "courses",
+// });
 
-courseInstance.belongsToMany(UserInstance, {
-  through: courseRequestInstance,
-  foreignKey: "courseId",
-  as:   "user"
-});
+// courseInstance.belongsToMany(UserInstance, {
+//   through: courseRequestInstance,
+//   foreignKey: "courseId",
+//   as: "user",
+// });
