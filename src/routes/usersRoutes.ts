@@ -1,4 +1,3 @@
-
 import express from "express";
 import {
   createReminder,
@@ -14,7 +13,7 @@ import {
   getAllTutors,
   tutorRating,
   verifyUser,
-  getUserNotifications
+  getUserNotifications,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -41,10 +40,10 @@ router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
-router.get('/all-tutors', getAllTutors)
-router.get('/feature-tutors', tutorRating)
+router.get("/all-tutors", getAllTutors);
+router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
-router.get('/recommended/:category', protect, getRecommendedCourses)
-router.get('/notifications/:id', protect, getUserNotifications)
+router.get("/recommended/:category", protect, getRecommendedCourses);
+router.get("/notifications", protect, getUserNotifications);
 
 export default router;

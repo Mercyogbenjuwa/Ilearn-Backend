@@ -4,7 +4,6 @@ import { courseInstance } from "./courseModel";
 import { ReminderInstance } from "./reminderModel";
 import { NotificationInstance } from "./notificationModel";
 
-
 export interface UserAttributes {
   [x: string]: any;
   id: string;
@@ -16,7 +15,7 @@ export interface UserAttributes {
   verified: boolean;
   salt: string;
   image: string;
-  rating: number
+  rating: number;
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -29,8 +28,7 @@ export class UserInstance extends Model<UserAttributes> {
   declare verified: boolean;
   declare salt: string;
   declare image: string;
-  declare rating: number
-
+  declare rating: number;
 }
 
 UserInstance.init(
@@ -118,15 +116,14 @@ UserInstance.hasMany(ReminderInstance, {
   foreignKey: "userId",
   as: "reminder",
 });
-courseInstance.hasOne(UserInstance, {
+
+courseInstance.belongsTo(UserInstance, {
   foreignKey: "tutorId",
   as: "tutor",
 });
-UserInstance.hasMany(NotificationInstance, {
-  foreignKey: "receiver",
-  as: "receiverNotification"
-});
-UserInstance.hasMany(NotificationInstance, {
-  foreignKey: "sender",
-  as: "senderNotification"
-});
+//
+
+// UserInstance.hasMany(NotificationInstance, {
+//   foreignKey: "sender",
+//   as: "senderNotification",
+// });
