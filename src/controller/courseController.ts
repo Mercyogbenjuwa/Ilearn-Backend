@@ -94,10 +94,9 @@ const createCourse = async (req: JwtPayload, res: Response) => {
       course: newCourse,
     });
   } catch (error: any) {
-    console.log(error);
     return res.status(500).json({
       route: "/users/create-courses",
-      error: error.message,
+      error: error.errors[0].message,
     });
   }
 };
@@ -200,7 +199,7 @@ const courseRequest = async (req: Request, res: Response) => {
           "You have already requested this course, please wait for a response",
       });
 
-    // // //Create course request
+    //Create course request
     const requestedCourse = await courseRequestInstance.create({
       courseId,
       tutorId: course.tutorId,
@@ -211,7 +210,7 @@ const courseRequest = async (req: Request, res: Response) => {
     await NotificationInstance.create({
       notificationType: "course request",
       receiver: course.tutorId,
-      description: `A student request ${course.title}`,
+      description: `A student requested ${course.title}`,
       sender: id,
       courseId,
     });
