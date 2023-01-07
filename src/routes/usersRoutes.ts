@@ -28,7 +28,18 @@ const router = express.Router();
 router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/verify/:signature", verifyUser);
-router.get("/", protect, getAllUsers);
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     description: get all users!
+ *     responses:
+ *       200:
+ *         description: Returns an array of users.
+ */
+
+router.get("/", getAllUsers);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 router.put(
   "/updatetutorprofile",
