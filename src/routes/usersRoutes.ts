@@ -57,5 +57,5 @@ router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
 router.get("/recommended/:category", protect, getRecommendedCourses);
 router.get("/notifications", protect, getUserNotifications);
-router.put("/readNotification/:id", protect, readNotification);
+router.put("/notifications/:id", protect, readNotification);
 export default router;

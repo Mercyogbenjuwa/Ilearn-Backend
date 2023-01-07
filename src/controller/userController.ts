@@ -515,11 +515,7 @@ export const getTutorDetails = async (req: Request, res: Response) => {
   }
 };
 
-const getAllTutors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getAllTutors = async (req: Request, res: Response) => {
   try {
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
@@ -556,7 +552,7 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/**=========================== get AllNotifications for students ============================== **/
+/**=========================== get User Notifications ============================== **/
 
 const getUserNotifications = async (req: Request, res: Response) => {
   try {
@@ -567,42 +563,16 @@ const getUserNotifications = async (req: Request, res: Response) => {
       },
       include: [
         { model: courseInstance, as: "course", attributes: ["title"] },
-        "theSender",
-        "theReceiver",
+        { model: UserInstance, as: "theSender", attributes: ["name", "image"] },
       ],
+      order: [["createdAt", "DESC"]],
     });
-    return res.status(200).json({
-      message: "Successfully fetched notifications",
-      notifications,
-    });
+    return res
+      .status(200)
+      .json({ message: "notification fetched successfully", notifications });
   } catch (error) {
     return res.status(500).json({
       Error: "Internal Server Error /users/getNotifications",
-      error,
-    });
-  }
-};
-/**=========================== get User Notifications ============================== **/
-const getUserNotificationss = async (req: Request, res: Response) => {
-  try {
-    const id = req.user?.id;
-
-    const notifiedUser = await NotificationInstance.findAll({
-      where: {
-        receiver: id,
-      },
-      order: [["createdAt", "DESC"]],
-    });
-    console.log(notifiedUser, "notified user");
-
-    return res.status(200).json({
-      message: "Successfully fetched notifications",
-      notifiedUser,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      Error: "Internal Server Error /users/notifications",
       error,
     });
   }
