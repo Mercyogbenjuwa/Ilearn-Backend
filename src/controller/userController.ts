@@ -554,6 +554,29 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
     console.log(err);
   }
 };
+
+// get notification after teacher has accepted a request
+const getNotification = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    // const notification = courseRequestInstance.find({ userId: userId, /*status: "accepted"*/ })
+    const notification = await courseRequestInstance.findAll({
+      where: {
+        studentId: userId,
+        status: "accepted" || "declined",
+      },
+    });
+
+    if (notification.length <= 0) {
+      return res.status(400).json({ message: "You have no notifications" });
+    }
+    res.status(200).json(notification);
+  } catch (error: any) {
+    res.status(500).json({ Error: error.message });
+  }
+};
+
 export {
   Login,
   Register,
@@ -566,4 +589,5 @@ export {
   getAllReminders,
   tutorRating,
   getAllTutors,
+  getNotification
 };

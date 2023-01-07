@@ -13,7 +13,8 @@ import {
   updateTutorProfile,
   getAllTutors,
   tutorRating,
-  verifyUser
+  verifyUser,
+  getNotification
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -43,6 +44,7 @@ router.post("/reminders", protect, createReminder);
 router.get('/all-tutors', getAllTutors)
 router.get('/feature-tutors', tutorRating)
 //router.post("/request", protect, requestTutor);
-router.get('/recommended/:category', protect, getRecommendedCourses)
+router.get('/recommended/:category', protect, getRecommendedCourses);
+router.get("/notifications", protect, getNotification);
 
 export default router;
