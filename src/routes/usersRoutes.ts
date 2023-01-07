@@ -13,10 +13,7 @@ import {
   getAllTutors,
   tutorRating,
   verifyUser,
-<<<<<<< HEAD
   getNotification
-=======
->>>>>>> staging
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
