@@ -1,6 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
+import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
 import { NotificationInstance } from "./notificationModel";
 
@@ -121,9 +122,3 @@ courseInstance.belongsTo(UserInstance, {
   foreignKey: "tutorId",
   as: "tutor",
 });
-//
-
-// UserInstance.hasMany(NotificationInstance, {
-//   foreignKey: "sender",
-//   as: "senderNotification",
-// });
