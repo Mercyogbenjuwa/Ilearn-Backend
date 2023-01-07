@@ -173,7 +173,7 @@ const courseRequest = async (req: Request, res: Response) => {
     //student Id requesting the course
     const id = req.user?.id;
     const courseId = req.params.id;
-    console.log("courseId is ", courseId);
+
     //First check if that course exist and include the tutor details
     let course = (await courseInstance.findOne({
       where: {
@@ -181,10 +181,9 @@ const courseRequest = async (req: Request, res: Response) => {
       },
       include: ["tutor"],
     })) as requestedCourse;
-    // console.log("Course is ", course?.toJSON());
 
     if (!course) return res.status(400).json({ Error: "No such course exist" });
-    // if (!course) return res.status(400).json({ Error: "No such course exist" });
+
     const courseRequested = await courseRequestInstance.findOne({
       where: {
         studentId: id,
@@ -200,7 +199,6 @@ const courseRequest = async (req: Request, res: Response) => {
         Error:
           "You have already requested this course, please wait for a response",
       });
-    // // //Pick the course id, tutor id
 
     // // //Create course request
     const requestedCourse = await courseRequestInstance.create({
@@ -208,9 +206,8 @@ const courseRequest = async (req: Request, res: Response) => {
       tutorId: course.tutorId,
       studentId: id,
     });
-    // console.log("requested Course is ", requestedCourse);
 
-    //Create notification
+    //Create notification for the tutor base on the user request.
     await NotificationInstance.create({
       notificationType: "course request",
       receiver: course.tutorId,
@@ -218,6 +215,7 @@ const courseRequest = async (req: Request, res: Response) => {
       sender: id,
       courseId,
     });
+    // also for user
     //Return a message, your course request is successful
     return res.status(200).json({
       message: `you have successfully requested for ${course.title}`,
