@@ -6,6 +6,7 @@ import usersRouter from "./routes/usersRoutes";
 import coursesRouter from "./routes/coursesRoutes";
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
+import { swaggerDoc } from "./utils";
 import {
   appError,
   errorHandler,
@@ -22,6 +23,8 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(logger("dev"));
 app.use(cookieParser());
+
+swaggerDoc(app);
 
 //routes
 app.use("/users", usersRouter);

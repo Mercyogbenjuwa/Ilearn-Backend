@@ -12,10 +12,25 @@ export const userSubject = process.env.usersubject as string;
 export const GMAIL_PASS = process.env.GMAIL_USER;
 export const GMAIL_USER = process.env.GMAIL_PASS;
 
+// for hosted DB
 export const db = new Sequelize(process.env.DB_CONNECTION_STRING!, {
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: process.env.NODE_ENV === "development" && false,
+    },
+  },
 });
 
+// for local connection
+// export const db = new Sequelize("postgres", "postgres", "password", {
+//   host: "localhost",
+//   port: 5433,
+//   dialect: "postgres",
+//   logging: false,
+//
+//
+// });
 
 export const connectDB = async () => {
   try {
