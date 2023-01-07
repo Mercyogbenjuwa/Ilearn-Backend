@@ -1,7 +1,6 @@
 import { Request, Response, Application } from "express";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import { protect } from "../../src/Middlewares/authMiddleware";
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -30,7 +29,7 @@ const options: swaggerJSDoc.Options = {
         bearerAuth: [],
       },
     ],
-    host: "localhost:4000",
+    host: process.env.BASE_URL,
 
     basePath: "/",
   },
@@ -49,5 +48,5 @@ export const swaggerDoc = async (app: Application) => {
     res.send(swaggerSpec);
   });
 
-  console.log(`Docs available at http://localhost:${4000}/api-docs`);
+  console.log(`Docs available at ${process.env.BASE_URL}/api-docs`);
 };
