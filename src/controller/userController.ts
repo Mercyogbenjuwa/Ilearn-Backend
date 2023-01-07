@@ -671,7 +671,6 @@ export const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
     const {id} = req.user;
     const { courseName } = req.body;
     const courseId = uuidv4();
-    // courseName = courseName.trim();
     if(!courseName){
       return res.status(400).json({
         Error: "courseName is required",
