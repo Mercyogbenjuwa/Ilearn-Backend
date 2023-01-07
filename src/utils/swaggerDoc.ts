@@ -8,7 +8,8 @@ const options: swaggerJSDoc.Options = {
     info: {
       title: "Swagger API Documentation for Ilearn App",
       version: "1.0.0",
-      description: "Documenting various apis for Smoove App",
+      description:
+        "Ilearn is app e-learning app for connecting students to tutor",
       contact: {
         name: "ILearn",
       },
