@@ -1,4 +1,3 @@
-
 import express from "express";
 import {
   createReminder,
@@ -30,7 +29,18 @@ const router = express.Router();
 router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/verify/:signature", verifyUser);
-router.get("/", protect, getAllUsers);
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     description: get all users!
+ *     responses:
+ *       200:
+ *         description: Returns an array of users.
+ */
+
+router.get("/", getAllUsers);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 router.put(
   "/updatetutorprofile",
@@ -42,12 +52,12 @@ router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
-router.get('/all-tutors', getAllTutors)
-router.get('/feature-tutors', tutorRating)
+router.get("/all-tutors", getAllTutors);
+router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
 router.get('/recommended/:category', protect, getRecommendedCourses)
 router.get('/notifications', protect, getUserNotifications)
-router.put('/readNotification/:id', protect, readNotification)
+router.put('/notifications/:id', protect, readNotification)
 router.post("/edit-profile/:signature",upload.single('imageUrl'),protect, Editprofile);
 router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);

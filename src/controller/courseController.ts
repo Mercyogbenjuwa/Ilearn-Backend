@@ -3,6 +3,15 @@ import { JwtPayload } from "jsonwebtoken";
 import { courseInstance } from "../model/courseModel";
 import path from "path";
 import { HttpError } from "http-errors";
+import { courseRequestInstance } from "../model/courseRequestsModel";
+import { NotificationInstance } from "../model/notificationModel";
+import { UserInstance } from "../model/userModel";
+import { Includeable } from "sequelize";
+
+UserInstance;
+interface requestedCourse extends courseInstance {
+  tutor: UserInstance;
+}
 
 const addCourse = async (req: Request, res: Response) => {
   try {
@@ -67,15 +76,17 @@ const createCourse = async (req: JwtPayload, res: Response) => {
   try {
     //const userId = req.user?.id;
 
+    console.log("test");
     const { title, description, category, pricing } = req.body;
+
     const newCourse = await courseInstance.create({
       title,
       description,
-      course_image: req.files.course_image[0].path,
+      course_image: req.files?.course_image[0].path,
       pricing: pricing.toLocaleString(),
       category,
       tutorId: req.user?.id,
-      course_material: req.files.course_material[0].path,
+      course_material: req.files?.course_material[0].path,
     });
 
     return res.status(200).json({
@@ -83,10 +94,9 @@ const createCourse = async (req: JwtPayload, res: Response) => {
       course: newCourse,
     });
   } catch (error: any) {
-    console.log(error);
     return res.status(500).json({
       route: "/users/create-courses",
-      error: error.message,
+      error: error.errors[0].message,
     });
   }
 };
@@ -155,6 +165,70 @@ const deleteCourse = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== get AllNotifications for students ============================== **/
+
+const courseRequest = async (req: Request, res: Response) => {
+  try {
+    //student Id requesting the course
+    const id = req.user?.id;
+    const courseId = req.params.id;
+
+    //First check if that course exist and include the tutor details
+    let course = (await courseInstance.findOne({
+      where: {
+        id: courseId,
+      },
+      include: ["tutor"],
+    })) as requestedCourse;
+
+    if (!course) return res.status(400).json({ Error: "No such course exist" });
+
+    const courseRequested = await courseRequestInstance.findOne({
+      where: {
+        studentId: id,
+        courseId,
+        status: "pending",
+        tutorId: course.tutor.id,
+      },
+    });
+
+    ///check if you user has already requested a course
+    if (courseRequested)
+      return res.status(400).json({
+        Error:
+          "You have already requested this course, please wait for a response",
+      });
+
+    //Create course request
+    const requestedCourse = await courseRequestInstance.create({
+      courseId,
+      tutorId: course.tutorId,
+      studentId: id,
+    });
+
+    //Create notification for the tutor base on the user request.
+    await NotificationInstance.create({
+      notificationType: "course request",
+      receiver: course.tutorId,
+      description: `A student requested ${course.title}`,
+      sender: id,
+      courseId,
+    });
+    // also for user
+    //Return a message, your course request is successful
+    return res.status(200).json({
+      message: `you have successfully requested for ${course.title}`,
+      course,
+      requestedCourse,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal Server Error /users/getNotifications",
+      error,
+    });
+  }
+};
+
 export {
   getAllCourse,
   getStudentHistory,
@@ -162,4 +236,5 @@ export {
   updateCourse,
   deleteCourse,
   addCourse,
+  courseRequest,
 };

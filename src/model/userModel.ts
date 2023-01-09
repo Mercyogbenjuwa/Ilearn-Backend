@@ -5,6 +5,7 @@ import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
 import { AreaOfInterestInstance} from './areaOfInterestModel';
 
+import { NotificationInstance } from "./notificationModel";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -124,15 +125,14 @@ UserInstance.hasMany(courseInstance, {
   foreignKey: "tutorId",
   as: "course",
 });
-
 UserInstance.hasMany(ReminderInstance, {
   foreignKey: "userId",
   as: "reminder",
 });
 
-courseInstance.hasOne(UserInstance, {
+courseInstance.belongsTo(UserInstance, {
   foreignKey: "tutorId",
-  as: "user",
+  as: "tutor",
 });
 
 

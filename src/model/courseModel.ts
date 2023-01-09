@@ -1,5 +1,6 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
+import { UserInstance } from "./userModel";
 
 export interface courseAttributes {
   [x: string]: any;
@@ -15,7 +16,6 @@ export interface courseAttributes {
 }
 
 export class courseInstance extends Model<courseAttributes> {
-  
   declare id: string;
   declare title: string;
   declare description: string;
@@ -64,16 +64,15 @@ courseInstance.init(
     category: {
       type: DataTypes.STRING,
       allowNull: false,
-    }, 
+    },
     course_material: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-   rating: {
+    rating: {
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-   
   },
 
   {

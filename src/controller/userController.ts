@@ -27,13 +27,14 @@ import {
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
-import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
-import { NotificationInstance, NotificationAttributes} from "../model/notificationModel";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
+import { NotificationInstance } from "../model/notificationModel";
+import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
+import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
+
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -185,7 +186,6 @@ const Login = async (req: Request, res: Response) => {
     const User = await UserInstance.findOne({
       where: { email: email },
     });
-    console.log(User);
 
     if (!User) {
       return res.status(400).json({
@@ -212,6 +212,7 @@ const Login = async (req: Request, res: Response) => {
           signature,
           email: User.email,
           verified: User.verified,
+          userType: User.userType,
         });
       }
       return res.status(400).json({
@@ -517,11 +518,7 @@ export const getTutorDetails = async (req: Request, res: Response) => {
   }
 };
 
-const getAllTutors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getAllTutors = async (req: Request, res: Response) => {
   try {
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
@@ -558,30 +555,27 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-
 /**=========================== get User Notifications ============================== **/
+
 const getUserNotifications = async (req: Request, res: Response) => {
   try {
     const id = req.user?.id;
-
-    const notifiedUser = await NotificationInstance.findAll({
+    const notifications = await NotificationInstance.findAll({
       where: {
         receiver: id,
       },
-      order:[[
-        "createdAt",
-        "DESC"
-      ]],
+      include: [
+        { model: courseInstance, as: "course", attributes: ["title"] },
+        { model: UserInstance, as: "theSender", attributes: ["name", "image"] },
+      ],
+      order: [["createdAt", "DESC"]],
     });
-      return res.status(200).json({
-        message: "Successfully fetched notifications",
-        notifiedUser
-      });
-  
+    return res
+      .status(200)
+      .json({ message: "notification fetched successfully", notifications });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
-      Error: "Internal Server Error /users/notifications",
+      Error: "Internal Server Error /users/getNotifications",
       error,
     });
   }
@@ -596,18 +590,17 @@ const readNotification = async (req: Request, res: Response) => {
         id,
       },
     });
-    if(!notification){
+    if (!notification) {
       return res.status(400).json({
-        message: "Notification does not exist"
-      })
-    }
-    notification.status = "read" 
-    const result = await notification.save()
-      return res.status(200).json({
-        message: "Notification has been read",
-        notification: result
+        message: "Notification does not exist",
       });
-
+    }
+    notification.status = "read";
+    const result = await notification.save();
+    return res.status(200).json({
+      message: "Notification has been read",
+      notification: result,
+    });
   } catch (error) {
     return res.status(500).json({
       Error: "Internal Server Error /users/readNotification",
@@ -617,7 +610,7 @@ const readNotification = async (req: Request, res: Response) => {
 };
 
 /**===================================== Edit-profile===================================== **/
-export const Editprofile = async (
+const Editprofile = async (
   req: JwtPayload,
   res: Response
 ) => {
@@ -665,7 +658,7 @@ export const Editprofile = async (
 
 }
 
-export const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
+ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
     const {userId} = req.user;
     const {id} = req.user;
@@ -711,7 +704,7 @@ export const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   }
 }
 
-export const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
+ const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try{
       const {id} = req.user;
       const courseId = req.params.id;
@@ -741,7 +734,7 @@ export const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
   }
 };
 
-export const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
+ const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try{
       const {id} = req.user;
 
@@ -784,6 +777,9 @@ export {
   tutorRating,
   getAllTutors,
   getUserNotifications,
-  readNotification
-
+  readNotification,
+  Editprofile,
+  addAreaOfInterest,
+  deleteAreaOfInterest,
+  getAreaOfInterest
 };
