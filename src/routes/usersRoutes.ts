@@ -26,11 +26,7 @@ import { upload } from "../utils/multer";
 
 const router = express.Router();
 
-// router.get("/", (req: Request, res: Response) => {
-//   return res.status(200).json({
-//     message: "my landing page",
-//   });
-// });
+
 router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/verify/:signature", verifyUser);
