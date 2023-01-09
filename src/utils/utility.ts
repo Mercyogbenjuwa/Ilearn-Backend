@@ -16,6 +16,12 @@ export const registerSchema = Joi.object().keys({
   //   .messages({ "any.only": "{{#label}} does not match" }),
 });
 
+export const editprofileSchema = Joi.object().keys({
+  email: Joi.string(),
+  name: Joi.string(),
+  areaOfInterest: Joi.string(),
+});
+
 export const loginSchema = Joi.object().keys({
   email: Joi.string().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),

@@ -3,6 +3,8 @@ import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
 import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
+import { AreaOfInterestInstance} from './areaOfInterestModel';
+
 import { NotificationInstance } from "./notificationModel";
 
 export interface UserAttributes {
@@ -109,6 +111,16 @@ UserInstance.init(
     tableName: "user",
   }
 );
+
+AreaOfInterestInstance.belongsTo(UserInstance, 
+  {foreignKey: 'userId', 
+  as: 'user'});
+
+UserInstance.hasMany(AreaOfInterestInstance, 
+  {foreignKey: 'userId', 
+  as: 'interests'
+});
+
 UserInstance.hasMany(courseInstance, {
   foreignKey: "tutorId",
   as: "course",
@@ -122,3 +134,5 @@ courseInstance.belongsTo(UserInstance, {
   foreignKey: "tutorId",
   as: "tutor",
 });
+
+
