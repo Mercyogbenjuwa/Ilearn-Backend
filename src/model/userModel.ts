@@ -1,7 +1,11 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
+import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
+import { AreaOfInterestInstance} from './areaOfInterestModel';
+
+import { NotificationInstance } from "./notificationModel";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -14,11 +18,10 @@ export interface UserAttributes {
   verified: boolean;
   salt: string;
   image: string;
-  rating: number
+  rating: number;
 }
 
 export class UserInstance extends Model<UserAttributes> {
-
   declare id: string;
   declare email: string;
   declare name: string;
@@ -28,8 +31,7 @@ export class UserInstance extends Model<UserAttributes> {
   declare verified: boolean;
   declare salt: string;
   declare image: string;
-  declare rating: number
-
+  declare rating: number;
 }
 
 UserInstance.init(
@@ -102,7 +104,6 @@ UserInstance.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-
   },
 
   {
@@ -110,17 +111,28 @@ UserInstance.init(
     tableName: "user",
   }
 );
+
+AreaOfInterestInstance.belongsTo(UserInstance, 
+  {foreignKey: 'userId', 
+  as: 'user'});
+
+UserInstance.hasMany(AreaOfInterestInstance, 
+  {foreignKey: 'userId', 
+  as: 'interests'
+});
+
 UserInstance.hasMany(courseInstance, {
   foreignKey: "tutorId",
   as: "course",
 });
-
 UserInstance.hasMany(ReminderInstance, {
   foreignKey: "userId",
   as: "reminder",
 });
 
-courseInstance.hasOne(UserInstance, {
+courseInstance.belongsTo(UserInstance, {
   foreignKey: "tutorId",
-  as: "user",
+  as: "tutor",
 });
+
+

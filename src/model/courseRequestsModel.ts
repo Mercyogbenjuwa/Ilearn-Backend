@@ -1,7 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 
-interface courseRequestAttributes {
+export interface courseRequestAttributes {
   [x: string]: any;
   id: string;
   status: string;
@@ -52,7 +52,6 @@ courseRequestInstance.init(
       allowNull: false,
     },
   },
-
   {
     sequelize: db,
     tableName: "course_requests",
