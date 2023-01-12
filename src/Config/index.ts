@@ -14,8 +14,12 @@ export const GMAIL_USER = process.env.GMAIL_PASS;
 
 export const db = new Sequelize(process.env.DB_CONNECTION_STRING!, {
   logging: false,
+  dialectOptions:{
+    ssl: {
+      require: false
+    }
+  }
 });
-
 
 export const connectDB = async () => {
   try {

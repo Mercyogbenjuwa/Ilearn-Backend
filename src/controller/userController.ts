@@ -408,7 +408,8 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
     // const id = req.user?.id
 
     const recommendedCourse = await courseInstance.findAll({
-      where: { category, rating: { [Op.gt]: 0 } },
+      // where: { category, rating: { [Op.gt]: 0 } },
+      where: { category },
       attributes: [
         "id",
         "title",
@@ -418,7 +419,9 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
         "description",
         "category",
       ],
-      order: [["rating", "DESC"]],
+      // order: [["rating", "DESC"]],
+      order: [["title", "DESC"]],
+
       limit: 10,
     });
     if (!recommendedCourse) {
@@ -523,7 +526,7 @@ const getAllTutors = async (
   try {
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
-      attributes: ["id", "email", "name", "rating"],
+      attributes: ["id", "email", "name", "rating","image"],
     });
     return res.status(200).json({
       TutorNumber: findTutor.length,
@@ -540,17 +543,29 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
 
     const offset = page ? page * limit : 0;
 
+    // return (console.log('kings'))
+
     const tutorSorted = await UserInstance.findAll({
-      where: { userType: "Tutor", rating: { [Op.gt]: 0 } },
-      attributes: ["id", "email", "name", "image", "rating"],
-      order: [["rating", "DESC"]],
-      limit: limit,
-      offset: offset,
-    });
+      where: {userType: 'Tutor'},
+      attributes: ["id", "email", "name", "image"],
+      order: [["email", "DESC"]],
+        limit: limit,
+        offset: offset,
+
+      
+    })
+    // const tutorSorted = await UserInstance.findAll({
+    //   where: { userType: "Tutor", rating: { [Op.gt]: 0 } },
+    //   attributes: ["id", "email", "name", "image", "rating"],
+    //   order: [["rating", "DESC"]],
+    //   limit: limit,
+    //   offset: offset,
+    // });
     return res.status(200).json({
       TutorNumber: tutorSorted.length,
       tutorSorted,
     });
+    
   } catch (err) {
     console.log(err);
   }
