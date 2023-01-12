@@ -226,6 +226,7 @@ const Login = async (req: Request, res: Response) => {
     res.status(500).json({
       Error: "Internal server Error",
       route: "/users/login",
+      err
     });
   }
 };

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { courseInstance } from "../model/courseModel";
+import { courseAttributes, courseInstance } from "../model/courseModel";
 import path from "path";
 import { HttpError } from "http-errors";
 import { courseRequestInstance } from "../model/courseRequestsModel";
@@ -229,8 +229,34 @@ const courseRequest = async (req: Request, res: Response) => {
   }
 };
 
+const getCourseById = async(req: Request, res: Response) => {
+  try {
+      const { id } = req.params
+      const course = await courseInstance.findAll({where: 
+        {id},
+        include: ["tutor"]
+      }) 
+      if(!course){
+        return res.status(400).json({
+          Error: "This course does not exist"
+        })
+      }
+      return res.status(200).json({
+        message: "Successfully fetched course",
+        course
+      })
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/courses/getSingleCourse",
+      error,
+    });
+  }
+}
+
 export {
   getAllCourse,
+  getCourseById,
   getStudentHistory,
   createCourse,
   updateCourse,
