@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+import { AvailabilityInstance, AvailabilityAttributes } from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -763,6 +764,49 @@ const Editprofile = async (
   }
 }
 
+const createAvailability = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { availableTime, availableDate } = req.body;
+
+    // Verify that the user exists
+    const user = await UserInstance.findOne({ where: { id: id } });
+    if (!user) {
+      return res.status(404).json({ Error: "User not found" });
+    }
+
+    const dateToIso = new Date(availableDate).toISOString();
+    
+    // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
+    const availabilityExists = await AvailabilityInstance.findOne({ where:{availableDate:dateToIso}})
+
+    if (availabilityExists) {
+      return res.status(400).json({
+        Error: "You have already created availability for this date, please edit your availability instead",
+      });
+    }
+
+    // create the user's availability
+    const availability = await AvailabilityInstance.create({ availableTime, availableDate, userId: id });
+
+    // Return a success response
+    return res.status(200).json({
+      message: "Availability updated successfully",
+      availability,
+      availableSlots: availability.availableTime.length,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/users/availability",
+    });
+  }
+};
+
+
+
+
 
 export {
   Login,
@@ -781,5 +825,6 @@ export {
   Editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
-  getAreaOfInterest
+  getAreaOfInterest,
+  createAvailability
 };
