@@ -15,6 +15,7 @@ import {
   verifyUser,
   getUserNotifications,
   readNotification,
+  rateTutor,
   Editprofile,
   addAreaOfInterest, 
   deleteAreaOfInterest,
@@ -41,7 +42,11 @@ router.get("/verify/:signature", verifyUser);
  */
 
 router.get("/", getAllUsers);
+
+
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
+
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.put(
   "/updatetutorprofile",
   protect,

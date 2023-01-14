@@ -32,6 +32,7 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
+import { TutorRatingAttribute, TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
 import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
 
@@ -99,7 +100,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         email: createdUser.email,
         verified: createdUser.verified,
       });
-      console.log(process.env.fromAdminMail, email, userSubject);
+      // console.log(process.env.fromAdminMail, email, userSubject);
 
       //send Email to user
       const link = `Press <a href=${process.env.BASE_URL}/users/verify/${signature}> here </a> to verify your account. Thanks.`;
@@ -522,7 +523,7 @@ const getAllTutors = async (req: Request, res: Response) => {
   try {
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
-      attributes: ["id", "email", "name", "rating"],
+      attributes: ["id", "email", "name", "rating","image"],
     });
     return res.status(200).json({
       TutorNumber: findTutor.length,
@@ -609,6 +610,53 @@ const readNotification = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== create tutor rating ============================== **/
+
+const rateTutor = async (req: Request, res: Response) => {
+  const {id} = req.user!
+ 
+  try {
+    const { description, ratingValue} = req.body;
+    
+
+    // Check if the student and tutor exist in the database
+    const student = await UserInstance.findOne({ where: {id} });
+    if (!student) {
+      return res.status(404).send({ message: 'Student not found' });
+    }
+
+    const alreadyRated = await TutorRatingInstance.findOne({where:{ studentId: id, tutorId: req.params.id}});
+    
+    if (alreadyRated) {
+      return res.status(401).send({ message: 'You cannot a tutor more than once' });
+    }
+    
+    const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
+    if (!tutor) {
+      return res.status(404).send({ message: 'Tutor not found' });
+    }
+    
+
+    const newRating = await TutorRatingInstance.create({
+      studentId: id,
+      description,
+      ratingValue,
+      tutorId:req.params.id,
+    });
+
+    res.json({
+      message: 'Rating added successfully',
+      data: {
+        ratingValue: newRating, 
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      mesage: 'Error adding rating',
+      error: error
+    });
+  }
+};
 /**===================================== Edit-profile===================================== **/
 const Editprofile = async (
   req: JwtPayload,
@@ -778,6 +826,7 @@ export {
   getAllTutors,
   getUserNotifications,
   readNotification,
+  rateTutor,
   Editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
