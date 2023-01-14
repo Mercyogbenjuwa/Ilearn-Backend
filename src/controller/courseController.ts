@@ -232,7 +232,7 @@ const courseRequest = async (req: Request, res: Response) => {
 const getCourseById = async(req: Request, res: Response) => {
   try {
       const { id } = req.params
-      const course = await courseInstance.findAll({where: 
+      const course = await courseInstance.findOne({where: 
         {id},
         include: ["tutor"]
       }) 
