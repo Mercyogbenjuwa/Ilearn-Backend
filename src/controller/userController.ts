@@ -32,13 +32,10 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-<<<<<<< HEAD
 import { TutorRatingAttribute, TutorRatingInstance } from "../model/tutorRatingModel";
-=======
 import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
 import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
 
->>>>>>> staging
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -613,7 +610,6 @@ const readNotification = async (req: Request, res: Response) => {
   }
 };
 
-<<<<<<< HEAD
 /**=========================== create tutor rating ============================== **/
 
 const rateTutor = async (req: Request, res: Response) => {
@@ -658,7 +654,9 @@ const rateTutor = async (req: Request, res: Response) => {
     res.status(500).json({
       mesage: 'Error adding rating',
       error: error
-=======
+    });
+  }
+};
 /**===================================== Edit-profile===================================== **/
 const Editprofile = async (
   req: JwtPayload,
@@ -780,15 +778,10 @@ const Editprofile = async (
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/delete-area-of-interest",
->>>>>>> staging
     });
   }
 };
 
-<<<<<<< HEAD
-
-
-=======
  const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try{
       const {id} = req.user;
@@ -817,7 +810,6 @@ const Editprofile = async (
     });
   }
 }
->>>>>>> staging
 
 
 export {
@@ -834,12 +826,9 @@ export {
   getAllTutors,
   getUserNotifications,
   readNotification,
-<<<<<<< HEAD
   rateTutor,
-=======
   Editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest
->>>>>>> staging
 };
