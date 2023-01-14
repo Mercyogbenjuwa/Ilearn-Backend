@@ -228,6 +228,7 @@ const Login = async (req: Request, res: Response) => {
     res.status(500).json({
       Error: "Internal server Error",
       route: "/users/login",
+      err
     });
   }
 };
@@ -423,6 +424,7 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
         "description",
         "category",
       ],
+      include: ['tutor'],
       order: [["rating", "DESC"]],
       limit: 10,
     });
