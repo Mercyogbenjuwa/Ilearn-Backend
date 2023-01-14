@@ -7,7 +7,7 @@ import {
   addCourse,
   courseRequest,
   rateCourses,
-} from "../controller/courseController";
+, requestCourseById} from "../controller/courseController";
 import { getAllUsers, Login, Register } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { getStudentHistory } from "../controller/courseController";
@@ -28,8 +28,8 @@ router.post(
 );
 router.patch("/updateCourse/:id", protect, updateCourse);
 router.delete("/deleteCourse/:id", protect, deleteCourse);
-router.post("/addCourse", addCourse);
-router.post("/requestCourse/:id", protect, courseRequest);
+router.post("/addCourse", addCourse)
+router.post("/requestCourse/:id", protect, courseRequest)
 
 /**
  * @swagger

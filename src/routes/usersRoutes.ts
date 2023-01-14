@@ -15,10 +15,12 @@ import {
   verifyUser,
   getUserNotifications,
   readNotification,
+  rateTutor,
   Editprofile,
   addAreaOfInterest, 
   deleteAreaOfInterest,
-  getAreaOfInterest
+  getAreaOfInterest,
+  createAvailability
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -41,7 +43,11 @@ router.get("/verify/:signature", verifyUser);
  */
 
 router.get("/", getAllUsers);
+
+
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
+
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.put(
   "/updatetutorprofile",
   protect,
@@ -62,4 +68,5 @@ router.post("/edit-profile/:signature",upload.single('imageUrl'),protect, Editpr
 router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
+router.post("/tutors/availablity", protect, createAvailability);
 export default router;
