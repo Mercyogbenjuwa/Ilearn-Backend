@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+import { AvailabilityInstance, AvailabilityAttributes } from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -32,6 +33,7 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
+import { TutorRatingAttribute, TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
 import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
 
@@ -99,7 +101,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         email: createdUser.email,
         verified: createdUser.verified,
       });
-      console.log(process.env.fromAdminMail, email, userSubject);
+      // console.log(process.env.fromAdminMail, email, userSubject);
 
       //send Email to user
       const link = `Press <a href=${process.env.BASE_URL}/users/verify/${signature}> here </a> to verify your account. Thanks.`;
@@ -524,7 +526,7 @@ const getAllTutors = async (req: Request, res: Response) => {
   try {
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
-      attributes: ["id", "email", "name", "rating"],
+      attributes: ["id", "email", "name", "rating","image"],
     });
     return res.status(200).json({
       TutorNumber: findTutor.length,
@@ -611,6 +613,53 @@ const readNotification = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== create tutor rating ============================== **/
+
+const rateTutor = async (req: Request, res: Response) => {
+  const {id} = req.user!
+ 
+  try {
+    const { description, ratingValue} = req.body;
+    
+
+    // Check if the student and tutor exist in the database
+    const student = await UserInstance.findOne({ where: {id} });
+    if (!student) {
+      return res.status(404).send({ message: 'Student not found' });
+    }
+
+    const alreadyRated = await TutorRatingInstance.findOne({where:{ studentId: id, tutorId: req.params.id}});
+    
+    if (alreadyRated) {
+      return res.status(401).send({ message: 'You cannot a tutor more than once' });
+    }
+    
+    const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
+    if (!tutor) {
+      return res.status(404).send({ message: 'Tutor not found' });
+    }
+    
+
+    const newRating = await TutorRatingInstance.create({
+      studentId: id,
+      description,
+      ratingValue,
+      tutorId:req.params.id,
+    });
+
+    res.json({
+      message: 'Rating added successfully',
+      data: {
+        ratingValue: newRating, 
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      mesage: 'Error adding rating',
+      error: error
+    });
+  }
+};
 /**===================================== Edit-profile===================================== **/
 const Editprofile = async (
   req: JwtPayload,
@@ -765,6 +814,49 @@ const Editprofile = async (
   }
 }
 
+const createAvailability = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { availableTime, availableDate } = req.body;
+
+    // Verify that the user exists
+    const user = await UserInstance.findOne({ where: { id: id } });
+    if (!user) {
+      return res.status(404).json({ Error: "User not found" });
+    }
+
+    const dateToIso = new Date(availableDate).toISOString();
+    
+    // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
+    const availabilityExists = await AvailabilityInstance.findOne({ where:{availableDate:dateToIso}})
+
+    if (availabilityExists) {
+      return res.status(400).json({
+        Error: "You have already created availability for this date, please edit your availability instead",
+      });
+    }
+
+    // create the user's availability
+    const availability = await AvailabilityInstance.create({ availableTime, availableDate, userId: id });
+
+    // Return a success response
+    return res.status(200).json({
+      message: "Availability updated successfully",
+      availability,
+      availableSlots: `${availability.availableTime.length} slots`,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      Error: "Internal server error",
+      route: "/users/tutur/availability",
+    });
+  }
+};
+
+
+
+
 
 export {
   Login,
@@ -780,8 +872,10 @@ export {
   getAllTutors,
   getUserNotifications,
   readNotification,
+  rateTutor,
   Editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
-  getAreaOfInterest
+  getAreaOfInterest,
+  createAvailability
 };
