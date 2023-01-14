@@ -297,7 +297,6 @@ const rateCourses = async (req: Request, res: Response) => {
       where: { studentId: id, courseId: req.params.id },
     });
     if (alreadyRatedCourse) {
-      console.log(alreadyRatedCourse);
       return res
         .status(401)
         .send({ message: "You cannot rate a course more than once" });
