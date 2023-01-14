@@ -4,6 +4,7 @@ import { courseInstance } from "./courseModel";
 import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
 import { AreaOfInterestInstance} from './areaOfInterestModel';
+import { AvailabilityInstance } from "./availabilityModel";
 
 import { NotificationInstance } from "./notificationModel";
 
@@ -134,5 +135,10 @@ courseInstance.belongsTo(UserInstance, {
   foreignKey: "tutorId",
   as: "tutor",
 });
+
+UserInstance.hasMany(AvailabilityInstance, {
+  foreignKey: "userId",
+  as: "availability",
+})
 
 
