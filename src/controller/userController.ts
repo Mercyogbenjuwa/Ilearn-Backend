@@ -32,9 +32,14 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
-import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
-
+import {
+  AreaOfInterestInstance,
+  AreaOfInterestAttributes,
+} from "../model/areaOfInterestModel";
+import {
+  courseRequestInstance,
+  courseRequestAttributes,
+} from "../model/courseRequestsModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -69,6 +74,11 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
+
+    const link = `Press <a href=${process.env.BASE_URL}/users/verify/> here </a> to verify your account. Thanks.`;
+    const html = emailHtml3(link);
+
+    await mailSent("Ilearn App", email, "Ilearn User Verification", html);
     if (User) {
       return res.status(400).json({
         message: "User already exist!",
@@ -518,6 +528,34 @@ export const getTutorDetails = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== get User Profile ============================== **/
+
+const getUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user!;
+
+    const userDetails = await UserInstance.findOne({
+      where: { id, verified: true },
+      attributes: { exclude: ["salt", "password"] },
+    });
+    if (!userDetails) {
+      return res.status(400).json({
+        Error: "You are not a valid user",
+      });
+    }
+
+    return res.status(200).json({
+      message: "user found",
+      userDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: error,
+      route: "/users/profile",
+    });
+  }
+};
+
 const getAllTutors = async (req: Request, res: Response) => {
   try {
     const findTutor = await UserInstance.findAll({
@@ -610,80 +648,78 @@ const readNotification = async (req: Request, res: Response) => {
 };
 
 /**===================================== Edit-profile===================================== **/
-const Editprofile = async (
-  req: JwtPayload,
-  res: Response
-) => {
+const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
   try {
-      const {id} = req.user;
-        const { image, name, email, areaOfInterest } = req.body;
-        const validateResult = editprofileSchema.validate(req.body, option);
-        if (validateResult.error) {
-          return res.status(400).json({
-            Error: validateResult.error.details[0].message,
-          });
-        } 
-        const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes; 
-        if (!user) { 
-          return res.status(400).json({
-            Error: "User does not exist",
-          });
-        }
-        const updateUser = await UserInstance.update(
-          {
-            image:req.file.path,
-            name,
-            email,
-            areaOfInterest,
-          },
-          {
-            where: {id: id}
-          }
-        )
+    const { id } = req.user;
+    const { image, name, email, areaOfInterest } = req.body;
+    const validateResult = editprofileSchema.validate(req.body, option);
+    if (validateResult.error) {
+      return res.status(400).json({
+        Error: validateResult.error.details[0].message,
+      });
+    }
+    const user = await UserInstance.findOne({
+      where: { id: id },
+    });
+    if (!user) {
+      return res.status(400).json({
+        Error: "User does not exist",
+      });
+    }
+    const updateUser = await UserInstance.update(
+      {
+        image: req.file.path,
+        name,
+        email,
+        areaOfInterest,
+      },
+      {
+        where: { id: id },
+      }
+    );
 
-        return res.status(200).json({
-          message: "User updated successfully",
-          name: user.name,
-          areaOfInterest: user.areaOfInterest,
-          email: user.email,
-          image: user.image,
-        });
+    return res.status(200).json({
+      message: "User updated successfully",
+      name: user.name,
+      areaOfInterest: user.areaOfInterest,
+      email: user.email,
+      image: user.image,
+    });
   } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/edit-profile",
     });
   }
+};
 
-}
-
- const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
+const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
-    const {userId} = req.user;
-    const {id} = req.user;
+    const { userId } = req.user;
+    const { id } = req.user;
     const { courseName } = req.body;
     const courseId = uuidv4();
-    if(!courseName){
+    if (!courseName) {
       return res.status(400).json({
         Error: "courseName is required",
       });
     }
 
-    const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = await UserInstance.findOne({
+      where: { id: id },
+    });
 
     if (!user) {
       return res.status(400).json({
         Error: "Not Authorized",
       });
-    }
-
-    else if(user) {
+    } else if (user) {
       const addAreaOfInterest = await AreaOfInterestInstance.create({
         id: uuidv4(),
         courseName,
-        userId
-      })
+        userId,
+      });
       return res.status(200).json({
         message: "Area of interest added successfully",
         addAreaOfInterest,
@@ -693,8 +729,6 @@ const Editprofile = async (
     return res.status(400).json({
       Error: "Not Authorized",
     });
-
-    
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -702,31 +736,34 @@ const Editprofile = async (
       route: "/users/add-area-of-interest",
     });
   }
-}
+};
 
- const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try{
-      const {id} = req.user;
-      const courseId = req.params.id;
+const deleteAreaOfInterest = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return "test";
+    const { id } = req.user;
+    const courseId = req.params.id;
 
-      const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = await UserInstance.findOne({
+      where: { id: id },
+    });
 
-      if(user) {
-        const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
-          where: {
-            id: courseId,
-          }
-        })
-
-        return res.status(200).json({
-          message: "Area of interest deleted successfully",
-          deleteAreaOfInterest,
-        });
-      }
-      return res.status(400).json({
-        Error: "Not Authorized",
+    if (user) {
+      const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
+        where: {
+          id: courseId,
+        },
       });
-  }catch(err){
+
+      return res.status(200).json({
+        message: "Area of interest deleted successfully",
+        deleteAreaOfInterest,
+      });
+    }
+    return res.status(400).json({
+      Error: "Not Authorized",
+    });
+  } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/delete-area-of-interest",
@@ -734,35 +771,36 @@ const Editprofile = async (
   }
 };
 
- const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try{
-      const {id} = req.user;
+const getAreaOfInterest = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user!;
 
-      const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = await UserInstance.findOne({
+      where: { id: id },
+    });
 
-      if(user) {
-        const getAreaOfInterest = await AreaOfInterestInstance.findAll({
-          where: {
-            userId: id,
-          }
-        })
-
-        return res.status(200).json({
-          message: "Area of interest fetched successfully",
-          getAreaOfInterest,
-        });
-      }
-      return res.status(400).json({
-        Error: "Not Authorized",
+    if (user) {
+      const getAreaOfInterest = await AreaOfInterestInstance.findAll({
+        where: {
+          userId: id,
+        },
       });
-  }catch(err){
+
+      return res.status(200).json({
+        message: "Area of interest fetched successfully",
+        getAreaOfInterest,
+      });
+    }
+    return res.status(400).json({
+      Error: "Not Authorized",
+    });
+  } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/get-area-of-interest",
     });
   }
-}
-
+};
 
 export {
   Login,
@@ -778,8 +816,9 @@ export {
   getAllTutors,
   getUserNotifications,
   readNotification,
-  Editprofile,
+  editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
-  getAreaOfInterest
+  getAreaOfInterest,
+  getUserProfile,
 };
