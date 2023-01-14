@@ -115,7 +115,9 @@ export const validateReminder = (input: {}) => {
 
 //schema for rating course
 export const ratingCourseSchema = Joi.object().keys({
-  rating: Joi.number().required(),
+  // courseId: Joi.string().required(),
+  description: Joi.string().required(),
+  ratingValue: Joi.number().required(),
 });
 
 //schema for create_course

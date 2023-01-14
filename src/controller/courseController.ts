@@ -7,7 +7,7 @@ import { courseRequestInstance } from "../model/courseRequestsModel";
 import { NotificationInstance } from "../model/notificationModel";
 import { UserInstance } from "../model/userModel";
 import { Includeable } from "sequelize";
-import { RatingInstance } from "../model/courseRatingModel";
+import { CourseRatingInstance } from "../model/courseRatingModel";
 import { option, ratingCourseSchema } from "../utils/utility";
 
 UserInstance;
@@ -233,44 +233,70 @@ const courseRequest = async (req: Request, res: Response) => {
 
 // ================================= Course Rating ==============================
 const rateCourses = async (req: Request, res: Response) => {
+  const { id } = req.user!;
+
   try {
-    if (!req.user) return "no id";
-    const { id } = req.user;
-    const { courseId, rating } = req.body;
     const validateResult = ratingCourseSchema.validate(req.body, option);
     if (validateResult.error) {
       return res.status(400).json({
         Error: validateResult.error.details[0].message,
       });
     }
-    const user = await UserInstance.findOne({ where: { id: id } });
-    if (!user) {
-      return res.status(400).json({
-        Error: "User does not exist",
-      });
-    }
-    const course = await courseInstance.findOne({ where: { id: courseId } });
+    const { courseId, ratingValue, description } = validateResult.value;
+
+    const course = await courseInstance.findOne({
+      where: { id: req.params.id },
+    });
     if (!course) {
       return res.status(400).json({
         Error: "Course does not exist",
       });
     }
-    const rateCourse = await RatingInstance.create({
-      courseId,
-      userId: id,
-      rating,
+    const alreadyRatedCourse = await CourseRatingInstance.findOne({
+      where: { studentId: id, courseId: req.params.id },
     });
+    if (alreadyRatedCourse) {
+      console.log(alreadyRatedCourse);
+      return res
+        .status(401)
+        .send({ message: "You cannot rate a course more than once" });
+      
+    }
+    
+    const rateCourse = await CourseRatingInstance.create({
+      ratingValue,
+      description,
+      courseId: req.params.id,
+      studentId: id,
+    });
+
+    const courseRatings = await CourseRatingInstance.findAll({
+      where: { courseId: req.params.id },
+    });
+    const totalRating = courseRatings.reduce((acc, curr) =>
+    {
+      return acc + curr.ratingValue;
+    }, 0);
+    const averageRating = totalRating / courseRatings.length;
+    await courseInstance.update(
+      { rating: averageRating },
+      { where: { id: req.params.id } }
+    );
+
     return res.status(200).json({
       message: "Course rated successfully",
       rateCourse,
     });
+
   } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
-      route: "/users/rate-course",
+      route: "/courses/rate-course",
+      err,
     });
   }
 };
+
 export {
   getAllCourse,
   getStudentHistory,

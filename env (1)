@@ -1,5 +1,0 @@
-APP_SECRET ="12345"
-JWT_SECRET = "ilearn"
-NODE_ENV = "development"
-PORT = 4000
-DB_CONNECTION_STRING = postgres://pjeuguod:rlCAuzjs9_ZkPtKNjYLxDiz5gqfh5YS8@mahmud.db.elephantsql.com/pjeuguod
