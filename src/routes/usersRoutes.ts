@@ -15,6 +15,7 @@ import {
   verifyUser,
   getUserNotifications,
   readNotification,
+  rateTutor,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -41,7 +42,11 @@ router.get("/verify/:signature", verifyUser);
  */
 
 router.get("/", getAllUsers);
+
+
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
+
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.put(
   "/updatetutorprofile",
   protect,
