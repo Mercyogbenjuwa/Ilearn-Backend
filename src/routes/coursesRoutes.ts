@@ -1,13 +1,5 @@
 import express from "express";
-import {
-  createCourse,
-  deleteCourse,
-  getAllCourse,
-  updateCourse,
-  addCourse,
-  courseRequest,
-  rateCourses,
-, requestCourseById} from "../controller/courseController";
+import {  createCourse, deleteCourse, getAllCourse, updateCourse, addCourse, courseRequest, rateCourses} from "../controller/courseController";
 import { getAllUsers, Login, Register } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { getStudentHistory } from "../controller/courseController";
