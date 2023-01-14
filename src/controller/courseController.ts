@@ -229,6 +229,23 @@ const courseRequest = async (req: Request, res: Response) => {
   }
 };
 
+const requestCourseById = async(req: Request, res: Response) => {
+  const id = req.user?.id;
+  const courseId = req.params.id;
+  const user = await UserInstance.findOne({where:{id}})
+  if(!user){
+    res.status(401)
+    throw new Error("Not Authorized")
+  }
+  const course = await courseInstance.findOne({where:{id: courseId}})
+  if(course){
+    res.status(200).json(course)
+  }else{
+    res.status(404)
+    throw new Error("Course Not Found")
+  }
+}
+
 export {
   getAllCourse,
   getStudentHistory,
@@ -237,4 +254,5 @@ export {
   deleteCourse,
   addCourse,
   courseRequest,
+  requestCourseById
 };
