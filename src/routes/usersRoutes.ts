@@ -46,7 +46,7 @@ router.get("/", getAllUsers);
 router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
-router.post("/tutors/:id/rate", protect,rateTutor )
+router.post("/tutors/:id/rate", protect, rateTutor);
 router.put(
   "/updatetutorprofile",
   protect,

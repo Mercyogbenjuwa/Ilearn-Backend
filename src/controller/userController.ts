@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
 import {
-  AvailabilityInstance,
-  AvailabilityAttributes,
-} from "../model/availabilityModel";
+  AvailabilityInstance} from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -23,21 +21,18 @@ import {
   validateReminder,
 } from "../utils/utility";
 import {
-  emailHtml,
   emailHtml2,
   emailHtml3,
-  GenerateOTP,
   mailSent,
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { link } from "joi";
+
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import { AreaOfInterestInstance, AreaOfInterestAttributes } from '../model/areaOfInterestModel';
-import { courseRequestInstance, courseRequestAttributes } from "../model/courseRequestsModel";
+import { AreaOfInterestInstance } from '../model/areaOfInterestModel';
 import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
 
@@ -530,8 +525,7 @@ export const getTutorDetails = async (req: Request, res: Response) => {
     });
   }
 };
-
-/**=========================== get User Profile ============================== **/
+// /**=========================== get User Profile ============================== **/
 
 const getUserProfile = async (req: Request, res: Response) => {
   try {
