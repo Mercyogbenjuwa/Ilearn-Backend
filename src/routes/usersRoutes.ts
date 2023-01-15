@@ -20,8 +20,8 @@ import {
   getAreaOfInterest,
   getUserProfile,
   editprofile,
-  rateTutor,
-  createAvailability
+  createAvailability,
+  rateTutor
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -46,7 +46,7 @@ router.get("/", getAllUsers);
 router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
-router.post("/tutors/:id/rate", protect, rateTutor)
+router.post("/tutors/:id/rate", protect,rateTutor )
 router.put(
   "/updatetutorprofile",
   protect,

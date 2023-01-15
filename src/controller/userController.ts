@@ -36,25 +36,11 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-<<<<<<< HEAD
 import { AreaOfInterestInstance, AreaOfInterestAttributes } from '../model/areaOfInterestModel';
 import { courseRequestInstance, courseRequestAttributes } from "../model/courseRequestsModel";
 import moment from "moment";
+import { TutorRatingInstance } from "../model/tutorRatingModel";
 
-=======
-import {
-  TutorRatingAttribute,
-  TutorRatingInstance,
-} from "../model/tutorRatingModel";
-import {
-  AreaOfInterestInstance,
-  AreaOfInterestAttributes,
-} from "../model/areaOfInterestModel";
-import {
-  courseRequestInstance,
-  courseRequestAttributes,
-} from "../model/courseRequestsModel";
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -725,13 +711,9 @@ const editprofile = async (req: JwtPayload, res: Response) => {
         Error: validateResult.error.details[0].message,
       });
     }
-<<<<<<< HEAD
-    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
-=======
     const user = await UserInstance.findOne({
       where: { id: id },
     });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
     if (!user) {
       return res.status(400).json({
         Error: "User does not exist",
@@ -745,15 +727,9 @@ const editprofile = async (req: JwtPayload, res: Response) => {
         areaOfInterest,
       },
       {
-<<<<<<< HEAD
         where: { id: id }
       }
     )
-=======
-        where: { id: id },
-      }
-    );
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
     return res.status(200).json({
       message: "User updated successfully",
@@ -770,11 +746,8 @@ const editprofile = async (req: JwtPayload, res: Response) => {
   }
 };
 
-<<<<<<< HEAD
-}
 
-=======
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
+
 const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
     const { userId } = req.user;
@@ -787,25 +760,15 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
       });
     }
 
-<<<<<<< HEAD
-    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
-=======
     const user = await UserInstance.findOne({
       where: { id: id },
     });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
     if (!user) {
       return res.status(400).json({
         Error: "Not Authorized",
       });
-<<<<<<< HEAD
-    }
-
-    else if (user) {
-=======
     } else if (user) {
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
       const addAreaOfInterest = await AreaOfInterestInstance.create({
         id: uuidv4(),
         courseName,
@@ -820,11 +783,6 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
     return res.status(400).json({
       Error: "Not Authorized",
     });
-<<<<<<< HEAD
-
-
-=======
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -834,14 +792,6 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   }
 };
 
-<<<<<<< HEAD
-const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try {
-    const { id } = req.user;
-    const courseId = req.params.id;
-
-    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
-=======
 const deleteAreaOfInterest = async (req: Request, res: Response) => {
   try {
     if (!req.user) return "test";
@@ -851,13 +801,11 @@ const deleteAreaOfInterest = async (req: Request, res: Response) => {
     const user = await UserInstance.findOne({
       where: { id: id },
     });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
     if (user) {
       const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
         where: {
           id: courseId,
-<<<<<<< HEAD
         }
       })
 
@@ -865,15 +813,6 @@ const deleteAreaOfInterest = async (req: Request, res: Response) => {
         message: "Area of interest deleted successfully",
         deleteAreaOfInterest,
       });
-=======
-        },
-      });
-
-      return res.status(200).json({
-        message: "Area of interest deleted successfully",
-        deleteAreaOfInterest,
-      });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
     }
     return res.status(400).json({
       Error: "Not Authorized",
@@ -886,13 +825,6 @@ const deleteAreaOfInterest = async (req: Request, res: Response) => {
   }
 };
 
-<<<<<<< HEAD
-const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try {
-    const { id } = req.user;
-
-    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
-=======
 const getAreaOfInterest = async (req: Request, res: Response) => {
   try {
     const { id } = req.user!;
@@ -900,13 +832,11 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
     const user = await UserInstance.findOne({
       where: { id: id },
     });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
     if (user) {
       const getAreaOfInterest = await AreaOfInterestInstance.findAll({
         where: {
           userId: id,
-<<<<<<< HEAD
         }
       })
 
@@ -914,15 +844,6 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
         message: "Area of interest fetched successfully",
         getAreaOfInterest,
       });
-=======
-        },
-      });
-
-      return res.status(200).json({
-        message: "Area of interest fetched successfully",
-        getAreaOfInterest,
-      });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
     }
     return res.status(400).json({
       Error: "Not Authorized",
@@ -935,7 +856,10 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
   }
 };
 
+
+
 const createAvailability = async (req: Request, res: Response) => {
+  
   try {
     const { id } = req.user;
     const { availableDate, availableTime } = req.body;
@@ -945,7 +869,6 @@ const createAvailability = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ Error: "User not found" });
     }
-<<<<<<< HEAD
     
     // use moment.js to validate date
     const date = moment(availableDate, 'YYYY-MM-DD');
@@ -956,15 +879,6 @@ const createAvailability = async (req: Request, res: Response) => {
     }
    
     const dateToIso = date.toISOString();
-=======
-
-    const dateToIso = new Date(availableDate).toISOString();
-
-    // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
-    const availabilityExists = await AvailabilityInstance.findOne({
-      where: { availableDate: dateToIso },
-    });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
@@ -982,15 +896,7 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-<<<<<<< HEAD
     const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length });
-=======
-    const availability = await AvailabilityInstance.create({
-      availableTime,
-      availableDate,
-      userId: id,
-    });
->>>>>>> d2d6ffe579569840ee249bbe3a23f4c3d906670b
 
     // Return a success response                                          
     return res.status(200).json({
@@ -1033,4 +939,3 @@ export {
   rateTutor,
   createAvailability,
 };
-
