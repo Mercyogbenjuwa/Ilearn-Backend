@@ -525,34 +525,33 @@ export const getTutorDetails = async (req: Request, res: Response) => {
     });
   }
 };
-
 // /**=========================== get User Profile ============================== **/
 
-// const getUserProfile = async (req: Request, res: Response) => {
-//   try {
-//     const { id } = req.user!;
+const getUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user!;
 
-//     const userDetails = await UserInstance.findOne({
-//       where: { id, verified: true },
-//       attributes: { exclude: ["salt", "password"] },
-//     });
-//     if (!userDetails) {
-//       return res.status(400).json({
-//         Error: "You are not a valid user",
-//       });
-//     }
+    const userDetails = await UserInstance.findOne({
+      where: { id, verified: true },
+      attributes: { exclude: ["salt", "password"] },
+    });
+    if (!userDetails) {
+      return res.status(400).json({
+        Error: "You are not a valid user",
+      });
+    }
 
-//     return res.status(200).json({
-//       message: "user found",
-//       userDetails,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       Error: error,
-//       route: "/users/profile",
-//     });
-//   }
-// };
+    return res.status(200).json({
+      message: "user found",
+      userDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: error,
+      route: "/users/profile",
+    });
+  }
+};
 
 const getAllTutors = async (req: Request, res: Response) => {
   try {

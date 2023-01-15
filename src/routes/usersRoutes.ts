@@ -18,7 +18,7 @@ import {
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
-  gettUserProfile,
+  getUserProfile,
   editprofile,
   rateTutor,
   createAvailability,
@@ -43,7 +43,7 @@ router.get("/verify/:signature", verifyUser);
  */
 
 router.get("/", getAllUsers);
-// router.get("/profile", protect, getUserProfile);
+router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
 router.post("/tutors/:id/rate", protect, rateTutor);

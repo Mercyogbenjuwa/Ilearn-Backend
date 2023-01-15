@@ -54,25 +54,29 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
       if (!user) {
         throw new Error(`not Authorized`);
       }
+      //console.log()
+      //req.user = user
       req.user = user;
 
       next();
     } catch (error) {
+      //   console.log(error)
       res.status(401).send({ error, message: "you are not a valid user" });
 
       return;
+      //   throw new Error(`${error}`)
     }
   }
 };
-// const tutor = (req: Request, res: Response, next: NextFunction) => {
-//   if (req.user && req.user.userType === "Tutor") {
-//     next();
-//   } else {
-//     res.status(401);
-//     res.send({ message: "Not authorized; you are not an tutor" });
-//     return;
-//   }
-// };
+const tutor = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.userType === "Tutor") {
+    next();
+  } else {
+    res.status(401);
+    res.send({ message: "Not authorized; you are not an tutor" });
+    return;
+  }
+};
 
 const admin = (req: Request, res: Response, next: NextFunction) => {
   if (req.user && req.user.isAdmin) {
@@ -80,8 +84,11 @@ const admin = (req: Request, res: Response, next: NextFunction) => {
   } else {
     res.status(401);
     res.send({ message: "Not authorized; you are not an admin" });
-    return;
   }
+  console.log(req.user);
 };
+// const authorized = async (req: Request, res: Response, next: NextFunction) => {
+//   // if(req.user && req.user.id)
+// }
 
 export { protect, admin, tutor };
