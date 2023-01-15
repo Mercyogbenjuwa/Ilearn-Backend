@@ -47,9 +47,9 @@ export const mailSent = async (
 ) => {
   try {
     const response = await transport.sendMail({
-      from,
+      from: FromAdminMail,
       to,
-      subject,
+      subject: userSubject,
       html,
     });
     return response;
