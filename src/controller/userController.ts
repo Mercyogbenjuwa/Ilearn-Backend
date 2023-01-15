@@ -32,8 +32,9 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
-import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
+import { AreaOfInterestInstance, AreaOfInterestAttributes } from '../model/areaOfInterestModel';
+import { courseRequestInstance, courseRequestAttributes } from "../model/courseRequestsModel";
+import { TutorRatingInstance } from "../model/tutorRatingModel";
 
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -421,6 +422,7 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
         "description",
         "category",
       ],
+      include: ['tutor'],
       order: [["rating", "DESC"]],
       limit: 10,
     });
@@ -616,39 +618,39 @@ const Editprofile = async (
 ) => {
   //user is a record
   try {
-      const {id} = req.user;
-        const { image, name, email, areaOfInterest } = req.body;
-        const validateResult = editprofileSchema.validate(req.body, option);
-        if (validateResult.error) {
-          return res.status(400).json({
-            Error: validateResult.error.details[0].message,
-          });
-        } 
-        const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes; 
-        if (!user) { 
-          return res.status(400).json({
-            Error: "User does not exist",
-          });
-        }
-        const updateUser = await UserInstance.update(
-          {
-            image:req.file.path,
-            name,
-            email,
-            areaOfInterest,
-          },
-          {
-            where: {id: id}
-          }
-        )
+    const { id } = req.user;
+    const { image, name, email, areaOfInterest } = req.body;
+    const validateResult = editprofileSchema.validate(req.body, option);
+    if (validateResult.error) {
+      return res.status(400).json({
+        Error: validateResult.error.details[0].message,
+      });
+    }
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
+    if (!user) {
+      return res.status(400).json({
+        Error: "User does not exist",
+      });
+    }
+    const updateUser = await UserInstance.update(
+      {
+        image: req.file.path,
+        name,
+        email,
+        areaOfInterest,
+      },
+      {
+        where: { id: id }
+      }
+    )
 
-        return res.status(200).json({
-          message: "User updated successfully",
-          name: user.name,
-          areaOfInterest: user.areaOfInterest,
-          email: user.email,
-          image: user.image,
-        });
+    return res.status(200).json({
+      message: "User updated successfully",
+      name: user.name,
+      areaOfInterest: user.areaOfInterest,
+      email: user.email,
+      image: user.image,
+    });
   } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
@@ -658,19 +660,19 @@ const Editprofile = async (
 
 }
 
- const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
+const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
-    const {userId} = req.user;
-    const {id} = req.user;
+    const { userId } = req.user;
+    const { id } = req.user;
     const { courseName } = req.body;
     const courseId = uuidv4();
-    if(!courseName){
+    if (!courseName) {
       return res.status(400).json({
         Error: "courseName is required",
       });
     }
 
-    const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
 
     if (!user) {
       return res.status(400).json({
@@ -678,7 +680,7 @@ const Editprofile = async (
       });
     }
 
-    else if(user) {
+    else if (user) {
       const addAreaOfInterest = await AreaOfInterestInstance.create({
         id: uuidv4(),
         courseName,
@@ -694,7 +696,7 @@ const Editprofile = async (
       Error: "Not Authorized",
     });
 
-    
+
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -704,29 +706,29 @@ const Editprofile = async (
   }
 }
 
- const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try{
-      const {id} = req.user;
-      const courseId = req.params.id;
+const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
+  try {
+    const { id } = req.user;
+    const courseId = req.params.id;
 
-      const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
 
-      if(user) {
-        const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
-          where: {
-            id: courseId,
-          }
-        })
+    if (user) {
+      const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
+        where: {
+          id: courseId,
+        }
+      })
 
-        return res.status(200).json({
-          message: "Area of interest deleted successfully",
-          deleteAreaOfInterest,
-        });
-      }
-      return res.status(400).json({
-        Error: "Not Authorized",
+      return res.status(200).json({
+        message: "Area of interest deleted successfully",
+        deleteAreaOfInterest,
       });
-  }catch(err){
+    }
+    return res.status(400).json({
+      Error: "Not Authorized",
+    });
+  } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/delete-area-of-interest",
@@ -734,28 +736,28 @@ const Editprofile = async (
   }
 };
 
- const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try{
-      const {id} = req.user;
+const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
+  try {
+    const { id } = req.user;
 
-      const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
 
-      if(user) {
-        const getAreaOfInterest = await AreaOfInterestInstance.findAll({
-          where: {
-            userId: id,
-          }
-        })
+    if (user) {
+      const getAreaOfInterest = await AreaOfInterestInstance.findAll({
+        where: {
+          userId: id,
+        }
+      })
 
-        return res.status(200).json({
-          message: "Area of interest fetched successfully",
-          getAreaOfInterest,
-        });
-      }
-      return res.status(400).json({
-        Error: "Not Authorized",
+      return res.status(200).json({
+        message: "Area of interest fetched successfully",
+        getAreaOfInterest,
       });
-  }catch(err){
+    }
+    return res.status(400).json({
+      Error: "Not Authorized",
+    });
+  } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/get-area-of-interest",
@@ -763,6 +765,45 @@ const Editprofile = async (
   }
 }
 
+
+
+/**=========================== create tutor rating ============================== **/
+const rateTutor = async (req: Request, res: Response) => {
+  const { id } = req.user!
+  try {
+    const { description, ratingValue } = req.body;
+    // Check if the student and tutor exist in the database
+    const student = await UserInstance.findOne({ where: { id } });
+    if (!student) {
+      return res.status(404).send({ message: 'Student not found' });
+    }
+    const alreadyRated = await TutorRatingInstance.findOne({ where: { studentId: id, tutorId: req.params.id } });
+    if (alreadyRated) {
+      return res.status(401).send({ message: 'You cannot a tutor more than once' });
+    }
+    const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
+    if (!tutor) {
+      return res.status(404).send({ message: 'Tutor not found' });
+    }
+    const newRating = await TutorRatingInstance.create({
+      studentId: id,
+      description,
+      ratingValue,
+      tutorId: req.params.id,
+    });
+    res.json({
+      message: 'Rating added successfully',
+      data: {
+        ratingValue: newRating,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      mesage: 'Error adding rating',
+      error: error
+    });
+  }
+};
 
 export {
   Login,
@@ -781,5 +822,6 @@ export {
   Editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
-  getAreaOfInterest
+  getAreaOfInterest,
+  rateTutor
 };

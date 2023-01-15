@@ -16,9 +16,10 @@ import {
   getUserNotifications,
   readNotification,
   Editprofile,
-  addAreaOfInterest, 
+  addAreaOfInterest,
   deleteAreaOfInterest,
-  getAreaOfInterest
+  getAreaOfInterest,
+  rateTutor
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -49,6 +50,7 @@ router.put(
   updateTutorProfile
 );
 router.post("/forgot-password", forgotPassword);
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
@@ -58,7 +60,7 @@ router.get("/feature-tutors", tutorRating);
 router.get('/recommended/:category', protect, getRecommendedCourses)
 router.get('/notifications', protect, getUserNotifications)
 router.put('/notifications/:id', protect, readNotification)
-router.post("/edit-profile/:signature",upload.single('imageUrl'),protect, Editprofile);
+router.post("/edit-profile/:signature", upload.single('imageUrl'), protect, Editprofile);
 router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
