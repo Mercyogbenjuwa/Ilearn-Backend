@@ -31,10 +31,11 @@ import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 import { link } from "joi";
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
-import { Op } from "sequelize";
+import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import { AreaOfInterestInstance, AreaOfInterestAttributes} from '../model/areaOfInterestModel';
-import { courseRequestInstance, courseRequestAttributes} from "../model/courseRequestsModel";
+import { AreaOfInterestInstance, AreaOfInterestAttributes } from '../model/areaOfInterestModel';
+import { courseRequestInstance, courseRequestAttributes } from "../model/courseRequestsModel";
+import moment from "moment";
 
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -617,39 +618,39 @@ const Editprofile = async (
 ) => {
   //user is a record
   try {
-      const {id} = req.user;
-        const { image, name, email, areaOfInterest } = req.body;
-        const validateResult = editprofileSchema.validate(req.body, option);
-        if (validateResult.error) {
-          return res.status(400).json({
-            Error: validateResult.error.details[0].message,
-          });
-        } 
-        const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes; 
-        if (!user) { 
-          return res.status(400).json({
-            Error: "User does not exist",
-          });
-        }
-        const updateUser = await UserInstance.update(
-          {
-            image:req.file.path,
-            name,
-            email,
-            areaOfInterest,
-          },
-          {
-            where: {id: id}
-          }
-        )
+    const { id } = req.user;
+    const { image, name, email, areaOfInterest } = req.body;
+    const validateResult = editprofileSchema.validate(req.body, option);
+    if (validateResult.error) {
+      return res.status(400).json({
+        Error: validateResult.error.details[0].message,
+      });
+    }
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
+    if (!user) {
+      return res.status(400).json({
+        Error: "User does not exist",
+      });
+    }
+    const updateUser = await UserInstance.update(
+      {
+        image: req.file.path,
+        name,
+        email,
+        areaOfInterest,
+      },
+      {
+        where: { id: id }
+      }
+    )
 
-        return res.status(200).json({
-          message: "User updated successfully",
-          name: user.name,
-          areaOfInterest: user.areaOfInterest,
-          email: user.email,
-          image: user.image,
-        });
+    return res.status(200).json({
+      message: "User updated successfully",
+      name: user.name,
+      areaOfInterest: user.areaOfInterest,
+      email: user.email,
+      image: user.image,
+    });
   } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
@@ -659,19 +660,19 @@ const Editprofile = async (
 
 }
 
- const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
+const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
-    const {userId} = req.user;
-    const {id} = req.user;
+    const { userId } = req.user;
+    const { id } = req.user;
     const { courseName } = req.body;
     const courseId = uuidv4();
-    if(!courseName){
+    if (!courseName) {
       return res.status(400).json({
         Error: "courseName is required",
       });
     }
 
-    const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
 
     if (!user) {
       return res.status(400).json({
@@ -679,7 +680,7 @@ const Editprofile = async (
       });
     }
 
-    else if(user) {
+    else if (user) {
       const addAreaOfInterest = await AreaOfInterestInstance.create({
         id: uuidv4(),
         courseName,
@@ -695,7 +696,7 @@ const Editprofile = async (
       Error: "Not Authorized",
     });
 
-    
+
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -705,29 +706,29 @@ const Editprofile = async (
   }
 }
 
- const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try{
-      const {id} = req.user;
-      const courseId = req.params.id;
+const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
+  try {
+    const { id } = req.user;
+    const courseId = req.params.id;
 
-      const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
 
-      if(user) {
-        const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
-          where: {
-            id: courseId,
-          }
-        })
+    if (user) {
+      const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
+        where: {
+          id: courseId,
+        }
+      })
 
-        return res.status(200).json({
-          message: "Area of interest deleted successfully",
-          deleteAreaOfInterest,
-        });
-      }
-      return res.status(400).json({
-        Error: "Not Authorized",
+      return res.status(200).json({
+        message: "Area of interest deleted successfully",
+        deleteAreaOfInterest,
       });
-  }catch(err){
+    }
+    return res.status(400).json({
+      Error: "Not Authorized",
+    });
+  } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/delete-area-of-interest",
@@ -735,28 +736,28 @@ const Editprofile = async (
   }
 };
 
- const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try{
-      const {id} = req.user;
+const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
+  try {
+    const { id } = req.user;
 
-      const user = (await UserInstance.findOne({  where: { id: id } })) as unknown as UserAttributes;
+    const user = (await UserInstance.findOne({ where: { id: id } })) as unknown as UserAttributes;
 
-      if(user) {
-        const getAreaOfInterest = await AreaOfInterestInstance.findAll({
-          where: {
-            userId: id,
-          }
-        })
+    if (user) {
+      const getAreaOfInterest = await AreaOfInterestInstance.findAll({
+        where: {
+          userId: id,
+        }
+      })
 
-        return res.status(200).json({
-          message: "Area of interest fetched successfully",
-          getAreaOfInterest,
-        });
-      }
-      return res.status(400).json({
-        Error: "Not Authorized",
+      return res.status(200).json({
+        message: "Area of interest fetched successfully",
+        getAreaOfInterest,
       });
-  }catch(err){
+    }
+    return res.status(400).json({
+      Error: "Not Authorized",
+    });
+  } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/get-area-of-interest",
@@ -767,19 +768,32 @@ const Editprofile = async (
 const createAvailability = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
-    const { availableTime, availableDate } = req.body;
+    const { availableDate, availableTime } = req.body;
 
     // Verify that the user exists
     const user = await UserInstance.findOne({ where: { id: id } });
     if (!user) {
       return res.status(404).json({ Error: "User not found" });
     }
-
-    const dateToIso = new Date(availableDate).toISOString();
     
-    // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
-    const availabilityExists = await AvailabilityInstance.findOne({ where:{availableDate:dateToIso}})
+    // use moment.js to validate date
+    const date = moment(availableDate, 'YYYY-MM-DD');
+    if (!date.isValid()) {
+      return res.status(400).json({
+        Error: "Invalid date format, please use format YYYY-MM-DD",
+      });
+    }
+   
+    const dateToIso = date.toISOString();
 
+    // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
+    const availabilityExists = await AvailabilityInstance.findOne({
+      where: {
+        availableDate:
+          dateToIso
+      }
+    })
+   
     if (availabilityExists) {
       return res.status(400).json({
         Error: "You have already created availability for this date, please edit your availability instead",
@@ -787,26 +801,26 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({ availableTime, availableDate, userId: id });
+    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length });
 
-    // Return a success response
+    // Return a success response                                          
     return res.status(200).json({
       message: "Availability updated successfully",
       availability,
-      availableSlots: `${availability.availableTime.length} slots`,
     });
   } catch (err) {
     console.error(err);
+    if ((err as ValidationError).name === 'ValidationError') {
+      return res.status(400).json({
+        Error: (err as ValidationError).errors[0].message,
+      });
+    }
     return res.status(500).json({
       Error: "Internal server error",
-      route: "/users/tutur/availability",
+      route: "/users/tutors/availability",
     });
   }
 };
-
-
-
-
 
 export {
   Login,
@@ -828,3 +842,4 @@ export {
   getAreaOfInterest,
   createAvailability
 };
+
