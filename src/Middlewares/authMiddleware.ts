@@ -64,15 +64,15 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
     }
   }
 };
-const tutor = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user && req.user.userType === "Tutor") {
-    next();
-  } else {
-    res.status(401);
-    res.send({ message: "Not authorized; you are not an tutor" });
-    return;
-  }
-};
+// const tutor = (req: Request, res: Response, next: NextFunction) => {
+//   if (req.user && req.user.userType === "Tutor") {
+//     next();
+//   } else {
+//     res.status(401);
+//     res.send({ message: "Not authorized; you are not an tutor" });
+//     return;
+//   }
+// };
 
 const admin = (req: Request, res: Response, next: NextFunction) => {
   if (req.user && req.user.isAdmin) {
