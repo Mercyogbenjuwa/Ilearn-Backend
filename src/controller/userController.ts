@@ -23,31 +23,19 @@ import {
   validateReminder,
 } from "../utils/utility";
 import {
-  emailHtml,
   emailHtml2,
   emailHtml3,
-  GenerateOTP,
   mailSent,
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { link } from "joi";
+
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import {
-  TutorRatingAttribute,
-  TutorRatingInstance,
-} from "../model/tutorRatingModel";
-import {
-  AreaOfInterestInstance,
-  AreaOfInterestAttributes,
-} from "../model/areaOfInterestModel";
-import {
-  courseRequestInstance,
-  courseRequestAttributes,
-} from "../model/courseRequestsModel";
+import { TutorRatingInstance } from "../model/tutorRatingModel";
+import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {

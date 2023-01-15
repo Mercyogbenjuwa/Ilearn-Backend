@@ -15,20 +15,13 @@ import {
   verifyUser,
   getUserNotifications,
   readNotification,
-<<<<<<< HEAD
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
   getUserProfile,
   editprofile,
-=======
   rateTutor,
-  Editprofile,
-  addAreaOfInterest, 
-  deleteAreaOfInterest,
-  getAreaOfInterest,
-  createAvailability
->>>>>>> origin
+  createAvailability,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -50,15 +43,10 @@ router.get("/verify/:signature", verifyUser);
  */
 
 router.get("/", getAllUsers);
-<<<<<<< HEAD
 router.get("/profile", protect, getUserProfile);
-=======
-
-
->>>>>>> origin
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
-router.post("/tutors/:id/rate", protect, rateTutor)
+router.post("/tutors/:id/rate", protect, rateTutor);
 router.put(
   "/updatetutorprofile",
   protect,
