@@ -547,7 +547,6 @@ const getUserProfile = async (req: Request, res: Response) => {
       userDetails,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       Error: error,
       route: "/users/profile",
