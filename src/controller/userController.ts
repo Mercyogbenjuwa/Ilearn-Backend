@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+import "../utils/passport"
 import {
   AvailabilityInstance,
   AvailabilityAttributes,
@@ -36,6 +37,7 @@ import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
+import passport from "passport";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -392,6 +394,38 @@ const createReminder = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**=========================== Google Login ============================== **/
+
+passport.serializeUser((user, done) => {
+  done(null, user)
+})
+
+passport.deserializeUser(function(user: string, done){
+   return done(null, user);
+}) 
+
+const oauthGoogleLoginCallback = (req: Request, res: Response) => {
+  passport.authenticate("google", {
+    failureRedirect: "/failure",
+    successRedirect: "/",
+    session: false
+  }),
+  res.redirect("/dashboard")
+}
+
+const oauthGoogleLogin = (req: Request, res: Response) => {
+  passport.authenticate("google", {
+    scope: ["email"]
+  })
+}
+
+const failureMessage = (req:Request, res: Response) => {
+  res.send("Something went wrong")
+}
+
+
+
 
 /**=========================== Get all Reminders============================== **/
 
@@ -900,6 +934,9 @@ export {
   Register,
   getAllUsers,
   forgotPassword,
+  oauthGoogleLogin,
+  oauthGoogleLoginCallback,
+  failureMessage,
   resetPasswordGet,
   resetPasswordPost,
   createReminder,

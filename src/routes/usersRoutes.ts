@@ -22,6 +22,9 @@ import {
   editprofile,
   rateTutor,
   createAvailability,
+  oauthGoogleLoginCallback,
+  oauthGoogleLogin,
+  failureMessage,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -31,6 +34,10 @@ const router = express.Router();
 router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/verify/:signature", verifyUser);
+router.get("/auth/google/callback", oauthGoogleLoginCallback)
+router.get("/auth/google", oauthGoogleLogin)
+router.get("/failure", failureMessage)
+
 
 /**
  * @swagger
