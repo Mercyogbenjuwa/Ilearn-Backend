@@ -19,7 +19,8 @@ import {
   addAreaOfInterest, 
   deleteAreaOfInterest,
   getAreaOfInterest,
-  createAvailability
+  createAvailability,
+  getTutorAvailabilities
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -64,4 +65,5 @@ router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
+router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 export default router;
