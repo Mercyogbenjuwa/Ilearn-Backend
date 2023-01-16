@@ -32,10 +32,11 @@ import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
+import { StudentCoursesInstance } from "../model/users/students/studentCoursesModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -895,6 +896,30 @@ const createAvailability = async (req: Request, res: Response) => {
   }
 };
 
+const getStudentCourses = async (req: Request, res: Response) => {
+  const { id } = req.user;
+
+  const courses = await StudentCoursesInstance.findAll({
+    where: { studentId: id },
+    include: [
+      { model: courseInstance, as: "course", attributes: ["title", "image"] },
+      { model: UserInstance, as: "tutor", attributes: ["name"] },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  if (!courses) {
+    return res.status(404).json({
+      message: "you currently have no courses",
+    });
+  }
+  // courses.map((course) => course.progress);
+  res.status(200).json({
+    message: "course fetched successfully",
+    courses,
+  });
+};
+
 export {
   Login,
   Register,
@@ -916,4 +941,5 @@ export {
   getUserProfile,
   rateTutor,
   createAvailability,
+  getStudentCourses,
 };
