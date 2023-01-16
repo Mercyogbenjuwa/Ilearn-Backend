@@ -23,27 +23,19 @@ import {
   validateReminder,
 } from "../utils/utility";
 import {
-  emailHtml,
   emailHtml2,
   emailHtml3,
-  GenerateOTP,
   mailSent,
   mailSent2,
 } from "../utils/notification";
 import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
-import { link } from "joi";
+
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import {
-  AreaOfInterestInstance,
-  AreaOfInterestAttributes,
-} from "../model/areaOfInterestModel";
-import {
-  courseRequestInstance,
-  courseRequestAttributes,
-} from "../model/courseRequestsModel";
+import { TutorRatingInstance } from "../model/tutorRatingModel";
+import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -78,6 +70,11 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
+
+    const link = `Press <a href=${process.env.BASE_URL}/users/verify/> here </a> to verify your account. Thanks.`;
+    const html = emailHtml3(link);
+
+    await mailSent("Ilearn App", email, "Ilearn User Verification", html);
     if (User) {
       return res.status(400).json({
         message: "User already exist!",
@@ -108,7 +105,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         email: createdUser.email,
         verified: createdUser.verified,
       });
-      console.log(process.env.fromAdminMail, email, userSubject);
+      // console.log(process.env.fromAdminMail, email, userSubject);
 
       //send Email to user
       const link = `Press <a href=${process.env.BASE_URL}/users/verify/${signature}> here </a> to verify your account. Thanks.`;
@@ -235,6 +232,7 @@ const Login = async (req: Request, res: Response) => {
     res.status(500).json({
       Error: "Internal server Error",
       route: "/users/login",
+      err,
     });
   }
 };
@@ -430,6 +428,7 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
         "description",
         "category",
       ],
+      include: ["tutor"],
       order: [["rating", "DESC"]],
       limit: 10,
     });
@@ -526,12 +525,39 @@ export const getTutorDetails = async (req: Request, res: Response) => {
     });
   }
 };
+// /**=========================== get User Profile ============================== **/
+
+const getUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user!;
+
+    const userDetails = await UserInstance.findOne({
+      where: { id, verified: true },
+      attributes: { exclude: ["salt", "password"] },
+    });
+    if (!userDetails) {
+      return res.status(400).json({
+        Error: "You are not a valid user",
+      });
+    }
+
+    return res.status(200).json({
+      message: "user found",
+      userDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: error,
+      route: "/users/profile",
+    });
+  }
+};
 
 const getAllTutors = async (req: Request, res: Response) => {
   try {
     const findTutor = await UserInstance.findAll({
       where: { userType: "Tutor" },
-      attributes: ["id", "email", "name", "rating"],
+      attributes: ["id", "email", "name", "rating", "image"],
     });
     return res.status(200).json({
       TutorNumber: findTutor.length,
@@ -618,8 +644,79 @@ const readNotification = async (req: Request, res: Response) => {
   }
 };
 
+/**=========================== create tutor rating ============================== **/
+
+const rateTutor = async (req: Request, res: Response) => {
+  const { id } = req.user!;
+
+  try {
+    const { description, ratingValue } = req.body;
+
+    // check if the student and tutor exist in the database
+
+    const student = await UserInstance.findOne({ where: { id } });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor not found" });
+    }
+
+    // check to ensure only students can rate tutor
+    if (student && student.userType !== 'Student') {
+      return res.status(403).json({message: 'Only students can rate tutors'});
+    }
+
+    const alreadyRated = await TutorRatingInstance.findOne({
+      where: { studentId: id, tutorId: req.params.id },
+    });
+
+    if (alreadyRated) {
+      return res
+        .status(401)
+        .json({ message: "This tutor has been rated by you." });
+    }
+
+
+    const newTutorRatingDetails = await TutorRatingInstance.create({
+      studentId: id,
+      description,
+      ratingValue,
+      tutorId: req.params.id,
+    });
+
+    const tutorRatings = await TutorRatingInstance.findAll({
+      where: { tutorId: req.params.id },
+    });
+    const tutorTotalRating = tutorRatings.reduce((acc, curr) =>
+    {
+      return acc + curr.ratingValue;
+    }, 0);
+    const tutorAverageRating = tutorTotalRating / tutorRatings.length;
+
+    await courseInstance.update(
+      { rating: tutorAverageRating },
+      { where: { id: req.params.id } }
+    );
+
+    res.status(200).json({
+      message: "Rating added successfully",
+      data: {
+        ratingValue: newTutorRatingDetails,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      mesage: "error adding rating",
+      error,
+    });
+  }
+};
+
 /**===================================== Edit-profile===================================== **/
-const Editprofile = async (req: JwtPayload, res: Response) => {
+const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
   try {
     const { id } = req.user;
@@ -630,9 +727,9 @@ const Editprofile = async (req: JwtPayload, res: Response) => {
         Error: validateResult.error.details[0].message,
       });
     }
-    const user = (await UserInstance.findOne({
+    const user = await UserInstance.findOne({
       where: { id: id },
-    })) as unknown as UserAttributes;
+    });
     if (!user) {
       return res.status(400).json({
         Error: "User does not exist",
@@ -677,9 +774,9 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
       });
     }
 
-    const user = (await UserInstance.findOne({
+    const user = await UserInstance.findOne({
       where: { id: id },
-    })) as unknown as UserAttributes;
+    });
 
     if (!user) {
       return res.status(400).json({
@@ -709,14 +806,15 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   }
 };
 
-const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
+const deleteAreaOfInterest = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return "test";
     const { id } = req.user;
     const courseId = req.params.id;
 
-    const user = (await UserInstance.findOne({
+    const user = await UserInstance.findOne({
       where: { id: id },
-    })) as unknown as UserAttributes;
+    });
 
     if (user) {
       const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
@@ -741,13 +839,13 @@ const deleteAreaOfInterest = async (req: JwtPayload, res: Response) => {
   }
 };
 
-const getAreaOfInterest = async (req: JwtPayload, res: Response) => {
+const getAreaOfInterest = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
 
-    const user = (await UserInstance.findOne({
+    const user = await UserInstance.findOne({
       where: { id: id },
-    })) as unknown as UserAttributes;
+    });
 
     if (user) {
       const getAreaOfInterest = await AreaOfInterestInstance.findAll({
@@ -808,13 +906,13 @@ const createAvailability = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Availability updated successfully",
       availability,
-      availableSlots: availability.availableTime.length,
+      availableSlots: `${availability.availableTime.length} slots`,
     });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
       Error: "Internal server error",
-      route: "/users/availability",
+      route: "/users/tutur/availability",
     });
   }
 };
@@ -849,10 +947,12 @@ export {
   getAllTutors,
   getUserNotifications,
   readNotification,
-  Editprofile,
+  editprofile,
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
+  getTutorAvailabilities,
+  getUserProfile,
+  rateTutor,
   createAvailability,
-  getTutorAvailabilities
 };
