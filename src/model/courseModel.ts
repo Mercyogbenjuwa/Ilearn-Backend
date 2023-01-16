@@ -5,7 +5,6 @@ import { UserInstance } from "./userModel";
 export interface courseAttributes {
   [x: string]: any;
   id: string;
-  courseId: string;
   title: string;
   description: string;
   rating: number;
@@ -20,7 +19,6 @@ export class courseInstance extends Model<courseAttributes> {
   declare id: string;
   declare title: string;
   declare description: string;
-  //declare tutor_Name: string;
   declare tutorId: string;
   declare pricing: string;
   declare category: string;

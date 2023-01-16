@@ -936,7 +936,18 @@ const getStudentCourses = async (req: Request, res: Response) => {
 const createStudentCourse = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
-    const { courseId, tutorId, progress } = req.body;
+    const { courseId } = req.params;
+
+    const validCourse = await StudentCoursesInstance.findOne({
+      where: { id: courseId },
+    });
+
+    if (!validCourse) {
+      return res.status(404).json({
+        message: "This is not a valid course",
+      });
+    }
+
     const courseExist = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },
     });
@@ -948,8 +959,7 @@ const createStudentCourse = async (req: Request, res: Response) => {
     await StudentCoursesInstance.create({
       courseId,
       studentId: id,
-      tutorId,
-      progress,
+      tutorId: validCourse.tutorId,
     });
 
     res.status(201).json({
