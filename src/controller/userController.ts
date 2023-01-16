@@ -652,10 +652,21 @@ const rateTutor = async (req: Request, res: Response) => {
   try {
     const { description, ratingValue } = req.body;
 
-    // Check if the student and tutor exist in the database
+    // check if the student and tutor exist in the database
+
     const student = await UserInstance.findOne({ where: { id } });
     if (!student) {
-      return res.status(404).send({ message: "Student not found" });
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor not found" });
+    }
+
+    // check to ensure only students can rate tutor
+    if (student && student.userType !== 'Student') {
+      return res.status(403).json({message: 'Only students can rate tutors'});
     }
 
     const alreadyRated = await TutorRatingInstance.findOne({
@@ -665,34 +676,45 @@ const rateTutor = async (req: Request, res: Response) => {
     if (alreadyRated) {
       return res
         .status(401)
-        .send({ message: "You cannot a tutor more than once" });
+        .json({ message: "This tutor has been rated by you." });
     }
 
-    const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
-    if (!tutor) {
-      return res.status(404).send({ message: "Tutor not found" });
-    }
 
-    const newRating = await TutorRatingInstance.create({
+    const newTutorRatingDetails = await TutorRatingInstance.create({
       studentId: id,
       description,
       ratingValue,
       tutorId: req.params.id,
     });
 
-    res.json({
+    const tutorRatings = await TutorRatingInstance.findAll({
+      where: { tutorId: req.params.id },
+    });
+    const tutorTotalRating = tutorRatings.reduce((acc, curr) =>
+    {
+      return acc + curr.ratingValue;
+    }, 0);
+    const tutorAverageRating = tutorTotalRating / tutorRatings.length;
+
+    await courseInstance.update(
+      { rating: tutorAverageRating },
+      { where: { id: req.params.id } }
+    );
+
+    res.status(200).json({
       message: "Rating added successfully",
       data: {
-        ratingValue: newRating,
+        ratingValue: newTutorRatingDetails,
       },
     });
   } catch (error) {
     res.status(500).json({
-      mesage: "Error adding rating",
-      error: error,
+      mesage: "error adding rating",
+      error,
     });
   }
 };
+
 /**===================================== Edit-profile===================================== **/
 const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
