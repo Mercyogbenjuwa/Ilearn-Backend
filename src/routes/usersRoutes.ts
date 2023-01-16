@@ -23,6 +23,7 @@ import {
   editprofile,
   rateTutor,
   createAvailability,
+  getTutorCourses
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -75,4 +76,6 @@ router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
+router.get("/tutors/:id/course", protect, getTutorCourses);
+
 export default router;

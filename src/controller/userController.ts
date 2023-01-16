@@ -534,6 +534,7 @@ const getUserProfile = async (req: Request, res: Response) => {
     const userDetails = await UserInstance.findOne({
       where: { id, verified: true },
       attributes: { exclude: ["salt", "password"] },
+      include: ["courses"],
     });
     if (!userDetails) {
       return res.status(400).json({
@@ -546,9 +547,11 @@ const getUserProfile = async (req: Request, res: Response) => {
       userDetails,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       Error: error,
       route: "/users/profile",
+      error
     });
   }
 };
@@ -933,6 +936,25 @@ const getTutorAvailabilities = async (req: Request, res: Response) => {
   }
 };
 
+const getTutorCourses = async (req: Request, res: Response) => {
+  try {
+    const tutorId = req.params.id;
+
+    const courses = await courseInstance.findAll({
+      where: { userId: tutorId },
+    });
+    return res.status(200).json({ 
+      message: "Courses fetched successfully",
+      courses 
+    });
+  } catch (error) {
+      return res.status(500).json({
+        Error: "Internal server error",
+        error,
+      });
+  }
+}
+
 export {
   Login,
   Register,
@@ -955,4 +977,5 @@ export {
   getUserProfile,
   rateTutor,
   createAvailability,
+  getTutorCourses
 };
