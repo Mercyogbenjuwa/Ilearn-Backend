@@ -917,6 +917,22 @@ const createAvailability = async (req: Request, res: Response) => {
   }
 };
 
+const getTutorAvailabilities = async (req: Request, res: Response) => {
+  try {
+    const tutorId  = req.params.tutorId;
+
+    const availabilities = await AvailabilityInstance.findAll({
+      where: { userId: tutorId },
+    });
+    res.json({ availabilities });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred while fetching availabilities" });
+    throw error;
+  }
+};
+
 export {
   Login,
   Register,
@@ -935,6 +951,7 @@ export {
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
+  getTutorAvailabilities,
   getUserProfile,
   rateTutor,
   createAvailability,
