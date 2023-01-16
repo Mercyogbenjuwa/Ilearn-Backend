@@ -1,35 +1,29 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 
-export interface RatingAttributes {
+export interface CourseRatingAttributes {
   [x: string]: any;
   id: string;
-  title: string;
   description: string;
   courseId: string;
   studentId: string;
   ratingValue: number;
 }
 
-export class RatingInstance extends Model<RatingAttributes> {
+export class CourseRatingInstance extends Model<CourseRatingAttributes> {
   declare id: string;
-  declare title: string;
   declare description: string;
   declare courseId: string;
   declare studentId: string;
   declare ratingValue: number;
 }
 
-RatingInstance.init(
+CourseRatingInstance.init(
   {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      allowNull: false,
-    },
-    title: {
-      type: DataTypes.STRING,
       allowNull: false,
     },
 
@@ -47,7 +41,7 @@ RatingInstance.init(
       allowNull: false,
     },
 
-    value: {
+    ratingValue: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },
