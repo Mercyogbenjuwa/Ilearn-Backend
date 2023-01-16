@@ -34,12 +34,14 @@ StudentCoursesInstance.init(
       unique: false,
     },
     studentId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
+      unique: false,
     },
     tutorId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
+      unique: false,
     },
     progress: {
       type: DataTypes.INTEGER,

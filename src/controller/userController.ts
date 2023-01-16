@@ -897,27 +897,99 @@ const createAvailability = async (req: Request, res: Response) => {
 };
 
 const getStudentCourses = async (req: Request, res: Response) => {
-  const { id } = req.user;
+  try {
+    const { id }: { id: string } = req.user;
 
-  const courses = await StudentCoursesInstance.findAll({
-    where: { studentId: id },
-    include: [
-      { model: courseInstance, as: "course", attributes: ["title", "image"] },
-      { model: UserInstance, as: "tutor", attributes: ["name"] },
-    ],
-    order: [["createdAt", "DESC"]],
-  });
+    const courses = await StudentCoursesInstance.findAll({
+      where: { studentId: id },
+      include: [
+        {
+          model: courseInstance,
+          as: "course",
+          attributes: ["title", "course_image"],
+        },
+        { model: UserInstance, as: "tutor", attributes: ["name"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
 
-  if (!courses) {
-    return res.status(404).json({
-      message: "you currently have no courses",
+    if (!courses) {
+      return res.status(404).json({
+        message: "you currently have no courses",
+      });
+    }
+
+    res.status(200).json({
+      message: "course fetched successfully",
+      courses,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
     });
   }
-  // courses.map((course) => course.progress);
-  res.status(200).json({
-    message: "course fetched successfully",
-    courses,
-  });
+};
+
+// test student create course
+// looks like this should be created when a user make a payment.
+const createStudentCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { courseId, tutorId, progress } = req.body;
+    const courseExist = await StudentCoursesInstance.findOne({
+      where: { courseId, studentId: id },
+    });
+    if (courseExist) {
+      return res.status(404).json({
+        message: "you Already have this course",
+      });
+    }
+    await StudentCoursesInstance.create({
+      courseId,
+      studentId: id,
+      tutorId,
+      progress,
+    });
+
+    res.status(201).json({
+      message: "course added successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
+    });
+  }
+};
+const updateCourseProgress = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { progress, courseId } = req.body;
+    const course = await StudentCoursesInstance.findOne({
+      where: { courseId, studentId: id },
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        message: "This is not a valid course",
+      });
+    }
+
+    course.progress = progress;
+
+    await course.save();
+
+    res.status(200).json({
+      message: "progress updated successfully",
+      progress,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
+    });
+  }
 };
 
 export {
@@ -942,4 +1014,6 @@ export {
   rateTutor,
   createAvailability,
   getStudentCourses,
+  createStudentCourse,
+  updateCourseProgress,
 };
