@@ -624,11 +624,15 @@ const rateTutor = async (req: Request, res: Response) => {
     if (!student) {
       return res.status(404).send({ message: 'Student not found' });
     }
-
+    
+    if (student && student.userType !== 'Tutor') {
+      return res.status(403).send({ message: 'user not allowed to rate a tutor.'});
+    
+    }
     const alreadyRated = await TutorRatingInstance.findOne({where:{ studentId: id, tutorId: req.params.id}});
     
     if (alreadyRated) {
-      return res.status(401).send({ message: 'You cannot a tutor more than once' });
+      return res.status(401).send({ message: 'You cannot rate a tutor more than once' });
     }
     
     const tutor = await UserInstance.findOne({ where: { id: req.params.id } });
