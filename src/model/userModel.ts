@@ -126,7 +126,7 @@ UserInstance.hasMany(AreaOfInterestInstance, {
 
 UserInstance.hasMany(courseInstance, {
   foreignKey: "tutorId",
-  as: "course",
+  as: "courses",
 });
 UserInstance.hasMany(ReminderInstance, {
   foreignKey: "userId",

@@ -26,6 +26,7 @@ import {
   getStudentCourses,
   createStudentCourse,
   updateCourseProgress,
+  getTutorCourses,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -86,4 +87,6 @@ router
   .patch(protect, updateCourseProgress);
 
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
+router.get("/tutors/:id/course", protect, getTutorCourses);
+
 export default router;
