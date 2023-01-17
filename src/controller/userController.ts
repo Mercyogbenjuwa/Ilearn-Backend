@@ -956,7 +956,7 @@ const getStudentCourses = async (req: Request, res: Response) => {
 const createStudentCourse = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
-    const { courseId } = req.params;
+    const { courseId } = req.body;
 
     const validCourse = await StudentCoursesInstance.findOne({
       where: { id: courseId },
