@@ -18,6 +18,7 @@ import {
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
+  getTutorAvailabilities,
   getUserProfile,
   editprofile,
   rateTutor,
@@ -84,4 +85,5 @@ router
   .post(protect, createStudentCourse)
   .patch(protect, updateCourseProgress);
 
+router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 export default router;
