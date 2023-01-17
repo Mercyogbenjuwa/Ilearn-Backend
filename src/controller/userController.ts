@@ -717,6 +717,33 @@ const rateTutor = async (req: Request, res: Response) => {
   }
 };
 
+/**===================================== Tutor review details ===================================== **/
+
+const getTutorReviews = async (req: Request, res: Response) => {
+  const tutorId = req.params.id;
+  try {
+    const tutorReviewInfo = await TutorRatingInstance.findAll({
+      where: {
+        tutorId: tutorId
+      }
+    });
+    if(!tutorReviewInfo) {
+      return res.status(404).json({
+        message: "you have no review"
+      });
+    }
+    return res.status(200).json({
+      tutorReviewInfo
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "could not fetch tutor review details at this time",
+      error,
+    });
+  }
+};
+
+
 /**===================================== Edit-profile===================================== **/
 const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
@@ -976,5 +1003,6 @@ export {
   getUserProfile,
   rateTutor,
   createAvailability,
-  getTutorCourses
+  getTutorCourses,
+  getTutorReviews,
 };
