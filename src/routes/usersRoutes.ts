@@ -18,6 +18,7 @@ import {
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
+  getTutorAvailabilities,
   getUserProfile,
   editprofile,
   createAvailability,
@@ -73,4 +74,5 @@ router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
+router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 export default router;
