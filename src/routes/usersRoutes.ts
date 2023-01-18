@@ -18,13 +18,13 @@ import {
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
+  getTutorAvailabilities,
   getUserProfile,
   editprofile,
   rateTutor,
   createAvailability,
-  oauthGoogleLoginCallback,
-  oauthGoogleLogin,
-  failureMessage,
+  getTutorCourses,
+  getTutorReviews
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -51,6 +51,7 @@ router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
 router.post("/tutors/:id/rate", protect, rateTutor);
+router.get("/tutors/:id/review", getTutorReviews);
 router.put(
   "/updatetutorprofile",
   protect,
@@ -77,4 +78,7 @@ router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
+router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
+router.get("/tutors/:id/course", protect, getTutorCourses);
+
 export default router;
