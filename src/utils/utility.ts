@@ -6,6 +6,7 @@ import { APP_SECRET } from "../Config";
 
 export const registerSchema = Joi.object().keys({
   email: Joi.string().required(),
+  name: Joi.string().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
   userType: Joi.string().required(),
   areaOfInterest: Joi.string().required(),

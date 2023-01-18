@@ -53,7 +53,7 @@ const getAllUsers = async (req: Request, res: Response) => {
 /**===================================== Register User ===================================== **/
 const Register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, confirm_password, areaOfInterest, userType } =
+    const { email, password, name, areaOfInterest, userType } =
       req.body;
     const uuiduser = uuidv4();
     //console.log(req.body)
@@ -71,10 +71,8 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
 
-    const link = `Press <a href=${process.env.BASE_URL}/users/verify/> here </a> to verify your account. Thanks.`;
-    const html = emailHtml3(link);
 
-    await mailSent("Ilearn App", email, "Ilearn User Verification", html);
+    // await mailSent("Ilearn App", email, "Ilearn User Verification", html);
     if (User) {
       return res.status(400).json({
         message: "User already exist!",
@@ -88,7 +86,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         id: uuiduser,
         email,
         password: userPassword,
-        name: "",
+        name,
         areaOfInterest,
         userType,
         verified: false,
@@ -136,6 +134,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 /**==================== Verify Users ========================**/
 export const verifyUser = async (req: JwtPayload, res: Response) => {
   try {
+    
     const token = req.params.signature;
     // Verify the signature
     const { id, email, verified } = await verifySignature(token);
