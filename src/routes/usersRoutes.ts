@@ -34,9 +34,6 @@ const router = express.Router();
 router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/verify/:signature", verifyUser);
-router.get("/auth/google/callback", oauthGoogleLoginCallback)
-router.get("/auth/google", oauthGoogleLogin)
-router.get("/failure", failureMessage)
 
 
 /**

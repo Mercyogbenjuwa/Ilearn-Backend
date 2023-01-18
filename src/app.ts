@@ -13,7 +13,8 @@ import {
   notFound,
 } from "./Middlewares/errorMiddleware";
 import passport from "passport";
-import session from "express-session"
+import session from "express-session";
+import "./utils/passport"
 
 
 dotenv.config();

@@ -1,13 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
 import "../utils/passport"
+import { Strategy as GoogleStrategy, StrategyOptionsWithRequest, VerifyCallback } from "passport-google-oauth20";
 import {
   AvailabilityInstance,
   AvailabilityAttributes,
 } from "../model/availabilityModel";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { decode, JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
+const adminData = require("../Config/firebase")
+import "../utils/passport"
 import {
   forgotPasswordSchema,
   GeneratePassword,
@@ -33,11 +36,13 @@ import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
-import { Op } from "sequelize";
+import { FindOrCreateOptions, Op, Optional } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
 import passport from "passport";
+import { GoogleAttributes, GoogleUserInstance } from "../model/googleUserModel";
+import { admin } from "../Middlewares/authMiddleware";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -395,34 +400,40 @@ const createReminder = async (req: Request, res: Response) => {
   }
 };
 
-/**=========================== Google Login ============================== **/
+// /**=========================== Google Login ============================== **/
 
-passport.serializeUser((user, done) => {
-  done(null, user)
-})
+const googleLogin = async (req:Request, res:Response) => {
+  if(!req.headers.authorization){
+    return res.status(500).send({ message: "Invalid token"})
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  try {
+    const decodeValue = await adminData.auth().verifyIdToken(token);
+    if(!decodeValue){
+      return res.status(505).json({ message: "Unauthorized"})
+    }else{
+      const userExists = await UserInstance.findOne({where: {user_id: decodeValue.user_id}})
+      if(!userExists){
+        const newUser = await UserInstance.create({
+          
+            name: decodeValue?.name,
+            email: decodeValue?.email,
+            imageUrl: decodeValue?.picture,
+            user_id: decodeValue.user_id,
+            email_verified: decodeValue?.email_verified,
+            userType: "Student",
 
-passport.deserializeUser(function(user: string, done){
-   return done(null, user);
-}) 
-
-const oauthGoogleLoginCallback = (req: Request, res: Response) => {
-  passport.authenticate("google", {
-    failureRedirect: "/failure",
-    successRedirect: "/",
-    session: false
-  }),
-  res.redirect("/dashboard")
+        
+        })
+      }else{
+        // updateNewUserData(decodeValue, req, res)
+      }
+    }
+  } catch (error) {
+    res.status(500).json({ message: error }); 
+  }
 }
 
-const oauthGoogleLogin = (req: Request, res: Response) => {
-  passport.authenticate("google", {
-    scope: ["email"]
-  })
-}
-
-const failureMessage = (req:Request, res: Response) => {
-  res.send("Something went wrong")
-}
 
 
 

@@ -20,6 +20,7 @@ export interface UserAttributes {
   salt: string;
   image: string;
   rating: number;
+  
 }
 
 export class UserInstance extends Model<UserAttributes> {
