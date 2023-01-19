@@ -21,12 +21,13 @@ import {
   getTutorAvailabilities,
   getUserProfile,
   editprofile,
-  rateTutor,
   createAvailability,
   getStudentCourses,
   createStudentCourse,
   updateCourseProgress,
   getTutorCourses,
+  rateTutor,
+  getTutorReviews,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -52,6 +53,7 @@ router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
 router.post("/tutors/:id/rate", protect, rateTutor);
+router.get("/tutors/:id/review", getTutorReviews);
 router.put(
   "/updatetutorprofile",
   protect,

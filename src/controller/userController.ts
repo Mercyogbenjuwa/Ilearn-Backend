@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import {
-  AvailabilityInstance,
-  AvailabilityAttributes,
-} from "../model/availabilityModel";
+import { AvailabilityInstance } from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -32,8 +29,10 @@ import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
-import { Op, where } from "sequelize";
+import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
+
+import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
 import { StudentCoursesInstance } from "../model/users/students/studentCoursesModel";
@@ -54,8 +53,7 @@ const getAllUsers = async (req: Request, res: Response) => {
 /**===================================== Register User ===================================== **/
 const Register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, confirm_password, areaOfInterest, userType } =
-      req.body;
+    const { email, password, name, areaOfInterest, userType } = req.body;
     const uuiduser = uuidv4();
     //console.log(req.body)
     const validateResult = registerSchema.validate(req.body, option);
@@ -72,10 +70,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
 
-    const link = `Press <a href=${process.env.BASE_URL}/users/verify/> here </a> to verify your account. Thanks.`;
-    const html = emailHtml3(link);
-
-    await mailSent("Ilearn App", email, "Ilearn User Verification", html);
+    // await mailSent("Ilearn App", email, "Ilearn User Verification", html);
     if (User) {
       return res.status(400).json({
         message: "User already exist!",
@@ -89,7 +84,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
         id: uuiduser,
         email,
         password: userPassword,
-        name: "",
+        name,
         areaOfInterest,
         userType,
         verified: false,
@@ -716,6 +711,32 @@ const rateTutor = async (req: Request, res: Response) => {
   }
 };
 
+/**===================================== Tutor review details ===================================== **/
+
+const getTutorReviews = async (req: Request, res: Response) => {
+  const tutorId = req.params.id;
+  try {
+    const tutorReviewInfo = await TutorRatingInstance.findAll({
+      where: {
+        tutorId: tutorId,
+      },
+    });
+    if (!tutorReviewInfo) {
+      return res.status(404).json({
+        message: "you have no review",
+      });
+    }
+    return res.status(200).json({
+      tutorReviewInfo,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "could not fetch tutor review details at this time",
+      error,
+    });
+  }
+};
+
 /**===================================== Edit-profile===================================== **/
 const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
@@ -874,7 +895,7 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
 const createAvailability = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
-    const { availableTime, availableDate } = req.body;
+    const { availableDate, availableTime } = req.body;
 
     // Verify that the user exists
     const user = await UserInstance.findOne({ where: { id: id } });
@@ -882,11 +903,21 @@ const createAvailability = async (req: Request, res: Response) => {
       return res.status(404).json({ Error: "User not found" });
     }
 
-    const dateToIso = new Date(availableDate).toISOString();
+    // use moment.js to validate date
+    const date = moment(availableDate, "YYYY-MM-DD");
+    if (!date.isValid()) {
+      return res.status(400).json({
+        Error: "Invalid date format, please use format YYYY-MM-DD",
+      });
+    }
+
+    const dateToIso = date.toISOString();
 
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
-      where: { availableDate: dateToIso },
+      where: {
+        availableDate: dateToIso,
+      },
     });
 
     if (availabilityExists) {
@@ -899,21 +930,26 @@ const createAvailability = async (req: Request, res: Response) => {
     // create the user's availability
     const availability = await AvailabilityInstance.create({
       availableTime,
-      availableDate,
+      availableDate: dateToIso,
       userId: id,
+      availableSlots: availableTime.length,
     });
 
     // Return a success response
     return res.status(200).json({
       message: "Availability updated successfully",
       availability,
-      availableSlots: `${availability.availableTime.length} slots`,
     });
   } catch (err) {
     console.error(err);
+    if ((err as ValidationError).name === "ValidationError") {
+      return res.status(400).json({
+        Error: (err as ValidationError).errors[0].message,
+      });
+    }
     return res.status(500).json({
       Error: "Internal server error",
-      route: "/users/tutur/availability",
+      route: "/users/tutors/availability",
     });
   }
 };
@@ -1111,4 +1147,5 @@ export {
   createStudentCourse,
   updateCourseProgress,
   getTutorCourses,
+  getTutorReviews,
 };
