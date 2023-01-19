@@ -10,6 +10,8 @@ export interface StudentCoursesAttributes {
   studentId: string;
   tutorId: string;
   progress: number;
+  currentPage: number;
+  totalPages: number;
 }
 
 export class StudentCoursesInstance extends Model<StudentCoursesAttributes> {
@@ -18,6 +20,8 @@ export class StudentCoursesInstance extends Model<StudentCoursesAttributes> {
   declare studentId: string;
   declare tutorId: string;
   declare progress: number;
+  declare currentPage: number;
+  declare totalPages: number;
 }
 
 StudentCoursesInstance.init(
@@ -52,8 +56,16 @@ StudentCoursesInstance.init(
         max: 100,
       },
     },
+    currentPage: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+    },
+    totalPages: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
-
   {
     sequelize: db,
     tableName: "student_courses",

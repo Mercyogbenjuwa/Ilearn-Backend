@@ -46,7 +46,7 @@ courseInstance.init(
     },
     course_image: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     // tutor_Name: {
     //   type: DataTypes.UUID,
@@ -66,11 +66,12 @@ courseInstance.init(
     },
     course_material: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     rating: {
       type: DataTypes.FLOAT,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: 0,
     },
   },
 
