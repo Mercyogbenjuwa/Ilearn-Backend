@@ -1055,21 +1055,11 @@ const updateCourseProgress = async (req: Request, res: Response) => {
     }
     const progress = Math.floor((currentPage / totalPages) * 100);
 
-    console.log(
-      currentPage,
-      "progress",
-      progress,
-      "existing",
-      existingPage,
-      totalPages
-    );
-
     if (currentPage <= course.currentPage) {
       return res.status(200).json({
         message: "progress does not need an update",
       });
     }
-    console.log(currentPage, "progress", progress);
 
     course.currentPage = currentPage;
     course.progress = progress;
