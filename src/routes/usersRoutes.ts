@@ -24,7 +24,8 @@ import {
   createAvailability,
   getTutorCourses,
   rateTutor,
-  getTutorReviews
+  getTutorReviews,
+  bookTutor
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -79,5 +80,6 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 router.get("/tutors/:id/course", protect, getTutorCourses);
+router.post('/scheduled-time/:tutorId/:studentId', bookTutor)
 
 export default router;

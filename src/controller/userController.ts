@@ -35,6 +35,7 @@ import { NotificationInstance } from "../model/notificationModel";
 import { AreaOfInterestInstance } from '../model/areaOfInterestModel';
 import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
+import { tutorRequestInstance } from "../model/tutorRequestModel";
 
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -996,6 +997,67 @@ const getTutorCourses = async (req: Request, res: Response) => {
   }
 }
 
+/**=====================================Scheduled Time for student===================================== **/
+
+/*const scheduledTimeForStudent = async (req:JwtPayload, res:Response) => {
+  try {
+   const { studentId, tutorId } = req.params
+   const {selectedTime} = req.body
+   const tutor = await UserInstance.findOne({ where: { id: tutorId } });
+   if (tutor == null) {
+     return res.status(400).send('cannot find such tutor')
+     //const studentScheduledtime = await UserInstance.findOne({where:{id: studentId}})
+     //if(studentScheduledtime){
+       //const ScheduledTime = await UserInstance.create()
+     }
+     const student = await UserInstance.findOne({where: {id: studentId}})
+     if (student == null){
+       return res.status(400).send('cannot find such user')
+     }
+     return res.send(`your lesson is scheduled at ${selectedTime}`)
+   } catch (error) {
+     throw new Error
+  }
+}*/
+
+const bookTutor = async (req:Request, res:Response) => {
+  try {
+    const {pickedDate, pickedTime, tutorId} = req.body
+    const { id } = req.user
+    // use moment.js to validate date
+    const date = moment(pickedDate, 'YYYY-MM-DD');
+    if (!date.isValid()) {
+      return res.status(400).json({
+        Error: "Invalid date format, please use format YYYY-MM-DD",
+      });
+    }
+    const dateToIso = date.toISOString();
+
+    const tutorAvailability = await AvailabilityInstance.findOne({where: {userId:tutorId, availableDate:dateToIso}})
+    if(!tutorAvailability){
+      throw new Error
+    }
+    if(!tutorAvailability.availableTime.includes(pickedTime)){
+      return res.status(404).json({message:'time is not available'})
+    }
+    const bookSession = await tutorRequestInstance.create({
+      pickedDate,
+      pickedTime,
+      tutorId,
+      studentId:id
+    })
+ const availableTime =   tutorAvailability.availableTime.filter(time=>time !== pickedTime)
+
+    tutorAvailability.availableTime = availableTime
+    tutorAvailability.save()
+    res.status(201).send('session booked successfully')
+
+
+  } catch (err) {
+    throw new Error
+  }
+}
+
 export {
   Login,
   Register,
@@ -1020,4 +1082,5 @@ export {
   createAvailability,
   getTutorCourses,
   getTutorReviews,
+  bookTutor
 };
