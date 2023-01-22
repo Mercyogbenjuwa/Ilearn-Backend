@@ -21,9 +21,9 @@ import {
   getTutorAvailabilities,
   getUserProfile,
   editprofile,
-  rateTutor,
   createAvailability,
   getTutorCourses,
+  rateTutor,
   getTutorReviews
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";

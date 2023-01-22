@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
 import {
-  AvailabilityInstance,
-  AvailabilityAttributes,
-} from "../model/availabilityModel";
+  AvailabilityInstance} from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -32,10 +30,12 @@ import { APP_SECRET, FromAdminMail, userSubject } from "../Config";
 
 import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
-import { Op } from "sequelize";
+import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
+import { AreaOfInterestInstance } from '../model/areaOfInterestModel';
+import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
-import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
+
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -771,9 +771,9 @@ const editprofile = async (req: JwtPayload, res: Response) => {
         areaOfInterest,
       },
       {
-        where: { id: id },
+        where: { id: id }
       }
-    );
+    )
 
     return res.status(200).json({
       message: "User updated successfully",
@@ -789,6 +789,8 @@ const editprofile = async (req: JwtPayload, res: Response) => {
     });
   }
 };
+
+
 
 const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
@@ -848,8 +850,8 @@ const deleteAreaOfInterest = async (req: Request, res: Response) => {
       const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
         where: {
           id: courseId,
-        },
-      });
+        }
+      })
 
       return res.status(200).json({
         message: "Area of interest deleted successfully",
@@ -879,8 +881,8 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
       const getAreaOfInterest = await AreaOfInterestInstance.findAll({
         where: {
           userId: id,
-        },
-      });
+        }
+      })
 
       return res.status(200).json({
         message: "Area of interest fetched successfully",
@@ -898,24 +900,38 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
   }
 };
 
+
+
 const createAvailability = async (req: Request, res: Response) => {
+  
   try {
     const { id } = req.user;
-    const { availableTime, availableDate } = req.body;
+    const { availableDate, availableTime } = req.body;
 
     // Verify that the user exists
     const user = await UserInstance.findOne({ where: { id: id } });
     if (!user) {
       return res.status(404).json({ Error: "User not found" });
     }
-
-    const dateToIso = new Date(availableDate).toISOString();
+    
+    // use moment.js to validate date
+    const date = moment(availableDate, 'YYYY-MM-DD');
+    if (!date.isValid()) {
+      return res.status(400).json({
+        Error: "Invalid date format, please use format YYYY-MM-DD",
+      });
+    }
+   
+    const dateToIso = date.toISOString();
 
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
-      where: { availableDate: dateToIso },
-    });
-
+      where: {
+        availableDate:
+          dateToIso
+      }
+    })
+   
     if (availabilityExists) {
       return res.status(400).json({
         Error:
@@ -924,23 +940,23 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({
-      availableTime,
-      availableDate,
-      userId: id,
-    });
+    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length });
 
-    // Return a success response
+    // Return a success response                                          
     return res.status(200).json({
       message: "Availability updated successfully",
       availability,
-      availableSlots: `${availability.availableTime.length} slots`,
     });
   } catch (err) {
     console.error(err);
+    if ((err as ValidationError).name === 'ValidationError') {
+      return res.status(400).json({
+        Error: (err as ValidationError).errors[0].message,
+      });
+    }
     return res.status(500).json({
       Error: "Internal server error",
-      route: "/users/tutur/availability",
+      route: "/users/tutors/availability",
     });
   }
 };
