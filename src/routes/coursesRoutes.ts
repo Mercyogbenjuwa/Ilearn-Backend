@@ -25,9 +25,9 @@ router.post("/addCourse", addCourse)
 router.post("/requestCourse/:id", protect, courseRequest)
 
 /**
- * @swagger
+ * @openapi
  * paths:
- *   /rate-courses/{id}:
+ *   /-courses/{id}:
  *   post:
  *     summary: Rate a course
  *     parameters:

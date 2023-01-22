@@ -1,6 +1,8 @@
-import { Request, Response, Application } from "express";
+import Express, { Request, Response, Application } from "express";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+
+
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -35,7 +37,7 @@ const options: swaggerJSDoc.Options = {
     basePath: "/",
   },
 
-  apis: ["./src/routes/*.ts"],
+  apis: ["./src/routes/*.ts", "./src/utils/*.ts"],
 };
 
 const swaggerSpec = swaggerJSDoc(options);

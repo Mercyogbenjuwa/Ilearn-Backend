@@ -24,21 +24,46 @@ import {
   createAvailability,
   getTutorCourses,
   rateTutor,
-  getTutorReviews
+  getTutorReviews,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
 
 const router = express.Router();
+/**
+ * @openapi
+ * '/users/signup':
+ *  post:
+ *   tags: 
+ *     - user
+ *  summary: Register a user
+ *  requestBody: 
+ *    required: true
+ *    contents: 
+ *      application/json:
+ *         schema:
+ *           $ref: '#/components/schemas/CreateUsers'
+ *    responses:
+ *       201:
+ *         description: you have sucessfully registered a user, check your email
+ *         content: 
+ *           application/json:
+ *              schema:
+ *       500:
+ *         description: internal server error
+ * 
+ */
 
 router.post("/signup", Register);
 router.post("/login", Login);
 router.get("/verify/:signature", verifyUser);
 
 /**
- * @swagger
+ * @openapi
  * /users:
  *   get:
+ *    tags: 
+ *      - user 
  *     description: get all users!
  *     responses:
  *       200:

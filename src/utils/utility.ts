@@ -4,6 +4,37 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthPayload } from "../interface/auth.dto";
 import { APP_SECRET } from "../Config";
 
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateUser:
+ *      type: object
+ *      required: 
+ *        - email
+ *        - name
+ *        - password
+ *        - userType
+ *        - areaOfInterest
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *         name:
+ *           type: string
+ *           default: john doe
+ *         password:
+ *           type: string
+ *           default: stringpassword123
+ *         userType:
+ *           type: string
+ *           default: 
+ *         areaOfInterest:
+ *           type: string
+ *           default: mathematics
+ */
+
 export const registerSchema = Joi.object().keys({
   email: Joi.string().required(),
   name: Joi.string().required(),
