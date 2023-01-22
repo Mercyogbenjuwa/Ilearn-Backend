@@ -34,21 +34,22 @@ const router = express.Router();
  * @openapi
  * '/users/signup':
  *  post:
- *   tags: 
- *     - user
- *  summary: Register a user
- *  requestBody: 
- *    required: true
- *    contents: 
- *      application/json:
- *         schema:
- *           $ref: '#/components/schemas/CreateUsers'
+ *    tags: 
+ *      - user
+ *    summary: Register a user
+ *    requestBody: 
+ *      required: true
+ *      content: 
+ *        application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateUserInput'
  *    responses:
  *       201:
  *         description: you have sucessfully registered a user, check your email
  *         content: 
  *           application/json:
  *              schema:
+ *                 $ref: '#/components/schemas/CreateUserResponse'
  *       500:
  *         description: internal server error
  * 
@@ -62,12 +63,10 @@ router.get("/verify/:signature", verifyUser);
  * @openapi
  * /users:
  *   get:
- *    tags: 
- *      - user 
- *     description: get all users!
- *     responses:
- *       200:
- *         description: Returns an array of users.
+ *      description: get all users!
+ *      responses:
+ *        200:
+ *          description: Returns an array of users.
  */
 
 router.get("/", getAllUsers);

@@ -9,9 +9,9 @@ import { APP_SECRET } from "../Config";
  * @openapi
  * components:
  *  schemas:
- *    CreateUser:
- *      type: object
- *      required: 
+ *    CreateUserInput:
+ *       type:  object
+ *       required: 
  *        - email
  *        - name
  *        - password
@@ -29,10 +29,23 @@ import { APP_SECRET } from "../Config";
  *           default: stringpassword123
  *         userType:
  *           type: string
- *           default: 
+ *           default: Student
  *         areaOfInterest:
  *           type: string
  *           default: mathematics
+ *    CreateUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
+ *         password:
+ *           type: string
+ *         userType:
+ *           type: string
+ *         areaOfInterest:
+ *           type: string
  */
 
 export const registerSchema = Joi.object().keys({

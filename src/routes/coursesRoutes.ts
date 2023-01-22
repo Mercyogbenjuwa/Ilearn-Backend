@@ -7,7 +7,29 @@ import { upload } from "../utils/multer";
 const router = express.Router();
 
 //router.post("/addCourse", protect, addCourse);
+/**
+ * @openapi
+ * /courses:
+ *  get:
+ *      description: get all courses
+ *      responses:  
+ *        200:
+ *          description: you have sucessfully retrieved all courses
+ */
 router.get("/",getAllCourse);
+
+/**
+ * @openapi
+ * /get-course/{:id}
+ *  get:
+ *  summary: Get a single course
+ *  parameters:
+ *  - name: id
+ *  in: path
+ *  description: the Id of the course
+ *  required: true
+ * 
+ */
 router.get("/get-course/:id", protect, getCourseById)
 router.get("/getStudentHistory", protect, getStudentHistory);
 router.post(
