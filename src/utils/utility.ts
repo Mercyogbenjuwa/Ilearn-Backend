@@ -47,7 +47,6 @@ import { APP_SECRET } from "../Config";
  *         areaOfInterest:
  *           type: string
  */
-
 export const registerSchema = Joi.object().keys({
   email: Joi.string().required(),
   name: Joi.string().required(),
@@ -67,6 +66,32 @@ export const editprofileSchema = Joi.object().keys({
   areaOfInterest: Joi.string(),
 });
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    LoginUserInput:
+ *       type:  object
+ *       required: 
+ *        - email
+ *        - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *         password:
+ *           type: string
+ *           default: stringpassword123
+ *    LoginUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *         signature:
+ *           type: string
+ */
 export const loginSchema = Joi.object().keys({
   email: Joi.string().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),

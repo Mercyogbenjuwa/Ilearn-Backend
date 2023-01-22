@@ -1,5 +1,15 @@
 import express from "express";
-import {  createCourse, deleteCourse, getAllCourse, updateCourse, addCourse, courseRequest, requestCourseById, getCourseById, rateCourses} from "../controller/courseController";
+import {
+  createCourse,
+  deleteCourse,
+  getAllCourse,
+  updateCourse,
+  addCourse,
+  courseRequest,
+  requestCourseById,
+  getCourseById,
+  rateCourses,
+} from "../controller/courseController";
 import { getAllUsers, Login, Register } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { getStudentHistory } from "../controller/courseController";
@@ -7,30 +17,49 @@ import { upload } from "../utils/multer";
 const router = express.Router();
 
 //router.post("/addCourse", protect, addCourse);
+
 /**
  * @openapi
  * /courses:
  *  get:
  *      description: get all courses
- *      responses:  
+ *      responses:
  *        200:
  *          description: you have sucessfully retrieved all courses
  */
-router.get("/",getAllCourse);
+router.get("/", getAllCourse);
 
 /**
  * @openapi
- * /get-course/{:id}
+ * /courses/get-course/{id}:
  *  get:
- *  summary: Get a single course
- *  parameters:
- *  - name: id
- *  in: path
- *  description: the Id of the course
- *  required: true
- * 
+ *     security:
+ *      - bearer: []
+ *     description: Get a single course
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *        200:
+ *          description: you have sucessfully retrieved a course
+ *        404:
+ *          description: course not found
  */
-router.get("/get-course/:id", protect, getCourseById)
+router.get("/get-course/:id", protect, getCourseById);
+
+/**
+ * @openapi
+ * /courses/getStudentHistory:
+ *  get:
+ *      description: get student course history
+ *      security:
+ *        - bearer: []
+ *      responses:
+ *        200:
+ *          description: you have sucessfully retrieved all courses
+ */
 router.get("/getStudentHistory", protect, getStudentHistory);
 router.post(
   "/createCourse",
@@ -43,8 +72,8 @@ router.post(
 );
 router.patch("/updateCourse/:id", protect, updateCourse);
 router.delete("/deleteCourse/:id", protect, deleteCourse);
-router.post("/addCourse", addCourse)
-router.post("/requestCourse/:id", protect, courseRequest)
+router.post("/addCourse", addCourse);
+router.post("/requestCourse/:id", protect, courseRequest);
 
 /**
  * @openapi

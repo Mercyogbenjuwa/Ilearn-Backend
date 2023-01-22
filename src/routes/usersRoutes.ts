@@ -54,9 +54,35 @@ const router = express.Router();
  *         description: internal server error
  * 
  */
-
 router.post("/signup", Register);
+
+/**
+ * @openapi
+ * '/users/login':
+ *  post:
+ *    tags: 
+ *      - user
+ *    summary: Login a user
+ *    requestBody: 
+ *      required: true
+ *      content: 
+ *        application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginUserInput'
+ *    responses:
+ *       201:
+ *         description: you have sucessfully logged in
+ *         content: 
+ *           application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/LoginUserResponse'
+ *       500:
+ *         description: internal server error
+ * 
+ */
 router.post("/login", Login);
+
+
 router.get("/verify/:signature", verifyUser);
 
 /**
@@ -68,7 +94,6 @@ router.get("/verify/:signature", verifyUser);
  *        200:
  *          description: Returns an array of users.
  */
-
 router.get("/", getAllUsers);
 router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
