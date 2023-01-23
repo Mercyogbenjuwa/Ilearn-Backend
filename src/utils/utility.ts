@@ -60,6 +60,36 @@ export const registerSchema = Joi.object().keys({
   //   .messages({ "any.only": "{{#label}} does not match" }),
 });
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    EdithUserProfile:
+ *       type:  object
+ *       required: 
+ *        - email
+ *        - name
+ *        - areaOfInterest
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *         name:
+ *           type: string
+ *           default: John Doe
+ *         areaOfInterest:
+ *           type: string
+ *           default: mathematics
+ *    LoginUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
+ *         areaOfInterst:
+ *           type: string
+ */
 export const editprofileSchema = Joi.object().keys({
   email: Joi.string(),
   name: Joi.string(),
@@ -134,7 +164,27 @@ export const validatePassword = async (
   return (await GeneratePassword(enteredPassword, salt)) === savedPassword;
 };
 
-//schema for reset Password
+//======schema for reset Password=============//
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    ForgetPasswordInput:
+ *       type:  object
+ *       required: 
+ *        - email
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *    LoginUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         signature:
+ *           type: string
+ */
 export const forgotPasswordSchema = Joi.object().keys({
   email: Joi.string().required(),
 });
@@ -190,8 +240,62 @@ export const ratingCourseSchema = Joi.object().keys({
   ratingValue: Joi.number().required(),
 });
 
-//schema for create_course
+//========schema for create_course===========
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CourseInput:
+ *       type:  object
+ *       required: 
+ *        - title
+ *        - description
+ *        - price
+ *        - category
+ *        - image
+ *        - video
+ *        - file
+ *       properties:
+ *         title:
+ *           type: string
+ *           default: graphic design
+ *         description:
+ *           type: string
+ *           default: master graphic design in one week
+ *         price:
+ *           type: string
+ *           default: 7000
+ *         category:
+ *           type: string
+ *           default: graphic design
+ *         image:
+ *           type: string
+ *           default:
+ *         video:
+ *           type: string
+ *           default:
+ *         file:
+ *           type: string
+ *           default:
+ *    CreateUserResponse:
+ *       type:  object
+ *       properties:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         price:
+ *           type: string
+ *         category:
+ *           type: string
+ *         image:
+ *           type: string
+ *         video:
+ *           type: string
+ *         file:
+ *           type: string
+ */
 export const createCourseSchema = Joi.object().keys({
   title: Joi.string().required(),
   description: Joi.string().required(),

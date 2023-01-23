@@ -16,12 +16,12 @@ import { getStudentHistory } from "../controller/courseController";
 import { upload } from "../utils/multer";
 const router = express.Router();
 
-//router.post("/addCourse", protect, addCourse);
 
 /**
  * @openapi
  * /courses:
  *  get:
+ *      tags: [courses]
  *      description: get all courses
  *      responses:
  *        200:
@@ -33,6 +33,7 @@ router.get("/", getAllCourse);
  * @openapi
  * /courses/get-course/{id}:
  *  get:
+ *     tags: [courses]
  *     security:
  *       - Authorization: []
  *     description: Get a single course
@@ -53,14 +54,17 @@ router.get("/get-course/:id", protect, getCourseById);
  * @openapi
  * /courses/getStudentHistory:
  *  get:
+ *      tags: [courses]
  *      description: get student course history
  *      security:
  *       - Authorization: []
  *      responses:
  *        200:
- *          description: you have sucessfully retrieved all courses
+ *          description: you have sucessfully student course history
  */
 router.get("/getStudentHistory", protect, getStudentHistory);
+
+
 router.post(
   "/createCourse",
   protect,
@@ -70,16 +74,91 @@ router.post(
   ]),
   createCourse
 );
+
+/**
+ * @openapi
+ * '/courses/updateCourse{id}':
+ *  patch:
+ *    tags: 
+ *      - courses
+ *    security:
+ *       - Authorization: []
+ *    summary: edit courses
+ *    requestBody: 
+ *      required: true
+ *      content: 
+ *        application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CourseInput'
+ *    responses:
+ *       201:
+ *         description: you have updated your course
+ *         content: 
+ *           application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/CourseResponse'
+ *       500:
+ *         description: internal server error
+ * 
+ */
 router.patch("/updateCourse/:id", protect, updateCourse);
+
+/**
+ * @openapi
+ * /courses/deleteCourse:
+ *  delete:
+ *      tags: [courses]
+ *      description: delete a course
+ *      security:
+ *       - Authorization: []
+ *      parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: you have sucessfully deleted a courses
+ */
 router.delete("/deleteCourse/:id", protect, deleteCourse);
-router.post("/addCourse", addCourse);
+
+
+/**
+ * @openapi
+ * '/courses/updateCourse{id}':
+ *  post:
+ *    tags: 
+ *      - courses
+ *    summary: request a course
+ *    security:
+ *       - Authorization: []
+ *    requestBody: 
+ *      required: true
+ *      content: 
+ *        application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CourseInput'
+ *    responses:
+ *       201:
+ *         description: you have sucessfully logged in
+ *         content: 
+ *           application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/CourseResponse'
+ *       500:
+ *         description: internal server error
+ * 
+ */
 router.post("/requestCourse/:id", protect, courseRequest);
 
 /**
  * @openapi
  *  /courses/rate-courses/{id}:
  *   post:
+ *     tags: [courses]
  *     summary: Rate a course
+ *     security:
+ *       - Authorization: []
  *     parameters:
  *       - in: path
  *         name: id

@@ -35,7 +35,7 @@ const router = express.Router();
  * '/users/signup':
  *  post:
  *    tags: 
- *      - user
+ *      - Auth
  *    summary: Register a user
  *    requestBody: 
  *      required: true
@@ -61,7 +61,7 @@ router.post("/signup", Register);
  * '/users/login':
  *  post:
  *    tags: 
- *      - user
+ *      - Auth
  *    summary: Login a user
  *    requestBody: 
  *      required: true
@@ -89,6 +89,7 @@ router.get("/verify/:signature", verifyUser);
  * @openapi
  * /users:
  *   get:
+ *      tags: [Users]
  *      description: get all users!
  *      responses:
  *        200:
@@ -110,6 +111,17 @@ router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
+
+/**
+ * @openapi
+ * /users/all-tutors:
+ *   get:
+ *      tags: [Users]
+ *      description: get all tutors!
+ *      responses:
+ *        200:
+ *          description: Returns an array of users.
+ */
 router.get("/all-tutors", getAllTutors);
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
