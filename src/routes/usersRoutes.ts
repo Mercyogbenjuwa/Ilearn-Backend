@@ -44,7 +44,6 @@ router.get("/verify/:signature", verifyUser);
  *       200:
  *         description: Returns an array of users.
  */
-
 router.get("/", getAllUsers);
 router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
@@ -62,7 +61,20 @@ router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
+
+
+/**
+ * @openapi
+ * /users/all-tutors:
+ *   get:
+ *     description: get all users!
+ *     responses:
+ *       200:
+ *         description: Returns an array of users.
+ */
 router.get("/all-tutors", getAllTutors);
+
+
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
 router.get("/recommended/:category", protect, getRecommendedCourses);
