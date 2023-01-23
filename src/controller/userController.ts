@@ -994,7 +994,7 @@ const getStudentCourses = async (req: Request, res: Response) => {
 const createStudentCourse = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
-    const { courseId, totalPages } = req.body;
+    const { courseId } = req.body;
 
     const validCourse = await courseInstance.findOne({
       where: { id: courseId },
@@ -1018,7 +1018,6 @@ const createStudentCourse = async (req: Request, res: Response) => {
       courseId,
       studentId: id,
       tutorId: validCourse.tutorId,
-      totalPages: totalPages,
     });
 
     res.status(201).json({
@@ -1035,7 +1034,7 @@ const createStudentCourse = async (req: Request, res: Response) => {
 const updateCourseProgress = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
-    const { courseId, currentPage } = req.body;
+    const { courseId, currentPage, totalPages } = req.body;
     const course = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },
     });
@@ -1045,10 +1044,8 @@ const updateCourseProgress = async (req: Request, res: Response) => {
         message: "This is not a valid course",
       });
     }
-    const existingPage = course.currentPage;
-    const totalPages = course.totalPages;
 
-    if (currentPage > course.totalPages || currentPage < 1) {
+    if (currentPage > totalPages || currentPage < 1) {
       return res.status(401).json({
         message: "could not update, this is not a valid currentpage",
       });
