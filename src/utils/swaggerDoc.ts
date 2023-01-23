@@ -19,18 +19,19 @@ const options: swaggerJSDoc.Options = {
 
     components: {
       securitySchemes: {
-        bearerAuth: {
+        Authorization: {
+          in: "header",
           type: "http",
           scheme: "bearer",
-          bearerformat: "JWT",
-        },
+          bearerFormat: "JWT",
+          value: "Bearer <JWT token here>"
+      },
       },
     },
-   
 
     security: [
       {
-        bearerAuth: [],
+        Authorization: [],
       },
     ],
     host: process.env.BASE_URL,
@@ -43,8 +44,14 @@ const options: swaggerJSDoc.Options = {
 
 const swaggerSpec = swaggerJSDoc(options);
 
+const swaggerUiOptions = {
+  explorer: true
+};
+
+
+
 export const swaggerDoc = async (app: Application) => {
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
   app.get("/docs.json", (req: Request, res: Response) => {
     res.setHeader("content-Type", "application/json");

@@ -34,7 +34,7 @@ router.get("/", getAllCourse);
  * /courses/get-course/{id}:
  *  get:
  *     security:
- *      - bearer: []
+ *       - Authorization: []
  *     description: Get a single course
  *     parameters:
  *       - name: id
@@ -55,7 +55,7 @@ router.get("/get-course/:id", protect, getCourseById);
  *  get:
  *      description: get student course history
  *      security:
- *        - bearer: []
+ *       - Authorization: []
  *      responses:
  *        200:
  *          description: you have sucessfully retrieved all courses
@@ -77,8 +77,7 @@ router.post("/requestCourse/:id", protect, courseRequest);
 
 /**
  * @openapi
- * paths:
- *   /-courses/{id}:
+ *  /courses/rate-courses/{id}:
  *   post:
  *     summary: Rate a course
  *     parameters:
