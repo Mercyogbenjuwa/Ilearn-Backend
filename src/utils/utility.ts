@@ -83,10 +83,12 @@ export const resetPasswordSchema = Joi.object().keys({
 });
 
 export const updateTutorSchema = Joi.object().keys({
-  name: Joi.string(),
-  image: Joi.string(),
-  areaOfInterest: Joi.string(),
-  rating: Joi.number()
+  name: Joi.string().required(),
+  about: Joi.string().allow(""),
+  expertise: Joi.array().items(Joi.string()).allow(""),
+  location: Joi.string().allow(""),
+  status: Joi.string().allow(""),
+  image: Joi.string().allow(""),
 });
 // validate schema for creating of reminders
 

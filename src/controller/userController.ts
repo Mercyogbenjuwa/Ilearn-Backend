@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
-import {
-  AvailabilityInstance} from "../model/availabilityModel";
+import { AvailabilityInstance } from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -32,10 +31,9 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import { AreaOfInterestInstance } from '../model/areaOfInterestModel';
+import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
 import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
-
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -53,8 +51,7 @@ const getAllUsers = async (req: Request, res: Response) => {
 /**===================================== Register User ===================================== **/
 const Register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, name, areaOfInterest, userType } =
-      req.body;
+    const { email, password, name, areaOfInterest, userType } = req.body;
     const uuiduser = uuidv4();
     //console.log(req.body)
     const validateResult = registerSchema.validate(req.body, option);
@@ -70,7 +67,6 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 
     //check if the user exists
     const User = await UserInstance.findOne({ where: { email: email } });
-
 
     // await mailSent("Ilearn App", email, "Ilearn User Verification", html);
     if (User) {
@@ -134,7 +130,6 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 /**==================== Verify Users ========================**/
 export const verifyUser = async (req: JwtPayload, res: Response) => {
   try {
-    
     const token = req.params.signature;
     // Verify the signature
     const { id, email, verified } = await verifySignature(token);
@@ -444,12 +439,11 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
 };
 
 /**=========================== updateTutorProfile ============================== **/
-
 export const updateTutorProfile = async (req: Request, res: Response) => {
   try {
     const id = req.user?.id;
 
-    const { name, areaOfInterest } = req.body;
+    const { name, areaOfInterest, about, location, status, expertise } = req.body;
     const joiValidateTutor = updateTutorSchema.validate(req.body, option);
     if (joiValidateTutor.error) {
       return res.status(400).json({
@@ -469,25 +463,35 @@ export const updateTutorProfile = async (req: Request, res: Response) => {
         Error: "You are not authorized to update your profile",
       });
     }
-    // console.log(Tutor);
 
     await tutor.update({
       image: req.file?.path,
       name,
       totalCourses,
       areaOfInterest,
+      about,
+      location,
+      status,
+      expertise
     });
 
     const updateTutor = await tutor.save();
-    // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
-    // this is for saving some fields
 
     if (updateTutor) {
       const tutor = await UserInstance.findOne({ where: { id } });
-      return res.status(200).json({
-        message: "You have successfully updated your account",
-        tutor,
-      });
+      if(tutor){
+          return res.status(200).json({
+            message: "You have successfully updated your account",
+            tutor: {
+              ...tutor.toJSON(),
+              expertise,
+            },
+          });
+      }else{
+          return res.status(400).json({
+            Error: "Tutor not found",
+          });
+      }
     }
 
     return res.status(400).json({
@@ -549,7 +553,7 @@ const getUserProfile = async (req: Request, res: Response) => {
     return res.status(500).json({
       Error: error,
       route: "/users/profile",
-      error
+      error,
     });
   }
 };
@@ -666,8 +670,8 @@ const rateTutor = async (req: Request, res: Response) => {
     }
 
     // check to ensure only students can rate tutor
-    if (student && student.userType !== 'Student') {
-      return res.status(403).json({message: 'Only students can rate tutors'});
+    if (student && student.userType !== "Student") {
+      return res.status(403).json({ message: "Only students can rate tutors" });
     }
 
     const alreadyRated = await TutorRatingInstance.findOne({
@@ -680,7 +684,6 @@ const rateTutor = async (req: Request, res: Response) => {
         .json({ message: "This tutor has been rated by you." });
     }
 
-
     const newTutorRatingDetails = await TutorRatingInstance.create({
       studentId: id,
       description,
@@ -691,8 +694,7 @@ const rateTutor = async (req: Request, res: Response) => {
     const tutorRatings = await TutorRatingInstance.findAll({
       where: { tutorId: req.params.id },
     });
-    const tutorTotalRating = tutorRatings.reduce((acc, curr) =>
-    {
+    const tutorTotalRating = tutorRatings.reduce((acc, curr) => {
       return acc + curr.ratingValue;
     }, 0);
     const tutorAverageRating = tutorTotalRating / tutorRatings.length;
@@ -723,16 +725,16 @@ const getTutorReviews = async (req: Request, res: Response) => {
   try {
     const tutorReviewInfo = await TutorRatingInstance.findAll({
       where: {
-        tutorId: tutorId
-      }
+        tutorId: tutorId,
+      },
     });
-    if(!tutorReviewInfo) {
+    if (!tutorReviewInfo) {
       return res.status(404).json({
-        message: "you have no review"
+        message: "you have no review",
       });
     }
     return res.status(200).json({
-      tutorReviewInfo
+      tutorReviewInfo,
     });
   } catch (error) {
     return res.status(500).json({
@@ -742,13 +744,13 @@ const getTutorReviews = async (req: Request, res: Response) => {
   }
 };
 
-
-/**===================================== Edit-profile===================================== **/
+/**===================================== Edit-profile ===================================== **/
 const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
   try {
     const { id } = req.user;
-    const { image, name, email, areaOfInterest } = req.body;
+    const { image, name, email } = req.body;
+
     const validateResult = editprofileSchema.validate(req.body, option);
     if (validateResult.error) {
       return res.status(400).json({
@@ -768,17 +770,14 @@ const editprofile = async (req: JwtPayload, res: Response) => {
         image: req.file.path,
         name,
         email,
-        areaOfInterest,
       },
       {
-        where: { id: id }
+        where: { id: id },
       }
-    )
-
+    );
     return res.status(200).json({
       message: "User updated successfully",
       name: user.name,
-      areaOfInterest: user.areaOfInterest,
       email: user.email,
       image: user.image,
     });
@@ -786,11 +785,10 @@ const editprofile = async (req: JwtPayload, res: Response) => {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/edit-profile",
+      err,
     });
   }
 };
-
-
 
 const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
@@ -801,6 +799,12 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
     if (!courseName) {
       return res.status(400).json({
         Error: "courseName is required",
+      });
+    }
+    const allowedCourses = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
+    if (!allowedCourses.includes(courseName)) {
+      return res.status(400).json({
+        Error: "Invalid courseName, allowed courses are " + allowedCourses.join(','),
       });
     }
 
@@ -820,10 +824,9 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
       });
       return res.status(200).json({
         message: "Area of interest added successfully",
-        addAreaOfInterest,
+        addAreaOfInterest: allowedCourses,
       });
     }
-
     return res.status(400).json({
       Error: "Not Authorized",
     });
@@ -832,6 +835,7 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
     return res.status(500).json({
       Error: "Internal server Error",
       route: "/users/add-area-of-interest",
+      err
     });
   }
 };
@@ -850,8 +854,8 @@ const deleteAreaOfInterest = async (req: Request, res: Response) => {
       const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
         where: {
           id: courseId,
-        }
-      })
+        },
+      });
 
       return res.status(200).json({
         message: "Area of interest deleted successfully",
@@ -881,8 +885,8 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
       const getAreaOfInterest = await AreaOfInterestInstance.findAll({
         where: {
           userId: id,
-        }
-      })
+        },
+      });
 
       return res.status(200).json({
         message: "Area of interest fetched successfully",
@@ -903,7 +907,6 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
 
 
 const createAvailability = async (req: Request, res: Response) => {
-  
   try {
     const { id } = req.user;
     const { availableDate, availableTime } = req.body;
@@ -913,25 +916,24 @@ const createAvailability = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ Error: "User not found" });
     }
-    
+
     // use moment.js to validate date
-    const date = moment(availableDate, 'YYYY-MM-DD');
+    const date = moment(availableDate, "YYYY-MM-DD");
     if (!date.isValid()) {
       return res.status(400).json({
         Error: "Invalid date format, please use format YYYY-MM-DD",
       });
     }
-   
+
     const dateToIso = date.toISOString();
 
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
       where: {
-        availableDate:
-          dateToIso
-      }
-    })
-   
+        availableDate: dateToIso,
+      },
+    });
+
     if (availabilityExists) {
       return res.status(400).json({
         Error:
@@ -940,16 +942,21 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length });
+    const availability = await AvailabilityInstance.create({
+      availableTime,
+      availableDate: dateToIso,
+      userId: id,
+      availableSlots: availableTime.length,
+    });
 
-    // Return a success response                                          
+    // Return a success response
     return res.status(200).json({
       message: "Availability updated successfully",
       availability,
     });
   } catch (err) {
     console.error(err);
-    if ((err as ValidationError).name === 'ValidationError') {
+    if ((err as ValidationError).name === "ValidationError") {
       return res.status(400).json({
         Error: (err as ValidationError).errors[0].message,
       });
@@ -963,7 +970,7 @@ const createAvailability = async (req: Request, res: Response) => {
 
 const getTutorAvailabilities = async (req: Request, res: Response) => {
   try {
-    const tutorId  = req.params.tutorId;
+    const tutorId = req.params.tutorId;
 
     const availabilities = await AvailabilityInstance.findAll({
       where: { userId: tutorId },
@@ -984,17 +991,17 @@ const getTutorCourses = async (req: Request, res: Response) => {
     const courses = await courseInstance.findAll({
       where: { userId: tutorId },
     });
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Courses fetched successfully",
-      courses 
+      courses,
     });
   } catch (error) {
-      return res.status(500).json({
-        Error: "Internal server error",
-        error,
-      });
+    return res.status(500).json({
+      Error: "Internal server error",
+      error,
+    });
   }
-}
+};
 
 export {
   Login,

@@ -5,7 +5,6 @@ import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
 import { AreaOfInterestInstance} from './areaOfInterestModel';
 import { AvailabilityInstance } from "./availabilityModel";
-
 import { NotificationInstance } from "./notificationModel";
 
 export interface UserAttributes {
@@ -20,6 +19,10 @@ export interface UserAttributes {
   salt: string;
   image: string;
   rating: number;
+  about: string;
+  expertise: string;
+  location: string;
+  status: string;
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -33,6 +36,11 @@ export class UserInstance extends Model<UserAttributes> {
   declare salt: string;
   declare image: string;
   declare rating: number;
+  declare about: string;
+  declare expertise: string;
+  declare location: string;
+  declare status: string;
+
 }
 
 UserInstance.init(
@@ -105,8 +113,31 @@ UserInstance.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
+    about: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    expertise:{
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: ["Mathematics"],
+    validate: {
+      customValidator: (value: any) => {
+        const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
+        if (!enums.includes(value)) {
+          throw new Error("not a valid option");
+        }
+      },
+    },
   },
-
+  },
   {
     sequelize: db,
     tableName: "user",
