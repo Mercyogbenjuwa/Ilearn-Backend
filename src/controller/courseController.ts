@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { courseInstance } from "../model/courseModel";
+import { courseAttributes, courseInstance } from "../model/courseModel";
 import path from "path";
 import { HttpError } from "http-errors";
 import { courseRequestInstance } from "../model/courseRequestsModel";
 import { NotificationInstance } from "../model/notificationModel";
 import { UserInstance } from "../model/userModel";
 import { Includeable } from "sequelize";
+import { CourseRatingInstance } from "../model/courseRatingModel";
+import { option, ratingCourseSchema } from "../utils/utility";
 
 UserInstance;
 interface requestedCourse extends courseInstance {
@@ -229,12 +231,121 @@ const courseRequest = async (req: Request, res: Response) => {
   }
 };
 
+const getCourseById = async(req: Request, res: Response) => {
+  try {
+      const { id } = req.params
+      const course = await courseInstance.findOne({where: 
+        {id},
+        include: ["tutor"]
+      }) 
+      if(!course){
+        return res.status(400).json({
+          Error: "This course does not exist"
+        })
+      }
+      return res.status(200).json({
+        message: "Successfully fetched course",
+        course
+      })
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/courses/getSingleCourse",
+      error,
+    });
+  }
+}
+const requestCourseById = async(req: Request, res: Response) => {
+  const id = req.user?.id;
+  const courseId = req.params.id;
+  const user = await UserInstance.findOne({where:{id}})
+  if(!user){
+    res.status(401)
+    throw new Error("Not Authorized")
+  }
+  const course = await courseInstance.findOne({where:{id: courseId}})
+  if(course){
+    res.status(200).json(course)
+  }else{
+    res.status(404)
+    throw new Error("Course Not Found")
+  }
+}
+
+// ================================= Course Rating ==============================
+const rateCourses = async (req: Request, res: Response) => {
+  const { id } = req.user!;
+
+  try {
+    const validateResult = ratingCourseSchema.validate(req.body, option);
+    if (validateResult.error) {
+      return res.status(400).json({
+        Error: validateResult.error.details[0].message,
+      });
+    }
+    const { courseId, ratingValue, description } = validateResult.value;
+
+    const course = await courseInstance.findOne({
+      where: { id: req.params.id },
+    });
+    if (!course) {
+      return res.status(400).json({
+        Error: "Course does not exist",
+      });
+    }
+    const alreadyRatedCourse = await CourseRatingInstance.findOne({
+      where: { studentId: id, courseId: req.params.id },
+    });
+    if (alreadyRatedCourse) {
+      return res
+        .status(401)
+        .send({ message: "You cannot rate a course more than once" });
+      
+    }
+    
+    const rateCourse = await CourseRatingInstance.create({
+      ratingValue,
+      description,
+      courseId: req.params.id,
+      studentId: id,
+    });
+
+    const courseRatings = await CourseRatingInstance.findAll({
+      where: { courseId: req.params.id },
+    });
+    const totalRating = courseRatings.reduce((acc, curr) =>
+    {
+      return acc + curr.ratingValue;
+    }, 0);
+    const averageRating = totalRating / courseRatings.length;
+    await courseInstance.update(
+      { rating: averageRating },
+      { where: { id: req.params.id } }
+    );
+
+    return res.status(200).json({
+      message: "Course rated successfully",
+      rateCourse,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/courses/rate-course",
+      err,
+    });
+  }
+};
+
 export {
   getAllCourse,
+  getCourseById,
   getStudentHistory,
   createCourse,
   updateCourse,
   deleteCourse,
   addCourse,
   courseRequest,
+  rateCourses,
+  requestCourseById
 };

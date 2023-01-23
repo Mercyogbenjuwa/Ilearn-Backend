@@ -5,6 +5,7 @@ import { UserInstance } from "./userModel";
 export interface courseAttributes {
   [x: string]: any;
   id: string;
+  courseId: string;
   title: string;
   description: string;
   rating: number;
