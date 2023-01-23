@@ -12,7 +12,6 @@ export interface ReminderAttributes {
 }
 
 export class ReminderInstance extends Model<ReminderAttributes> {
- 
   declare id: string;
   declare title: string;
   declare description: string;
@@ -47,12 +46,6 @@ ReminderInstance.init(
       type: DataTypes.DATE,
       allowNull: false,
     },
-
-    // duration: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    // },
-
     endTime: {
       type: DataTypes.DATE,
       allowNull: false,
