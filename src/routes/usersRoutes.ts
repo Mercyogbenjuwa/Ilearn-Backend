@@ -58,6 +58,7 @@ router.put(
   updateTutorProfile
 );
 router.post("/forgot-password", forgotPassword);
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
