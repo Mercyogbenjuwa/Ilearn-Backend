@@ -15,13 +15,6 @@ import {
   verifyUser,
   getUserNotifications,
   readNotification,
-<<<<<<< HEAD
-  Editprofile,
-  addAreaOfInterest,
-  deleteAreaOfInterest,
-  getAreaOfInterest,
-  rateTutor
-=======
   addAreaOfInterest,
   deleteAreaOfInterest,
   getAreaOfInterest,
@@ -32,7 +25,6 @@ import {
   getTutorCourses,
   rateTutor,
   getTutorReviews
->>>>>>> staging
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -73,12 +65,6 @@ router.post("/reminders", protect, createReminder);
 router.get("/all-tutors", getAllTutors);
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
-<<<<<<< HEAD
-router.get('/recommended/:category', protect, getRecommendedCourses)
-router.get('/notifications', protect, getUserNotifications)
-router.put('/notifications/:id', protect, readNotification)
-router.post("/edit-profile/:signature", upload.single('imageUrl'), protect, Editprofile);
-=======
 router.get("/recommended/:category", protect, getRecommendedCourses);
 router.get("/notifications", protect, getUserNotifications);
 router.put("/notifications/:id", protect, readNotification);
@@ -88,7 +74,6 @@ router.post(
   protect,
   editprofile
 );
->>>>>>> staging
 router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
