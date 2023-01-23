@@ -5,7 +5,6 @@ import { UserInstance } from "./userModel";
 export interface courseAttributes {
   [x: string]: any;
   id: string;
-  courseId: string;
   title: string;
   description: string;
   rating: number;
@@ -20,7 +19,6 @@ export class courseInstance extends Model<courseAttributes> {
   declare id: string;
   declare title: string;
   declare description: string;
-  //declare tutor_Name: string;
   declare tutorId: string;
   declare pricing: string;
   declare category: string;
@@ -48,7 +46,7 @@ courseInstance.init(
     },
     course_image: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     // tutor_Name: {
     //   type: DataTypes.UUID,
@@ -68,11 +66,12 @@ courseInstance.init(
     },
     course_material: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     rating: {
       type: DataTypes.FLOAT,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: 0,
     },
   },
 

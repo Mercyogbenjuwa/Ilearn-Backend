@@ -31,9 +31,10 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
-import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
 import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
+import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
+import { StudentCoursesInstance } from "../model/users/students/studentCoursesModel";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -558,20 +559,56 @@ const getUserProfile = async (req: Request, res: Response) => {
   }
 };
 
+//==========================All Tutor====================
+
 const getAllTutors = async (req: Request, res: Response) => {
   try {
-    const findTutor = await UserInstance.findAll({
-      where: { userType: "Tutor" },
+    const { query, page, limit } = req.query as {
+      query?: string;
+      page?: string;
+      limit?: string;
+    };
+    const currentPage = page ? parseInt(page) : 1;
+    const limitPerPage = limit ? parseInt(limit) : 10;
+    const offset = (currentPage - 1) * limitPerPage;
+
+    let queryPage;
+    if (query) {
+      queryPage = {
+        userType: "Tutor",
+        [Op.or]: [
+          { name: { [Op.like]: `${query}` } },
+          { email: { [Op.like]: `${query}` } },
+        ],
+      };
+    } else {
+      queryPage = { userType: "Tutor" };
+    }
+    // Find the tutors in the database
+    const findTutor = await UserInstance.findAndCountAll({
+      where: queryPage,
       attributes: ["id", "email", "name", "rating", "image"],
+      limit: limitPerPage,
+      offset,
     });
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(findTutor.count / limitPerPage);
+    // Return the results in a JSON response
     return res.status(200).json({
-      TutorNumber: findTutor.length,
-      findTutor,
+      TutorNumber: findTutor.count,
+      findTutor: findTutor.rows,
+      totalPages,
+      currentPage,
     });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({
+      Error: "Internal Server Error: All Tutor",
+      error,
+    });
   }
 };
+
+// =============================Tutor Rating==============================
 const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let page: any = req.query.page;
@@ -590,8 +627,11 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
       TutorNumber: tutorSorted.length,
       tutorSorted,
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal Server Error: Tutor-Rating",
+      error,
+    });
   }
 };
 
@@ -744,7 +784,7 @@ const getTutorReviews = async (req: Request, res: Response) => {
   }
 };
 
-/**===================================== Edit-profile ===================================== **/
+/**===================================== Edit-profile===================================== **/
 const editprofile = async (req: JwtPayload, res: Response) => {
   //user is a record
   try {
@@ -904,8 +944,6 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
   }
 };
 
-
-
 const createAvailability = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
@@ -968,6 +1006,125 @@ const createAvailability = async (req: Request, res: Response) => {
   }
 };
 
+const getStudentCourses = async (req: Request, res: Response) => {
+  try {
+    const { id }: { id: string } = req.user;
+
+    const courses = await StudentCoursesInstance.findAll({
+      where: { studentId: id },
+      include: [
+        {
+          model: courseInstance,
+          as: "course",
+          attributes: ["title", "course_image"],
+        },
+        { model: UserInstance, as: "tutor", attributes: ["name"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (!courses) {
+      return res.status(404).json({
+        message: "you currently have no courses",
+      });
+    }
+
+    res.status(200).json({
+      message: "course fetched successfully",
+      courses,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
+    });
+  }
+};
+
+// test student create course
+// looks like this should be created when a user make a payment.
+const createStudentCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { courseId } = req.body;
+
+    const validCourse = await courseInstance.findOne({
+      where: { id: courseId },
+    });
+
+    if (!validCourse) {
+      return res.status(404).json({
+        message: "This is not a valid course",
+      });
+    }
+
+    const courseExist = await StudentCoursesInstance.findOne({
+      where: { courseId, studentId: id },
+    });
+    if (courseExist) {
+      return res.status(404).json({
+        message: "you Already have this course",
+      });
+    }
+    await StudentCoursesInstance.create({
+      courseId,
+      studentId: id,
+      tutorId: validCourse.tutorId,
+    });
+
+    res.status(201).json({
+      message: "course added successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
+    });
+  }
+};
+
+const updateCourseProgress = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { courseId, currentPage, totalPages } = req.body;
+    const course = await StudentCoursesInstance.findOne({
+      where: { courseId, studentId: id },
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        message: "This is not a valid course",
+      });
+    }
+
+    if (currentPage > totalPages || currentPage < 1) {
+      return res.status(401).json({
+        message: "could not update, this is not a valid currentpage",
+      });
+    }
+    const progress = Math.floor((currentPage / totalPages) * 100);
+
+    if (currentPage <= course.currentPage) {
+      return res.status(200).json({
+        message: "progress does not need an update",
+      });
+    }
+
+    course.currentPage = currentPage;
+    course.progress = progress;
+    await course.save();
+
+    res.status(200).json({
+      message: "progress updated successfully",
+      progress,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
+    });
+  }
+};
 const getTutorAvailabilities = async (req: Request, res: Response) => {
   try {
     const tutorId = req.params.tutorId;
@@ -1025,6 +1182,9 @@ export {
   getUserProfile,
   rateTutor,
   createAvailability,
+  getStudentCourses,
+  createStudentCourse,
+  updateCourseProgress,
   getTutorCourses,
   getTutorReviews,
 };

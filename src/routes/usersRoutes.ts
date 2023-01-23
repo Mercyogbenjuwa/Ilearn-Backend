@@ -22,6 +22,9 @@ import {
   getUserProfile,
   editprofile,
   createAvailability,
+  getStudentCourses,
+  createStudentCourse,
+  updateCourseProgress,
   getTutorCourses,
   rateTutor,
   getTutorReviews,
@@ -58,6 +61,7 @@ router.put(
   updateTutorProfile
 );
 router.post("/forgot-password", forgotPassword);
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 router.post("/reminders", protect, createReminder);
@@ -77,6 +81,14 @@ router.post("/add-area-of-interest", protect, addAreaOfInterest);
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
+
+// student course route
+router
+  .route("/students/courses")
+  .get(protect, getStudentCourses)
+  .post(protect, createStudentCourse)
+  .patch(protect, updateCourseProgress);
+
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 router.get("/tutors/:id/course", protect, getTutorCourses);
 
