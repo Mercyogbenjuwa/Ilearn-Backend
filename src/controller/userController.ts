@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
+<<<<<<< HEAD
 import { AvailabilityInstance } from "../model/availabilityModel";
+=======
+import {
+  AvailabilityInstance
+} from "../model/availabilityModel";
+>>>>>>> staging
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
@@ -31,7 +37,12 @@ import { ReminderInstance } from "../model/reminderModel";
 import { courseInstance } from "../model/courseModel";
 import { Op, ValidationError } from "sequelize";
 import { NotificationInstance } from "../model/notificationModel";
+<<<<<<< HEAD
 
+=======
+import { courseRequestInstance, courseRequestAttributes } from "../model/courseRequestsModel";
+import { AreaOfInterestInstance } from '../model/areaOfInterestModel';
+>>>>>>> staging
 import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
 import { AreaOfInterestInstance } from "../model/areaOfInterestModel";
@@ -132,6 +143,10 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
 /**==================== Verify Users ========================**/
 export const verifyUser = async (req: JwtPayload, res: Response) => {
   try {
+<<<<<<< HEAD
+=======
+
+>>>>>>> staging
     const token = req.params.signature;
     // Verify the signature
     const { id, email, verified } = await verifySignature(token);
@@ -551,20 +566,57 @@ const getUserProfile = async (req: Request, res: Response) => {
   }
 };
 
+//==========================All Tutor====================
+
 const getAllTutors = async (req: Request, res: Response) => {
   try {
-    const findTutor = await UserInstance.findAll({
-      where: { userType: "Tutor" },
+    const { query, page, limit } = req.query as {
+      query?: string;
+      page?: string;
+      limit?: string;
+    };
+    const currentPage = page ? parseInt(page) : 1;
+    const limitPerPage = limit ? parseInt(limit) : 10;
+    const offset = (currentPage - 1) * limitPerPage;
+
+    let queryPage;
+    if (query) {
+      queryPage = {
+        userType: "Tutor",
+        [Op.or]: [
+          { name: { [Op.like]: `${query}` } },
+          { email: { [Op.like]: `${query}` } },
+        ],
+      };
+    } else {
+      queryPage = { userType: "Tutor" };
+    }
+    // Find the tutors in the database
+    const findTutor = await UserInstance.findAndCountAll({
+      where: queryPage,
       attributes: ["id", "email", "name", "rating", "image"],
+      limit: limitPerPage,
+      offset,
     });
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(findTutor.count / limitPerPage);
+    // Return the results in a JSON response
     return res.status(200).json({
-      TutorNumber: findTutor.length,
-      findTutor,
+      TutorNumber: findTutor.count,
+      findTutor: findTutor.rows,
+      totalPages,
+      currentPage,
     });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({
+
+      Error: "Internal Server Error: All Tutor",
+      error,
+    });
   }
 };
+
+// =============================Tutor Rating==============================
 const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let page: any = req.query.page;
@@ -583,8 +635,13 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
       TutorNumber: tutorSorted.length,
       tutorSorted,
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    return res.status(500).json({
+
+      Error: "Internal Server Error: Tutor-Rating",
+      error,
+    });
+
   }
 };
 
@@ -663,8 +720,13 @@ const rateTutor = async (req: Request, res: Response) => {
     }
 
     // check to ensure only students can rate tutor
+<<<<<<< HEAD
     if (student && student.userType !== "Student") {
       return res.status(403).json({ message: "Only students can rate tutors" });
+=======
+    if (student && student.userType !== 'Student') {
+      return res.status(403).json({ message: 'Only students can rate tutors' });
+>>>>>>> staging
     }
 
     const alreadyRated = await TutorRatingInstance.findOne({
@@ -784,6 +846,10 @@ const editprofile = async (req: JwtPayload, res: Response) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> staging
 const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
   try {
     const { userId } = req.user;
@@ -893,6 +959,10 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
 };
 
 const createAvailability = async (req: Request, res: Response) => {
+<<<<<<< HEAD
+=======
+
+>>>>>>> staging
   try {
     const { id } = req.user;
     const { availableDate, availableTime } = req.body;
@@ -916,9 +986,16 @@ const createAvailability = async (req: Request, res: Response) => {
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
       where: {
+<<<<<<< HEAD
         availableDate: dateToIso,
       },
     });
+=======
+        availableDate:
+          dateToIso
+      }
+    })
+>>>>>>> staging
 
     if (availabilityExists) {
       return res.status(400).json({
@@ -1098,7 +1175,11 @@ const getTutorCourses = async (req: Request, res: Response) => {
     });
     return res.status(200).json({
       message: "Courses fetched successfully",
+<<<<<<< HEAD
       courses,
+=======
+      courses
+>>>>>>> staging
     });
   } catch (error) {
     return res.status(500).json({
