@@ -520,20 +520,57 @@ export const getTutorDetails = async (req: Request, res: Response) => {
   }
 };
 
+//==========================All Tutor====================
+
 const getAllTutors = async (req: Request, res: Response) => {
   try {
-    const findTutor = await UserInstance.findAll({
-      where: { userType: "Tutor" },
-      attributes: ["id", "email", "name", "rating"],
+    const { query, page, limit } = req.query as {
+      query?: string;
+      page?: string;
+      limit?: string;
+    };
+    const currentPage = page ? parseInt(page) : 1;
+    const limitPerPage = limit ? parseInt(limit) : 10;
+    const offset = (currentPage - 1) * limitPerPage;
+
+    let queryPage;
+    if (query) {
+      queryPage = {
+        userType: "Tutor",
+        [Op.or]: [
+          { name: { [Op.like]: `${query}` } },
+          { email: { [Op.like]: `${query}` } },
+        ],
+      };
+    } else {
+      queryPage = { userType: "Tutor" };
+    }
+    // Find the tutors in the database
+    const findTutor = await UserInstance.findAndCountAll({
+      where: queryPage,
+      attributes: ["id", "email", "name", "rating", "image"],
+      limit: limitPerPage,
+      offset,
     });
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(findTutor.count / limitPerPage);
+    // Return the results in a JSON response
     return res.status(200).json({
-      TutorNumber: findTutor.length,
-      findTutor,
+      TutorNumber: findTutor.count,
+      findTutor: findTutor.rows,
+      totalPages,
+      currentPage,
     });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({
+
+      Error: "Internal Server Error: All Tutor",
+      error,
+    });
   }
 };
+
+// =============================Tutor Rating==============================
 const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let page: any = req.query.page;
@@ -552,8 +589,13 @@ const tutorRating = async (req: Request, res: Response, next: NextFunction) => {
       TutorNumber: tutorSorted.length,
       tutorSorted,
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    return res.status(500).json({
+
+      Error: "Internal Server Error: Tutor-Rating",
+      error,
+    });
+
   }
 };
 
