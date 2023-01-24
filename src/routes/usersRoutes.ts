@@ -82,8 +82,23 @@ router.post("/signup", Register);
  */
 router.post("/login", Login);
 
-
+/**
+ * @openapi
+ * /users/verify/{signature}:
+ *   get:
+ *      tags: [Auth]
+ *      description: get all users!
+ *      parameters:
+ *       - name: signature
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns verified true.
+ */
 router.get("/verify/:signature", verifyUser);
+
 
 /**
  * @openapi
@@ -96,17 +111,111 @@ router.get("/verify/:signature", verifyUser);
  *          description: Returns an array of users.
  */
 router.get("/", getAllUsers);
+
+/**
+ * @openapi
+ * /users/profile:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: get all users!
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
 router.get("/profile", protect, getUserProfile);
+
+/**
+ * @openapi
+ * /users/atutordetail/{tutorid}:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: get all users!
+ *      parameters:
+ *       - name: tutorid
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
 router.post("/tutors/:id/rate", protect, rateTutor);
+
+/**
+ * @openapi
+ * /users/tutors/{id}/review:
+ *   get:
+ *      tags: [Users]
+ *      description: get tutor review
+ *      parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
 router.get("/tutors/:id/review", getTutorReviews);
+
+
+/**
+ * @openapi
+ * '/users/updatetutorprofile':
+ *  put:
+ *    tags:
+ *      - users
+ *    security:
+ *       - Authorization: []
+ *    summary: Update tutor profile
+ *    requestBody:
+ *       content:
+ *         multipart/form-data:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              name:
+ *                type: string
+ *              totalCourses:
+ *                type: string
+ *              areaOfInterest:
+ *                type: string
+ *              image:
+ *                type: string
+ *                format: binary   
+ *    responses:
+ *       201:
+ *         description: you have sucessfully updated your course
+ *         content:
+ *           application/json:
+ *              schema:
+ *       type:  object
+ *       properties:
+ *         name:
+ *           type: string
+ *         totalCourses:
+ *           type: string
+ *         areaOfInterest:
+ *           type: string
+ *         image:
+ *           type: string
+ *       500:
+ *         description: internal server error
+ *
+ */
 router.put(
   "/updatetutorprofile",
   protect,
   upload.single("image"),
   updateTutorProfile
 );
+
 router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);

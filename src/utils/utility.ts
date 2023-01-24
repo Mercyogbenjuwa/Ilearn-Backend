@@ -46,6 +46,8 @@ import { APP_SECRET } from "../Config";
  *           type: string
  *         areaOfInterest:
  *           type: string
+ *         signature:
+ *           type: string
  */
 export const registerSchema = Joi.object().keys({
   email: Joi.string().required(),
@@ -64,7 +66,7 @@ export const registerSchema = Joi.object().keys({
  * @openapi
  * components:
  *  schemas:
- *    EdithUserProfile:
+ *    EditUserProfile:
  *       type:  object
  *       required: 
  *        - email
@@ -80,7 +82,7 @@ export const registerSchema = Joi.object().keys({
  *         areaOfInterest:
  *           type: string
  *           default: mathematics
- *    LoginUserResponse:
+ *    EditUserResponse:
  *       type:  object
  *       properties:
  *         email:
@@ -108,18 +110,16 @@ export const editprofileSchema = Joi.object().keys({
  *       properties:
  *         email:
  *           type: string
- *           default: john.doe@example.com
+ *           default: oluwaseyimakinde64@gmail.com
  *         password:
  *           type: string
- *           default: stringpassword123
+ *           default: 1234567890
  *    LoginUserResponse:
  *       type:  object
  *       properties:
  *         email:
  *           type: string
  *         password:
- *           type: string
- *         signature:
  *           type: string
  */
 export const loginSchema = Joi.object().keys({
@@ -271,13 +271,13 @@ export const ratingCourseSchema = Joi.object().keys({
  *           default: graphic design
  *         image:
  *           type: string
- *           default:
+ *           format: binary
  *         video:
  *           type: string
- *           default:
+ *           format: binary
  *         file:
  *           type: string
- *           default:
+ *           format: binary
  *    CreateUserResponse:
  *       type:  object
  *       properties:

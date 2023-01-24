@@ -16,7 +16,6 @@ import { getStudentHistory } from "../controller/courseController";
 import { upload } from "../utils/multer";
 const router = express.Router();
 
-
 /**
  * @openapi
  * /courses:
@@ -64,7 +63,45 @@ router.get("/get-course/:id", protect, getCourseById);
  */
 router.get("/getStudentHistory", protect, getStudentHistory);
 
-
+/**
+ * @openapi
+ * '/courses/createCourse':
+ *  post:
+ *    tags: [courses]
+ *    summary: create a course
+ *    security:
+ *       - Authorization: []
+ *    requestBody:
+ *       content:
+ *         multipart/form-data:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              title:
+ *                type: string
+ *              description:
+ *                type: string
+ *              pricing:
+ *                type: string
+ *              category:
+ *                type: string
+ *              course_image:
+ *                type: string
+ *                format: binary
+ *              course_material:
+ *                type: string
+ *                format: binary   
+ *    responses:
+ *       201:
+ *         description: you have sucessfully logged in
+ *         content: 
+ *           application/json:
+ *              schema:
+ *              //   $ref: '#/components/schemas/CourseResponse'
+ *       500:
+ *         description: internal server error
+ * 
+ */
 router.post(
   "/createCourse",
   protect,
@@ -79,33 +116,52 @@ router.post(
  * @openapi
  * '/courses/updateCourse{id}':
  *  patch:
- *    tags: 
+ *    tags:
  *      - courses
  *    security:
  *       - Authorization: []
- *    summary: edit courses
- *    requestBody: 
- *      required: true
- *      content: 
- *        application/json:
- *           schema:
- *             $ref: '#/components/schemas/CourseInput'
+ *    summary: Update a course
+ *    parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         type: string
+ *    requestBody:
+ *       content:
+ *         multipart/form-data:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              title:
+ *                type: string
+ *              description:
+ *                type: string
+ *              pricing:
+ *                type: string
+ *              category:
+ *                type: string
+ *              course_image:
+ *                type: string
+ *                format: binary
+ *              course_material:
+ *                type: string
+ *                format: binary   
  *    responses:
  *       201:
- *         description: you have updated your course
- *         content: 
+ *         description: you have sucessfully updated your course
+ *         content:
  *           application/json:
  *              schema:
  *                 $ref: '#/components/schemas/CourseResponse'
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.patch("/updateCourse/:id", protect, updateCourse);
 
 /**
  * @openapi
- * /courses/deleteCourse:
+ * /courses/deleteCourse/{id}:
  *  delete:
  *      tags: [courses]
  *      description: delete a course
@@ -122,32 +178,31 @@ router.patch("/updateCourse/:id", protect, updateCourse);
  */
 router.delete("/deleteCourse/:id", protect, deleteCourse);
 
-
 /**
  * @openapi
- * '/courses/updateCourse{id}':
+ * '/courses/requestCourse{id}':
  *  post:
- *    tags: 
+ *    tags:
  *      - courses
  *    summary: request a course
  *    security:
  *       - Authorization: []
- *    requestBody: 
+ *    requestBody:
  *      required: true
- *      content: 
+ *      content:
  *        application/json:
  *           schema:
  *             $ref: '#/components/schemas/CourseInput'
  *    responses:
  *       201:
  *         description: you have sucessfully logged in
- *         content: 
+ *         content:
  *           application/json:
  *              schema:
  *                 $ref: '#/components/schemas/CourseResponse'
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.post("/requestCourse/:id", protect, courseRequest);
 
@@ -181,7 +236,7 @@ router.post("/requestCourse/:id", protect, courseRequest);
  *                 maxLength: 500
  *     responses:
  *       200:
- *         description: Successfully rated the course
+ *         description: you have successfully rated the course
  *       401:
  *         description: Unauthorized
  *       403:
@@ -194,3 +249,5 @@ router.post("/requestCourse/:id", protect, courseRequest);
 router.post("/rate-courses/:id", protect, rateCourses);
 
 export default router;
+
+
