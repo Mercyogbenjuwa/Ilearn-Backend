@@ -1,5 +1,5 @@
 import express from "express";
-import {  createCourse, deleteCourse, getAllCourse, updateCourse, addCourse, courseRequest, requestCourseById, getCourseById, rateCourses} from "../controller/courseController";
+import {  createCourse, deleteCourse, getAllCourses, updateCourse, addCourse, courseRequest, requestCourseById, getCourseById, rateCourses} from "../controller/courseController";
 import { getAllUsers, Login, Register } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { getStudentHistory } from "../controller/courseController";
@@ -7,7 +7,7 @@ import { upload } from "../utils/multer";
 const router = express.Router();
 
 //router.post("/addCourse", protect, addCourse);
-router.get("/",getAllCourse);
+router.get("/",protect, getAllCourses);
 router.get("/get-course/:id", protect, getCourseById)
 router.get("/getStudentHistory", protect, getStudentHistory);
 router.post(
