@@ -219,6 +219,7 @@ router.put(
 router.post("/forgot-password", forgotPassword);
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
+
 router.post("/reminders", protect, createReminder);
 
 /**
@@ -232,6 +233,8 @@ router.post("/reminders", protect, createReminder);
  *          description: Returns an array of users.
  */
 router.get("/all-tutors", getAllTutors);
+
+
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
 router.get("/recommended/:category", protect, getRecommendedCourses);
@@ -243,7 +246,45 @@ router.post(
   protect,
   editprofile
 );
+
+
+/**
+ * @openapi
+ * '/users/add-area-of-interest':
+ *  post:
+ *    tags: 
+ *      - Users
+ *    summary: Add area of Interest
+ *    requestBody: 
+ *      required: true
+ *      content: 
+ *        application/json:
+ *           schema:
+ *             type:  object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               totalCourses:
+ *                 type: string
+ *               areaOfInterest:
+ *                 type: string
+ *    responses:
+ *       201:
+ *         description: you have sucessfully logged in
+ *         content: 
+ *           application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  areaOfInterest:
+ *                    type: string
+ *       500:
+ *         description: internal server error
+ * 
+ */
 router.post("/add-area-of-interest", protect, addAreaOfInterest);
+
+
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
