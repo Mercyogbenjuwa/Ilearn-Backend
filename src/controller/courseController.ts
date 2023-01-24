@@ -83,8 +83,7 @@ const getAllCourses = async (req: Request, res: Response) => {
     }
     const findCourse = await courseInstance.findAndCountAll({
       where: queryPage,
-      attributes: ["category", "title", "description", "rating", "pricing"],
-      
+      attributes: ["category","course_image", "title", "description", "rating", "pricing"],
       include: [{
         model: UserInstance,
         as: "tutor",
@@ -93,10 +92,10 @@ const getAllCourses = async (req: Request, res: Response) => {
       limit: limitPerPage,
       offset,
     });
-  // Calculate the total number of pages    
-  const totalPages = Math.ceil(findCourse.count / limitPerPage);
-  // Return the results in a JSON response    
-  return res.status(200).json({
+    // Calculate the total number of pages      
+    const totalPages = Math.ceil(findCourse.count / limitPerPage);
+    // Return the results in a JSON response        
+    return res.status(200).json({
       courseNumber: findCourse.count,
       findCourse: findCourse.rows,
       totalPages,
@@ -109,7 +108,6 @@ const getAllCourses = async (req: Request, res: Response) => {
     });
   }
 };
-
 
 const createCourse = async (req: JwtPayload, res: Response) => {
   try {
