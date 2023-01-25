@@ -255,8 +255,29 @@ router.put(
   updateTutorProfile
 );
 
+
+/**
+ * @openapi
+ *  /users/forgot-password:
+ *   post:
+ *     tags: [Users]
+ *     summary: Forget Password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                 email:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: password reset link sent to email
+ *       500:
+ *         description: unable to reset password
+ */
 router.post("/forgot-password", forgotPassword);
-router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 
