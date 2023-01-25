@@ -90,7 +90,7 @@ router.post("/login", Login);
  * /users/verify/{signature}:
  *   get:
  *      tags: [Auth]
- *      description: get all users!
+ *      description: verify user
  *      parameters:
  *       - name: signature
  *         in: path
@@ -108,7 +108,7 @@ router.get("/verify/:signature", verifyUser);
  * /users:
  *   get:
  *      tags: [Users]
- *      description: get all users!
+ *      description: get all users..
  *      responses:
  *        200:
  *          description: Returns an array of users.
@@ -288,31 +288,19 @@ router.post("/resetpassword/:id/:token", resetPasswordPost);
  */
 router.post("/reminders", protect, createReminder);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> staging
 /**
  * @openapi
  * /users/all-tutors:
  *   get:
-<<<<<<< HEAD
  *      tags: [Users]
- *      description: get all tutors!
+ *      description: Display all tutor
  *      responses:
  *        200:
- *          description: Returns an array of users.
-=======
- *     description: get all users!
- *     responses:
- *       200:
- *         description: Returns an array of users.
->>>>>>> staging
+ *          description: Returns all tutors.
  */
 router.get("/all-tutors", getAllTutors);
 
 
-<<<<<<< HEAD
 /**
  * @openapi
  * /users/feature-tutors:
@@ -323,20 +311,18 @@ router.get("/all-tutors", getAllTutors);
  *        200:
  *          description: Returns user profile.
  */
-=======
->>>>>>> staging
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
 
 
 /**
  * @openapi
- * /usersrecommended/{category}:
+ * /users/recommended/{category}:
  *   get:
  *      tags: [Users]
  *      security:
  *       - Authorization: []
- *      description: get all users!
+ *      description: recommend a course
  *      parameters:
  *       - name: category
  *         in: query
@@ -501,7 +487,7 @@ router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
  *      tags: [Users]
  *      security:
  *       - Authorization: []
- *      description: get all users!
+ *      description: get area of interest for student
  *      parameters:
  *       - name: tutorid
  *         in: path
@@ -555,26 +541,6 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  */
 router.post("/tutors/availablity", protect, createAvailability);
 
-<<<<<<< HEAD
-
-/**
- * @openapi
- * /users/get-available-tutors/{tutorid}:
- *   get:
- *      tags: [Users]
- *      security:
- *       - Authorization: []
- *      description: students get available tutors
- *      parameters:
- *       - name: tutorid
- *         in: path
- *         required: true
- *         type: string
- *      responses:
- *        200:
- *          description: Returns user profile.
- */
-=======
 // student course route
 router
   .route("/students/courses")
@@ -582,7 +548,6 @@ router
   .post(protect, createStudentCourse)
   .patch(protect, updateCourseProgress);
 
->>>>>>> staging
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 
 
