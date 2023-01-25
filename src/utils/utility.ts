@@ -20,7 +20,9 @@ export const registerSchema = Joi.object().keys({
 export const editprofileSchema = Joi.object().keys({
   email: Joi.string(),
   name: Joi.string(),
-  areaOfInterest: Joi.string(),
+  areaOfInterest: Joi.array().items(Joi.string()).allow(""),
+  image: Joi.string().allow(""),
+  
 });
 
 export const loginSchema = Joi.object().keys({

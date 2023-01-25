@@ -9,18 +9,14 @@ import {
   resetPasswordGet,
   resetPasswordPost,
   getTutorDetails,
-  updateTutorProfile,
   getAllTutors,
   tutorRating,
   verifyUser,
   getUserNotifications,
   readNotification,
-  addAreaOfInterest,
-  deleteAreaOfInterest,
-  getAreaOfInterest,
   getTutorAvailabilities,
   getUserProfile,
-  editprofile,
+  updateProfile,
   createAvailability,
   getStudentCourses,
   createStudentCourse,
@@ -54,12 +50,6 @@ router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
 router.post("/tutors/:id/rate", protect, rateTutor);
 router.get("/tutors/:id/review", getTutorReviews);
-router.put(
-  "/updatetutorprofile",
-  protect,
-  upload.single("image"),
-  updateTutorProfile
-);
 router.post("/forgot-password", forgotPassword);
 router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
@@ -73,13 +63,10 @@ router.get("/notifications", protect, getUserNotifications);
 router.put("/notifications/:id", protect, readNotification);
 router.put(
   "/edit-profile/:signature",
-  upload.single("imageUrl"),
+  upload.single("image"),
   protect,
-  editprofile
+  updateProfile
 );
-router.post("/add-area-of-interest", protect, addAreaOfInterest);
-router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
-router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
 
 // student course route
