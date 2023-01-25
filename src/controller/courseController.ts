@@ -113,7 +113,8 @@ const createCourse = async (req: JwtPayload, res: Response) => {
   try {
     //const userId = req.user?.id;
 
-    console.log("test");
+    console.log(req.files);
+
     const { title, description, category, pricing } = req.body;
 
     const newCourse = await courseInstance.create({
@@ -174,8 +175,6 @@ const updateCourse = async (req: Request, res: Response) => {
     const courses = await courseInstance.findAll();
     console.log(courses);
 
-    //jggj
-
     res.send(courses);
   } catch (error) {
     res.send(error);
@@ -189,10 +188,7 @@ const deleteCourse = async (req: Request, res: Response) => {
       where: { id: id },
     });
 
-    return res.status(200).json({
-      message: "You have successfully deleted a course",
-      course: deleteCourse,
-    });
+    return res.status(204).json();
     //jggj
   } catch (error) {
     return res.status(500).json({
