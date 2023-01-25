@@ -2,7 +2,7 @@ import express from "express";
 import {
   createCourse,
   deleteCourse,
-  getAllCourse,
+  getAllCourses,
   updateCourse,
   addCourse,
   courseRequest,
@@ -23,15 +23,23 @@ const router = express.Router();
  *      tags: [courses]
  *      description: get all courses
  *      parameters:
- *       - name: courses
+ *       - name: query
  *         in: query
- *         required: true
+ *         required: false
+ *         type: string
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         type: string
+ *       - name: limit
+ *         in: query
+ *         required: false
  *         type: string
  *      responses:
  *        200:
  *          description: you have sucessfully retrieved all courses
  */
-router.get("/", getAllCourse);
+router.get("/", protect, getAllCourses);
 
 /**
  * @openapi
@@ -95,17 +103,17 @@ router.get("/getStudentHistory", protect, getStudentHistory);
  *                format: binary
  *              course_material:
  *                type: string
- *                format: binary   
+ *                format: binary
  *    responses:
  *       201:
  *         description: you have sucessfully logged in
- *         content: 
+ *         content:
  *           application/json:
  *              schema:
  *              //   $ref: '#/components/schemas/CourseResponse'
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.post(
   "/createCourse",
@@ -150,7 +158,7 @@ router.post(
  *                format: binary
  *              course_material:
  *                type: string
- *                format: binary   
+ *                format: binary
  *    responses:
  *       201:
  *         description: you have sucessfully updated your course
@@ -254,5 +262,3 @@ router.post("/requestCourse/:id", protect, courseRequest);
 router.post("/rate-courses/:id", protect, rateCourses);
 
 export default router;
-
-
