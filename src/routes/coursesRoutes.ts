@@ -22,6 +22,11 @@ const router = express.Router();
  *  get:
  *      tags: [courses]
  *      description: get all courses
+ *      parameters:
+ *       - name: courses
+ *         in: query
+ *         required: true
+ *         type: string
  *      responses:
  *        200:
  *          description: you have sucessfully retrieved all courses

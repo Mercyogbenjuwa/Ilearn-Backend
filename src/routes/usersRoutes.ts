@@ -119,10 +119,10 @@ router.get("/", getAllUsers);
  *      tags: [Users]
  *      security:
  *       - Authorization: []
- *      description: get all users!
+ *      description: get users profile
  *      responses:
  *        200:
- *          description: Returns user profile.
+ *          description: Returns users profile.
  */
 router.get("/profile", protect, getUserProfile);
 
@@ -133,7 +133,7 @@ router.get("/profile", protect, getUserProfile);
  *      tags: [Users]
  *      security:
  *       - Authorization: []
- *      description: get all users!
+ *      description: get a tutors details
  *      parameters:
  *       - name: tutorid
  *         in: path
@@ -147,7 +147,7 @@ router.get("/atutordetail/:tutorid", protect, getTutorDetails);
 
 /**
  * @openapi
- *  /courses/rate-courses/{id}:
+ *  /courses/rate-courses/{id}/rate:
  *   post:
  *     tags: [Users]
  *     summary: Rate a tutor
@@ -198,7 +198,7 @@ router.post("/tutors/:id/rate", protect, rateTutor);
  *        200:
  *          description: Returns user profile.
  */
-router.get("/tutors/:id/review", getTutorReviews);
+router.get("/tutors/:id/review", getTutorReviews);  //if any conflict, inquire the id to be used
 
 
 /**
@@ -209,7 +209,7 @@ router.get("/tutors/:id/review", getTutorReviews);
  *      - Users
  *    security:
  *       - Authorization: []
- *    summary: Update tutor profile
+ *    summary: Update a tutor profile
  *    requestBody:
  *       content:
  *         multipart/form-data:
@@ -297,18 +297,78 @@ router.post("/reminders", protect, createReminder);
 router.get("/all-tutors", getAllTutors);
 
 
+/**
+ * @openapi
+ * /users/feature-tutors:
+ *   get:
+ *      tags: [Users]
+ *      description: Display tutor ratings for students
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
-router.get("/recommended/:category", protect, getRecommendedCourses);
-router.get("/notifications", protect, getUserNotifications);
-
-
-router.put("/notifications/:id", protect, readNotification);
 
 
 /**
  * @openapi
- * '/users/edit-profile/:signature':
+ * /usersrecommended/{category}:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: get all users!
+ *      parameters:
+ *       - name: category
+ *         in: query
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
+router.get("/recommended/:category", protect, getRecommendedCourses);
+
+
+/**
+ * @openapi
+ * /users/notifications:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: get Users notifications
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
+router.get("/notifications", protect, getUserNotifications);
+
+
+/**
+ * @openapi
+ * '/notifications/{id}':
+ *  put:
+ *    tags:
+ *      - Users
+ *    security:
+ *       - Authorization: []
+ *    summary: read/get single notifications**
+ *    requestBody:
+ *       content:
+ *         application/json:
+ *          schema: 
+ *    responses:
+ *       201:
+ *        sucessfull read notificcation
+ */
+router.put("/notifications/:id", protect, readNotification); //this may be a get request, confirm !!!
+
+
+/**
+ * @openapi
+ * '/users/edit-profile/{signature}':
  *  put:
  *    tags:
  *      - Users
@@ -364,7 +424,7 @@ router.post(
  *  post:
  *    tags: 
  *      - Users
- *    summary: Add area of Interest
+ *    summary: Add area of Interest by student
  *    requestBody: 
  *      required: true
  *      content: 
@@ -372,15 +432,15 @@ router.post(
  *           schema:
  *             type:  object
  *             properties:
- *               name:
+ *               id:
  *                 type: string
- *               totalCourses:
+ *               coursesName:
  *                 type: string
- *               areaOfInterest:
+ *               UserId:
  *                 type: string
  *    responses:
  *       201:
- *         description: you have sucessfully logged in
+ *         description: you have sucessfully added new area of interest
  *         content: 
  *           application/json:
  *              schema:
@@ -400,7 +460,7 @@ router.post("/add-area-of-interest", protect, addAreaOfInterest);
  * /users/delete-area-of-interest/{id}:
  *  delete:
  *      tags: [Users]
- *      description: delete an area of interest
+ *      description: to delete an area of interest by student
  *      security:
  *       - Authorization: []
  *      parameters:
@@ -410,10 +470,29 @@ router.post("/add-area-of-interest", protect, addAreaOfInterest);
  *         type: string
  *      responses:
  *        200:
- *          description: you have sucessfully deleted a courses
+ *          description: you have sucessfully deleted an area of interest
  */
 router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
 
+
+
+/**
+ * @openapi
+ * /users/get-area-of-interest/:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: get all users!
+ *      parameters:
+ *       - name: tutorid
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
 router.get("/get-area-of-interest", protect, getAreaOfInterest);
 
 /**
@@ -458,8 +537,44 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  */
 router.post("/tutors/availablity", protect, createAvailability);
 
+
+/**
+ * @openapi
+ * /users/get-available-tutors/{tutorid}:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: students get available tutors
+ *      parameters:
+ *       - name: tutorid
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns user profile.
+ */
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 
+
+/**
+ * @openapi
+ * /users/tutors/{id}/course:
+ *   get:
+ *      tags: [Users]
+ *      security:
+ *       - Authorization: []
+ *      description: get tutor courses by ID
+ *      parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         type: string
+ *      responses:
+ *        200:
+ *          description: Returns tutor courses.
+ */
 router.get("/tutors/:id/course", protect, getTutorCourses);
 
 export default router;
