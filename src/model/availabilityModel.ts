@@ -8,6 +8,7 @@ export interface AvailabilityAttributes {
     userId: string;
     availableTime: Array<string>;
     availableDate: Date;
+    availableSlots: number
   }
 
 export class AvailabilityInstance extends Model<AvailabilityAttributes> {
@@ -15,6 +16,7 @@ export class AvailabilityInstance extends Model<AvailabilityAttributes> {
     declare userId: string;
     declare availableTime: Array<string>;
     declare availableDate: Date;
+    declare availableSlots: number
   }
 
 AvailabilityInstance.init({
@@ -37,6 +39,10 @@ AvailabilityInstance.init({
         type: DataTypes.DATE,
         allowNull: false,
     },
+    availableSlots: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    }
 },
 {
     sequelize: db,

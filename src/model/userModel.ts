@@ -3,10 +3,13 @@ import { db } from "../Config/index";
 import { courseInstance } from "./courseModel";
 import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
-import { AreaOfInterestInstance} from './areaOfInterestModel';
+import { AreaOfInterestInstance } from "./areaOfInterestModel";
 import { AvailabilityInstance } from "./availabilityModel";
 
 import { NotificationInstance } from "./notificationModel";
+import { StudentCoursesInstance } from "./users/students/studentCoursesModel";
+
+
 
 export interface UserAttributes {
   [x: string]: any;
@@ -114,13 +117,14 @@ UserInstance.init(
   }
 );
 
-AreaOfInterestInstance.belongsTo(UserInstance, 
-  {foreignKey: 'userId', 
-  as: 'user'});
+AreaOfInterestInstance.belongsTo(UserInstance, {
+  foreignKey: "userId",
+  as: "user",
+});
 
-UserInstance.hasMany(AreaOfInterestInstance, 
-  {foreignKey: 'userId', 
-  as: 'interests'
+UserInstance.hasMany(AreaOfInterestInstance, {
+  foreignKey: "userId",
+  as: "interests",
 });
 
 UserInstance.hasMany(courseInstance, {
@@ -140,6 +144,9 @@ courseInstance.belongsTo(UserInstance, {
 UserInstance.hasMany(AvailabilityInstance, {
   foreignKey: "userId",
   as: "availability",
-})
+});
 
-
+// UserInstance.hasMany(StudentCoursesInstance, {
+//   foreignKey: "studentId",
+//   as: "studentCourses",
+// });
