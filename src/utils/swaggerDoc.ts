@@ -11,7 +11,7 @@ const options: swaggerJSDoc.Options = {
       title: "Swagger API Documentation for Ilearn App",
       version: "1.0.0",
       description:
-        "Ilearn is app e-learning app for connecting students to tutor",
+        "Ilearn is an e-learning app for connecting students to tutor",
       contact: {
         name: "ILearn",
       },

@@ -22,6 +22,9 @@ import {
   getUserProfile,
   editprofile,
   createAvailability,
+  getStudentCourses,
+  createStudentCourse,
+  updateCourseProgress,
   getTutorCourses,
   rateTutor,
   getTutorReviews,
@@ -253,6 +256,7 @@ router.put(
 );
 
 router.post("/forgot-password", forgotPassword);
+router.post("/tutors/:id/rate", protect, rateTutor)
 router.get("/resetpassword/:id/:token", resetPasswordGet);
 router.post("/resetpassword/:id/:token", resetPasswordPost);
 
@@ -284,19 +288,31 @@ router.post("/resetpassword/:id/:token", resetPasswordPost);
  */
 router.post("/reminders", protect, createReminder);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> staging
 /**
  * @openapi
  * /users/all-tutors:
  *   get:
+<<<<<<< HEAD
  *      tags: [Users]
  *      description: get all tutors!
  *      responses:
  *        200:
  *          description: Returns an array of users.
+=======
+ *     description: get all users!
+ *     responses:
+ *       200:
+ *         description: Returns an array of users.
+>>>>>>> staging
  */
 router.get("/all-tutors", getAllTutors);
 
 
+<<<<<<< HEAD
 /**
  * @openapi
  * /users/feature-tutors:
@@ -307,6 +323,8 @@ router.get("/all-tutors", getAllTutors);
  *        200:
  *          description: Returns user profile.
  */
+=======
+>>>>>>> staging
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
 
@@ -537,6 +555,7 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  */
 router.post("/tutors/availablity", protect, createAvailability);
 
+<<<<<<< HEAD
 
 /**
  * @openapi
@@ -555,6 +574,15 @@ router.post("/tutors/availablity", protect, createAvailability);
  *        200:
  *          description: Returns user profile.
  */
+=======
+// student course route
+router
+  .route("/students/courses")
+  .get(protect, getStudentCourses)
+  .post(protect, createStudentCourse)
+  .patch(protect, updateCourseProgress);
+
+>>>>>>> staging
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 
 
