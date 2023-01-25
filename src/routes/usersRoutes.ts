@@ -24,7 +24,8 @@ import {
   rateTutor,
   createAvailability,
   getTutorCourses,
-  getTutorReviews
+  getTutorReviews,
+  googleLogin
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -49,6 +50,7 @@ router.get("/verify/:signature", verifyUser);
 router.get("/", getAllUsers);
 router.get("/profile", protect, getUserProfile);
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
+router.get("/googleLogin", googleLogin)
 
 router.post("/tutors/:id/rate", protect, rateTutor);
 router.get("/tutors/:id/review", getTutorReviews);
