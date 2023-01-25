@@ -36,7 +36,7 @@ import { NotificationInstance } from "../model/notificationModel";
 import { AreaOfInterestInstance } from '../model/areaOfInterestModel';
 import moment from "moment";
 import { TutorRatingInstance } from "../model/tutorRatingModel";
-import { tutorRequestInstance } from "../model/tutorRequestModel";
+import { tutorRequestInstance } from "../model/bookSession";
 
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -1040,7 +1040,6 @@ const bookTutor = async (req:Request, res:Response) => {
     if(!tutorAvailability){
       throw new Error ("no tutor availability")
     }
-    console.log(tutorAvailability.toJSON());
     
     if(!tutorAvailability.availableTime.includes(pickedTime)){
       return res.status(404).json({message:'time is not available'})
