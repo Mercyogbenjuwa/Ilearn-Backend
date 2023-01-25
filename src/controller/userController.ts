@@ -21,6 +21,7 @@ import {
   validateReminder,
 } from "../utils/utility";
 import {
+  createNotification,
   emailHtml2,
   emailHtml3,
   mailSent,
@@ -932,6 +933,7 @@ const createAvailability = async (req: Request, res: Response) => {
           dateToIso
       }
     })
+    
    
     if (availabilityExists) {
       return res.status(400).json({
@@ -941,7 +943,7 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length });
+    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length, selectedTime:availableTime });
 
     // Return a success response                                          
     return res.status(200).json({
@@ -1022,39 +1024,47 @@ const getTutorCourses = async (req: Request, res: Response) => {
 
 const bookTutor = async (req:Request, res:Response) => {
   try {
-    const {pickedDate, pickedTime, tutorId} = req.body
-    const { id } = req.user
-    // use moment.js to validate date
-    const date = moment(pickedDate, 'YYYY-MM-DD');
-    if (!date.isValid()) {
+    const {availabilityId, pickedTime} = req.body
+    if(!req.user){
       return res.status(400).json({
-        Error: "Invalid date format, please use format YYYY-MM-DD",
-      });
+        Error: "no user found"
+      })
     }
-    const dateToIso = date.toISOString();
+    const { id } = req.user
+      
+    
 
-    const tutorAvailability = await AvailabilityInstance.findOne({where: {userId:tutorId, availableDate:dateToIso}})
+    const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
+
+
     if(!tutorAvailability){
-      throw new Error
+      throw new Error ("no tutor availability")
     }
+    console.log(tutorAvailability.toJSON());
+    
     if(!tutorAvailability.availableTime.includes(pickedTime)){
       return res.status(404).json({message:'time is not available'})
     }
     const bookSession = await tutorRequestInstance.create({
-      pickedDate,
       pickedTime,
-      tutorId,
-      studentId:id
+      tutorId:tutorAvailability.userId,
+      studentId:id,
+      availabilityId
     })
- const availableTime =   tutorAvailability.availableTime.filter(time=>time !== pickedTime)
+     const availableTime =  tutorAvailability.availableTime.filter(time=>time !== pickedTime)
 
     tutorAvailability.availableTime = availableTime
     tutorAvailability.save()
+    
+   await createNotification("session", tutorAvailability.userId, "This user request a session with you", id, null )
+
     res.status(201).send('session booked successfully')
 
-
   } catch (err) {
-    throw new Error
+    console.log(err);
+    // throw new Error
+    res.status(500).send(err)
+    
   }
 }
 

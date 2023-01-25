@@ -3,10 +3,16 @@ import { db } from "../Config";
 import { courseInstance } from "./courseModel";
 import { UserInstance } from "./userModel";
 
+enum NotificationType  {
+  "course_request",
+  "rating",
+  "session"
+ }
+
 export interface NotificationAttributes {
   [x: string]: any;
   id: string;
-  notificationType: string;
+  notificationType:NotificationType ;
   receiver: string;
   courseId: string;
   sender: string;
@@ -17,9 +23,10 @@ export interface NotificationAttributes {
   createdAt: string;
 }
 
+
 export class NotificationInstance extends Model<NotificationAttributes> {
   declare id: string;
-  declare notificationType: string;
+  declare notificationType: NotificationType;
   declare receiver: string;
   declare courseId: string;
   declare sender: string;
@@ -44,7 +51,7 @@ NotificationInstance.init(
       validate: {
         notNull: { msg: "notificationType is required" },
         notEmpty: { msg: "Provide a notificationType " },
-        isIn: [["course request", "rating"]],
+        isIn: [["course request", "rating", "session"]],
       },
     },
     receiver: {

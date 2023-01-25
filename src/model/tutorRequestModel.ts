@@ -33,13 +33,14 @@ tutorRequestInstance.init(
         type: DataTypes.UUID,
         allowNull: false,
       },
-    pickedDate: {
-        type: DataTypes.UUID,
-        allowNull: false,},
     pickedTime: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       allowNull: false,
     },
+    availabilityId:{
+      type:DataTypes.UUID,
+      allowNull: false,
+    }
   },
 
   {

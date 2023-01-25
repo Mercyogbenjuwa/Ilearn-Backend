@@ -80,6 +80,6 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
 router.post("/tutors/availablity", protect, createAvailability);
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 router.get("/tutors/:id/course", protect, getTutorCourses);
-router.post('/scheduled-time/:tutorId/:studentId', bookTutor)
+router.post('/book-session', protect, bookTutor)
 
 export default router;
