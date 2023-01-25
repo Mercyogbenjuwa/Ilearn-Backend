@@ -28,6 +28,7 @@ import {
   getTutorCourses,
   rateTutor,
   getTutorReviews,
+  bookTutor
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -590,5 +591,6 @@ router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
  *          description: Returns tutor courses.
  */
 router.get("/tutors/:id/course", protect, getTutorCourses);
+router.post('/book-session', protect, bookTutor)
 
 export default router;
