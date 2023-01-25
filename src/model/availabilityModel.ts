@@ -7,6 +7,7 @@ export interface AvailabilityAttributes {
     id: string;
     userId: string;
     availableTime: Array<string>;
+    selectedTime: Array<string>
     availableDate: Date;
     availableSlots: number
   }
@@ -15,6 +16,7 @@ export class AvailabilityInstance extends Model<AvailabilityAttributes> {
     declare id: string;
     declare userId: string;
     declare availableTime: Array<string>;
+    declare selectedTime: Array<string>
     declare availableDate: Date;
     declare availableSlots: number
   }
@@ -41,6 +43,10 @@ AvailabilityInstance.init({
     },
     availableSlots: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    selectedTime: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull: false,
     }
 },
