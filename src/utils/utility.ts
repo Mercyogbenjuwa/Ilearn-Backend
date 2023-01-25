@@ -209,6 +209,32 @@ export const updateTutorSchema = Joi.object().keys({
 });
 // validate schema for creating of reminders
 
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateReminderInput:
+ *       type:  object
+ *       properties:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         startTime:
+ *           type: string
+ *         endTime:
+ *           type: string
+ *    CreateReminderResponse:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         startTime:
+ *           type: string
+ *         endTime:
+ *           type: string
+ */
 export const validateReminder = (input: {}) => {
   const schema = Joi.object({
     title: Joi.string()
