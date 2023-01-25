@@ -28,6 +28,7 @@ import {
   getTutorCourses,
   rateTutor,
   getTutorReviews,
+  getStudentCourse,
 } from "../controller/userController";
 import { protect } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
@@ -88,6 +89,8 @@ router
   .get(protect, getStudentCourses)
   .post(protect, createStudentCourse)
   .patch(protect, updateCourseProgress);
+
+  router.get( "/students/courses/:id",protect,  getStudentCourse)
 
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 router.get("/tutors/:id/course", protect, getTutorCourses);
