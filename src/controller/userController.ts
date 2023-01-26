@@ -985,13 +985,13 @@ const updateProfile = async (req: Request, res: Response) => {
       }
 
       // Check if the expertise is valid
-      expertise.forEach((expert: any) => {
-        if (!expertise.includes(expert)) {
-          return res.status(400).json({
-            Error: `Invalid expertise ${expert}`,
-          });
-        }
-      });
+      // expertise.forEach((expert: any) => {
+      //   if (!expertise.includes(expert)) {
+      //     return res.status(400).json({
+      //       Error: `Invalid expertise ${expert}`,
+      //     });
+      //   }
+      // });
 
       const tutor = await UserInstance.findOne({ where: { id } });
       if (tutor === null) {
@@ -1031,14 +1031,16 @@ const updateProfile = async (req: Request, res: Response) => {
             updatedTutor,
           });
         } else {
-          return res.status(400).json({
-            Error: "Tutor not found",
+          return res.status(200).json({
+            message: "You have successfully updated your account",
+            updateTutor,
           });
         }
+      }else{
+        return res.status(400).json({
+          Error: "There's an error",
+        });
       }
-      return res.status(400).json({
-        Error: "There's an error",
-      });
     } else {
       return res.status(400).json({
         Error: "Invalid user type",
