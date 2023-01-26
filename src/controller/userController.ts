@@ -984,15 +984,6 @@ const updateProfile = async (req: Request, res: Response) => {
         });
       }
 
-      // Check if the expertise is valid
-      // expertise.forEach((expert: any) => {
-      //   if (!expertise.includes(expert)) {
-      //     return res.status(400).json({
-      //       Error: `Invalid expertise ${expert}`,
-      //     });
-      //   }
-      // });
-
       const tutor = await UserInstance.findOne({ where: { id } });
       if (tutor === null) {
         return res.status(400).json({
@@ -1121,6 +1112,40 @@ const bookTutor = async (req:Request, res:Response) => {
     
   }
 }
+const getTutorBookings = async (req: Request, res: Response) => {
+  const tutorId = req.user?.id;
+  try {
+    const bookings = await tutorRequestInstance.findAll({
+      include: [
+        {
+          model: UserInstance,
+          as: "student",
+          attributes: ["name", "email", "image", "areaOfInterest"],
+        },
+        {
+          model: AvailabilityInstance,
+          as: "availableTime",
+          attributes: ["availableTime", "availableDate"],
+        },
+      ],
+      where: { tutorId },
+    });
+    if (!bookings) {
+      return res.status(404).json({
+        Error: "No bookings found",
+      });
+    }
+    return res.status(200).json({
+      bookings,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      error,
+    });
+  }
+};
+
 
 export {
   Login,
@@ -1146,5 +1171,6 @@ export {
   getTutorCourses,
   getTutorReviews,
   updateProfile,
-  bookTutor
+  bookTutor,
+  getTutorBookings
 };
