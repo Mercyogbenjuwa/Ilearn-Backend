@@ -4,6 +4,51 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthPayload } from "../interface/auth.dto";
 import { APP_SECRET } from "../Config";
 
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateUserInput:
+ *       type:  object
+ *       required: 
+ *        - email
+ *        - name
+ *        - password
+ *        - userType
+ *        - areaOfInterest
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *         name:
+ *           type: string
+ *           default: john doe
+ *         password:
+ *           type: string
+ *           default: stringpassword123
+ *         userType:
+ *           type: string
+ *           default: Student
+ *         areaOfInterest:
+ *           type: string
+ *           default: mathematics
+ *    CreateUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
+ *         password:
+ *           type: string
+ *         userType:
+ *           type: string
+ *         areaOfInterest:
+ *           type: string
+ *         signature:
+ *           type: string
+ */
 export const registerSchema = Joi.object().keys({
   email: Joi.string().required(),
   name: Joi.string().required(),
@@ -17,12 +62,68 @@ export const registerSchema = Joi.object().keys({
   //   .messages({ "any.only": "{{#label}} does not match" }),
 });
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    EditUserProfile:
+ *       type:  object
+ *       required: 
+ *        - email
+ *        - name
+ *        - areaOfInterest
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *         name:
+ *           type: string
+ *           default: John Doe
+ *         areaOfInterest:
+ *           type: string
+ *           default: mathematics
+ *    EditUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
+ *         areaOfInterst:
+ *           type: string
+ */
 export const editprofileSchema = Joi.object().keys({
   email: Joi.string(),
   name: Joi.string(),
-  areaOfInterest: Joi.string(),
+  areaOfInterest: Joi.array().items(Joi.string()).allow(""),
+  image: Joi.string().allow(""),
+  
 });
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    LoginUserInput:
+ *       type:  object
+ *       required: 
+ *        - email
+ *        - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: oluwaseyimakinde64@gmail.com
+ *         password:
+ *           type: string
+ *           default: 1234567890
+ *    LoginUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ */
 export const loginSchema = Joi.object().keys({
   email: Joi.string().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
@@ -65,7 +166,27 @@ export const validatePassword = async (
   return (await GeneratePassword(enteredPassword, salt)) === savedPassword;
 };
 
-//schema for reset Password
+//======schema for reset Password=============//
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    ForgetPasswordInput:
+ *       type:  object
+ *       required: 
+ *        - email
+ *       properties:
+ *         email:
+ *           type: string
+ *           default: john.doe@example.com
+ *    LoginUserResponse:
+ *       type:  object
+ *       properties:
+ *         email:
+ *           type: string
+ *         signature:
+ *           type: string
+ */
 export const forgotPasswordSchema = Joi.object().keys({
   email: Joi.string().required(),
 });
@@ -83,13 +204,41 @@ export const resetPasswordSchema = Joi.object().keys({
 });
 
 export const updateTutorSchema = Joi.object().keys({
-  name: Joi.string(),
-  image: Joi.string(),
-  areaOfInterest: Joi.string(),
-  rating: Joi.number()
+  name: Joi.string().required(),
+  about: Joi.string().allow(""),
+  expertise: Joi.array().items(Joi.string()).allow(""),
+  location: Joi.string().allow(""),
+  status: Joi.string().allow(""),
+  image: Joi.string().allow(""),
 });
 // validate schema for creating of reminders
 
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateReminderInput:
+ *       type:  object
+ *       properties:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         startTime:
+ *           type: string
+ *         endTime:
+ *           type: string
+ *    CreateReminderResponse:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         startTime:
+ *           type: string
+ *         endTime:
+ *           type: string
+ */
 export const validateReminder = (input: {}) => {
   const schema = Joi.object({
     title: Joi.string()
@@ -121,8 +270,62 @@ export const ratingCourseSchema = Joi.object().keys({
   ratingValue: Joi.number().required(),
 });
 
-//schema for create_course
+//========schema for create_course===========
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CourseInput:
+ *       type:  object
+ *       required: 
+ *        - title
+ *        - description
+ *        - price
+ *        - category
+ *        - image
+ *        - video
+ *        - file
+ *       properties:
+ *         title:
+ *           type: string
+ *           default: graphic design
+ *         description:
+ *           type: string
+ *           default: master graphic design in one week
+ *         price:
+ *           type: string
+ *           default: 7000
+ *         category:
+ *           type: string
+ *           default: graphic design
+ *         image:
+ *           type: string
+ *           format: binary
+ *         video:
+ *           type: string
+ *           format: binary
+ *         file:
+ *           type: string
+ *           format: binary
+ *    CreateUserResponse:
+ *       type:  object
+ *       properties:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         price:
+ *           type: string
+ *         category:
+ *           type: string
+ *         image:
+ *           type: string
+ *         video:
+ *           type: string
+ *         file:
+ *           type: string
+ */
 export const createCourseSchema = Joi.object().keys({
   title: Joi.string().required(),
   description: Joi.string().required(),

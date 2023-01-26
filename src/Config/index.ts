@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
+
 dotenv.config();
 
 export const accountSid = process.env.AccountSID;
@@ -11,6 +12,11 @@ export const FromAdminMail = process.env.FromAdminMail as string;
 export const userSubject = process.env.usersubject as string;
 export const GMAIL_PASS = process.env.GMAIL_USER;
 export const GMAIL_USER = process.env.GMAIL_PASS;
+export const Client_ID = process.env.Client_ID;
+export const Client_Secret = process.env.Client_Secret;
+
+
+
 
 // for hosted DB
 export const db = new Sequelize(process.env.DB_CONNECTION_STRING!, {
@@ -41,3 +47,6 @@ export const connectDB = async () => {
     console.error("Unable to connect to the database:", error);
   }
 };
+
+
+

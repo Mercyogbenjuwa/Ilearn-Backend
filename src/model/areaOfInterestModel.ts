@@ -11,8 +11,7 @@ export interface AreaOfInterestAttributes{
 export class AreaOfInterestInstance extends Model<AreaOfInterestAttributes>{
     declare id: string;
     declare courseName: string;
-    declare userId: string;
-    
+    declare userId: string; 
 }
 
 AreaOfInterestInstance.init({

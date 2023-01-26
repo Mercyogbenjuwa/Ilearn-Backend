@@ -9,6 +9,7 @@ import { UserInstance } from "../model/userModel";
 import { Includeable } from "sequelize";
 import { CourseRatingInstance } from "../model/courseRatingModel";
 import { option, ratingCourseSchema } from "../utils/utility";
+import { Op } from "sequelize";
 
 UserInstance;
 interface requestedCourse extends courseInstance {
@@ -58,18 +59,52 @@ const getStudentHistory = async (req: Request, res: Response) => {
   console.log(req.user);
 };
 
-const getAllCourse = async (req: Request, res: Response) => {
+//To Get All Courses
+const getAllCourses = async (req: Request, res: Response) => {
   try {
-    //const userId = req.user?.id;
-    const course = await courseInstance.findAndCountAll(); //{ where: { id: userId } }
-    return res.status(200).json({
-      message: "You have successfully retrieved all courses",
-      course: course,
+    const { query, page, limit } = req.query as {
+      query?: string;
+      page?: string;
+      limit?: string;
+    };
+    const currentPage = page ? parseInt(page) : 1;
+    const limitPerPage = limit ? parseInt(limit) : 10;
+    const offset = (currentPage - 1) * limitPerPage;
+    let queryPage;
+    if (query) {
+      queryPage = {
+        [Op.or]: [
+          { description: { [Op.substring]: `${query}` } },
+          { title: { [Op.substring]: `${query}` } },
+        ],
+      };
+    } else {
+      queryPage = {};
+    }
+    const findCourse = await courseInstance.findAndCountAll({
+      where: queryPage,
+      attributes: ["category","course_image", "title", "description", "rating", "pricing", "id"],
+      include: [{
+        model: UserInstance,
+        as: "tutor",
+        attributes: ["name"]
+      }],
+      limit: limitPerPage,
+      offset,
     });
-  } catch (err: any) {
+    // Calculate the total number of pages      
+    const totalPages = Math.ceil(findCourse.count / limitPerPage);
+    // Return the results in a JSON response        
+    return res.status(200).json({
+      courseNumber: findCourse.count,
+      findCourse: findCourse.rows,
+      totalPages,
+      currentPage,
+    });
+  } catch (error) {
     return res.status(500).json({
-      route: "/users/get-all-courses",
-      error: err.message,
+      Error: "Internal Server Error: All Course",
+      error,
     });
   }
 };
@@ -78,8 +113,10 @@ const createCourse = async (req: JwtPayload, res: Response) => {
   try {
     //const userId = req.user?.id;
 
-    console.log("test");
+    console.log(req.files);
+
     const { title, description, category, pricing } = req.body;
+    console.log("body is ", req.body);
 
     const newCourse = await courseInstance.create({
       title,
@@ -115,6 +152,9 @@ const updateCourse = async (req: Request, res: Response) => {
       tutorId,
       tutor_Name,
     } = req.body;
+console.log("req.body is ", req.body)
+console.log("params is ", req.params)
+
     // updating course
     const updateCourse = await courseInstance.update(
       {
@@ -130,7 +170,7 @@ const updateCourse = async (req: Request, res: Response) => {
         where: { id: id },
       }
     );
-
+      console.log("updated course is ", updateCourse)
     return res.status(200).json({
       message: "You have successfully updated a course",
       course: updateCourse,
@@ -138,8 +178,6 @@ const updateCourse = async (req: Request, res: Response) => {
 
     const courses = await courseInstance.findAll();
     console.log(courses);
-
-    //jggj
 
     res.send(courses);
   } catch (error) {
@@ -154,10 +192,7 @@ const deleteCourse = async (req: Request, res: Response) => {
       where: { id: id },
     });
 
-    return res.status(200).json({
-      message: "You have successfully deleted a course",
-      course: deleteCourse,
-    });
+    return res.status(204).json();
     //jggj
   } catch (error) {
     return res.status(500).json({
@@ -317,7 +352,8 @@ const rateCourses = async (req: Request, res: Response) => {
     {
       return acc + curr.ratingValue;
     }, 0);
-    const averageRating = totalRating / courseRatings.length;
+    let averageRating = totalRating / courseRatings.length;
+    averageRating = parseFloat(averageRating.toFixed(1));
     await courseInstance.update(
       { rating: averageRating },
       { where: { id: req.params.id } }
@@ -337,8 +373,10 @@ const rateCourses = async (req: Request, res: Response) => {
   }
 };
 
+
+
 export {
-  getAllCourse,
+  getAllCourses,
   getCourseById,
   getStudentHistory,
   createCourse,

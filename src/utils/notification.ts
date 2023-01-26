@@ -8,6 +8,7 @@ import {
   userSubject,
 } from "../Config";
 import nodemailer from "nodemailer";
+import { NotificationAttributes, NotificationInstance } from "../model/notificationModel";
 
 export const GenerateOTP = () => {
   const otp = Math.floor(1000 + Math.random() * 9000);
@@ -140,3 +141,17 @@ export const emailHtml3 = (link: string): string => {
     `;
   return response;
 };
+
+
+
+export const createNotification = async(notificationType:string,receiver:string,description:string,sender:string,courseId:string|null) => {
+
+
+ return await NotificationInstance.create({
+    notificationType,
+    receiver,
+    description,
+    sender,
+    courseId: courseId || null
+  });
+}

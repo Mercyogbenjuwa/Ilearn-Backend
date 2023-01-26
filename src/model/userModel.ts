@@ -5,9 +5,10 @@ import { courseRequestInstance } from "./courseRequestsModel";
 import { ReminderInstance } from "./reminderModel";
 import { AreaOfInterestInstance } from "./areaOfInterestModel";
 import { AvailabilityInstance } from "./availabilityModel";
-
 import { NotificationInstance } from "./notificationModel";
 import { StudentCoursesInstance } from "./users/students/studentCoursesModel";
+
+
 
 export interface UserAttributes {
   [x: string]: any;
@@ -15,12 +16,17 @@ export interface UserAttributes {
   name: string;
   email: string;
   password: string;
-  areaOfInterest: string;
+  areaOfInterest: Array<string>;
   userType: string;
   verified: boolean;
   salt: string;
   image: string;
   rating: number;
+  about: string;
+  expertise: Array<string>;
+  location: string;
+  status: boolean;
+  
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -28,12 +34,17 @@ export class UserInstance extends Model<UserAttributes> {
   declare email: string;
   declare name: string;
   declare password: string;
-  declare areaOfInterest: string;
+  declare areaOfInterest: Array<string>;
   declare userType: string;
   declare verified: boolean;
   declare salt: string;
   declare image: string;
   declare rating: number;
+  declare about: string;
+  declare expertise: Array<string>;
+  declare location: string;
+  declare status: boolean;
+
 }
 
 UserInstance.init(
@@ -41,7 +52,7 @@ UserInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      //defaultValue: DataTypes.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
     email: {
@@ -82,10 +93,21 @@ UserInstance.init(
         notEmpty: { msg: "Provide a salt" },
       },
     },
-    areaOfInterest: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    areaOfInterest:{
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: ["Mathematics"],
+    validate: {
+      customValidator: (values: []) => {
+        values.forEach((value)=>{
+          const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
+          if (!enums.includes(value)) {
+            throw new Error("not a valid option");
+          }
+        })
+       
+      },
     },
+  },
     userType: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -106,8 +128,31 @@ UserInstance.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
+    about: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    expertise:{
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: ["Mathematics"],
+    validate: {
+      customValidator: (value: any) => {
+        const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
+        if (!enums.includes(value)) {
+          throw new Error("not a valid option");
+        }
+      },
+    },
   },
-
+  },
   {
     sequelize: db,
     tableName: "user",
