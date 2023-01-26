@@ -1145,28 +1145,6 @@ const getTutorCourses = async (req: Request, res: Response) => {
   }
 };
 
-/**=====================================Scheduled Time for student===================================== **/
-
-/*const scheduledTimeForStudent = async (req:JwtPayload, res:Response) => {
-  try {
-   const { studentId, tutorId } = req.params
-   const {selectedTime} = req.body
-   const tutor = await UserInstance.findOne({ where: { id: tutorId } });
-   if (tutor == null) {
-     return res.status(400).send('cannot find such tutor')
-     //const studentScheduledtime = await UserInstance.findOne({where:{id: studentId}})
-     //if(studentScheduledtime){
-       //const ScheduledTime = await UserInstance.create()
-     }
-     const student = await UserInstance.findOne({where: {id: studentId}})
-     if (student == null){
-       return res.status(400).send('cannot find such user')
-     }
-     return res.send(`your lesson is scheduled at ${selectedTime}`)
-   } catch (error) {
-     throw new Error
-  }
-}*/
 
 const bookTutor = async (req:Request, res:Response) => {
   try {
@@ -1212,6 +1190,40 @@ const bookTutor = async (req:Request, res:Response) => {
     
   }
 }
+const getTutorBookings = async (req: Request, res: Response) => {
+  const tutorId = req.user?.id;
+  try {
+    const bookings = await tutorRequestInstance.findAll({
+      include: [
+        {
+          model: UserInstance,
+          as: "student",
+          attributes: ["name", "email", "image", "areaOfInterest"],
+        },
+        {
+          model: AvailabilityInstance,
+          as: "availableTime",
+          attributes: ["availableTime", "availableDate"],
+        },
+      ],
+      where: { tutorId },
+    });
+    if (!bookings) {
+      return res.status(404).json({
+        Error: "No bookings found",
+      });
+    }
+    return res.status(200).json({
+      bookings,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      error,
+    });
+  }
+};
+
 
 export {
   Login,
@@ -1240,5 +1252,6 @@ export {
   updateCourseProgress,
   getTutorCourses,
   getTutorReviews,
-  bookTutor
+  bookTutor,
+  getTutorBookings
 };
