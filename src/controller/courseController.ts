@@ -83,7 +83,7 @@ const getAllCourses = async (req: Request, res: Response) => {
     }
     const findCourse = await courseInstance.findAndCountAll({
       where: queryPage,
-      attributes: ["category","course_image", "title", "description", "rating", "pricing"],
+      attributes: ["category","course_image", "title", "description", "rating", "pricing", "id"],
       include: [{
         model: UserInstance,
         as: "tutor",
@@ -116,6 +116,7 @@ const createCourse = async (req: JwtPayload, res: Response) => {
     console.log(req.files);
 
     const { title, description, category, pricing } = req.body;
+    console.log("body is ", req.body);
 
     const newCourse = await courseInstance.create({
       title,
@@ -151,6 +152,9 @@ const updateCourse = async (req: Request, res: Response) => {
       tutorId,
       tutor_Name,
     } = req.body;
+console.log("req.body is ", req.body)
+console.log("params is ", req.params)
+
     // updating course
     const updateCourse = await courseInstance.update(
       {
@@ -166,7 +170,7 @@ const updateCourse = async (req: Request, res: Response) => {
         where: { id: id },
       }
     );
-
+      console.log("updated course is ", updateCourse)
     return res.status(200).json({
       message: "You have successfully updated a course",
       course: updateCourse,
