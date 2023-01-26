@@ -844,6 +844,81 @@ const createAvailability = async (req: Request, res: Response) => {
   }
 };
 
+// const getStudentCourse = async (req: Request, res: Response) => {
+//   try {
+//     const { id }: { id: string } = req.user;
+
+//     const courses = await StudentCoursesInstance.findOne({
+//       where: { studentId: id },
+//       include: [
+//         {
+//           model: courseInstance,
+//           as: "course",
+//           attributes: ["title", "course_image"],
+//         },
+//         { model: UserInstance, as: "tutor", attributes: ["name"] },
+//       ],
+//       order: [["createdAt", "DESC"]],
+//     });
+
+//     if (!courses) {
+//       return res.status(404).json({
+//         message: "you currently have no courses",
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "course fetched successfully",
+//       courses,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       Error: "Internal server error",
+//       message: error,
+//     });
+//   }
+// };
+
+const getStudentCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const courseDetails = await StudentCoursesInstance.findOne({
+      where:{courseId: id},
+      include: [
+        {
+          model: courseInstance,
+          as: "course",
+          attributes: ["title", "course_image", "course_material"],
+        },
+      ]
+    })
+      // where: { studentId: id },
+     
+    //     { model: UserInstance, as: "tutor", attributes: ["name"] },
+    //   ],
+    //   order: [["createdAt", "DESC"]],
+    // });
+
+    if (!courseDetails) {
+      return res.status(404).json({
+        message: "you currently have no course",
+      });
+    }
+
+    res.status(200).json({
+      message: "course fetched successfully",
+      courseDetails,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Error: "Internal server error",
+      message: error,
+    });
+  }
+};
+
+
 const getStudentCourses = async (req: Request, res: Response) => {
   try {
     const { id } = req.user!;
@@ -1234,6 +1309,7 @@ export {
   getUserProfile,
   rateTutor,
   createAvailability,
+  getStudentCourse,
   getStudentCourses,
   createStudentCourse,
   updateCourseProgress,

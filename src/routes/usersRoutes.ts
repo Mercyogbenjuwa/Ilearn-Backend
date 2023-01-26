@@ -24,6 +24,7 @@ import {
   getTutorCourses,
   rateTutor,
   getTutorReviews,
+  getStudentCourse,
   googleLogin,
   bookTutor,
   getTutorBookings
@@ -486,6 +487,8 @@ router
   .get(protect, getStudentCourses)
   .post(protect, createStudentCourse)
   .patch(protect, updateCourseProgress);
+
+  router.get( "/students/courses/:id",protect,  getStudentCourse)
 
 router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 
