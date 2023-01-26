@@ -1000,7 +1000,7 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
 
 const createAvailability = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
     const { availableDate, availableTime } = req.body;
 
     // Verify that the user exists
@@ -1062,7 +1062,7 @@ const createAvailability = async (req: Request, res: Response) => {
 
 const getStudentCourses = async (req: Request, res: Response) => {
   try {
-    const { id }: { id: string } = req.user;
+    const { id } = req.user!;
 
     const courses = await StudentCoursesInstance.findAll({
       where: { studentId: id },
@@ -1099,7 +1099,7 @@ const getStudentCourses = async (req: Request, res: Response) => {
 // looks like this should be created when a user make a payment.
 const createStudentCourse = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
     const { courseId } = req.body;
 
     const validCourse = await courseInstance.findOne({
@@ -1139,7 +1139,7 @@ const createStudentCourse = async (req: Request, res: Response) => {
 
 const updateCourseProgress = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
     const { courseId, currentPage, totalPages } = req.body;
     const course = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },

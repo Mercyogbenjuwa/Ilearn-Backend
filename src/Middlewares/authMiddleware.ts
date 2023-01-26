@@ -14,7 +14,7 @@ interface JwtExpPayload {
 declare global {
   namespace Express {
     interface Request {
-      user: UserAttributes;
+      user?: UserAttributes;
     }
   }
 }
