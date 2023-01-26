@@ -508,66 +508,6 @@ const getRecommendedCourses = async (req: Request, res: Response) => {
     res.status(500).json({ Error: error.message });
   }
 };
-
-/**=========================== updateTutorProfile ============================== **/
-
-export const updateTutorProfile = async (req: Request, res: Response) => {
-  try {
-    const id = req.user?.id;
-
-    const { name, areaOfInterest } = req.body;
-    const joiValidateTutor = updateTutorSchema.validate(req.body, option);
-    if (joiValidateTutor.error) {
-      return res.status(400).json({
-        Error: joiValidateTutor.error.details[0].message,
-      });
-    }
-
-    const courses = await courseInstance.findAndCountAll({
-      where: { tutorId: id },
-    });
-
-    const totalCourses = courses.count.toString();
-
-    const tutor = await UserInstance.findOne({ where: { id } });
-    if (tutor === null) {
-      return res.status(400).json({
-        Error: "You are not authorized to update your profile",
-      });
-    }
-    // console.log(Tutor);
-
-    await tutor.update({
-      image: req.file?.path,
-      name,
-      totalCourses,
-      areaOfInterest,
-    });
-
-    const updateTutor = await tutor.save();
-    // await updateTutor.save({fields: ['name', 'totalCourses', 'areaOfInterest', 'image']})
-    // this is for saving some fields
-
-    if (updateTutor) {
-      const tutor = await UserInstance.findOne({ where: { id } });
-      return res.status(200).json({
-        message: "You have successfully updated your account",
-        tutor,
-      });
-    }
-
-    return res.status(400).json({
-      Error: "There's an error",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      Error: "Internal server error",
-      route: "/vendor/update-profile",
-      error,
-    });
-  }
-};
-
 /**=========================== get Tutor Details ============================== **/
 
 export const getTutorDetails = async (req: Request, res: Response) => {
@@ -845,161 +785,6 @@ const getTutorReviews = async (req: Request, res: Response) => {
   }
 };
 
-/**===================================== Edit-profile===================================== **/
-const editprofile = async (req: JwtPayload, res: Response) => {
-  //user is a record
-  try {
-    const { id } = req.user;
-    const { image, name, email, areaOfInterest } = req.body;
-    const validateResult = editprofileSchema.validate(req.body, option);
-    if (validateResult.error) {
-      return res.status(400).json({
-        Error: validateResult.error.details[0].message,
-      });
-    }
-    const user = await UserInstance.findOne({
-      where: { id: id },
-    });
-    if (!user) {
-      return res.status(400).json({
-        Error: "User does not exist",
-      });
-    }
-    const updateUser = await UserInstance.update(
-      {
-        image: req.file.path,
-        name,
-        email,
-        areaOfInterest,
-      },
-      {
-        where: { id: id },
-      }
-    );
-
-    return res.status(200).json({
-      message: "User updated successfully",
-      name: user.name,
-      areaOfInterest: user.areaOfInterest,
-      email: user.email,
-      image: user.image,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      Error: "Internal server Error",
-      route: "/users/edit-profile",
-    });
-  }
-};
-
-const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
-  try {
-    const { userId } = req.user;
-    const { id } = req.user;
-    const { courseName } = req.body;
-    const courseId = uuidv4();
-    if (!courseName) {
-      return res.status(400).json({
-        Error: "courseName is required",
-      });
-    }
-
-    const user = await UserInstance.findOne({
-      where: { id: id },
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        Error: "Not Authorized",
-      });
-    } else if (user) {
-      const addAreaOfInterest = await AreaOfInterestInstance.create({
-        id: uuidv4(),
-        courseName,
-        userId,
-      });
-      return res.status(200).json({
-        message: "Area of interest added successfully",
-        addAreaOfInterest,
-      });
-    }
-
-    return res.status(400).json({
-      Error: "Not Authorized",
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      Error: "Internal server Error",
-      route: "/users/add-area-of-interest",
-    });
-  }
-};
-
-const deleteAreaOfInterest = async (req: Request, res: Response) => {
-  try {
-    if (!req.user) return "test";
-    const { id } = req.user;
-    const courseId = req.params.id;
-
-    const user = await UserInstance.findOne({
-      where: { id: id },
-    });
-
-    if (user) {
-      const deleteAreaOfInterest = await AreaOfInterestInstance.destroy({
-        where: {
-          id: courseId,
-        },
-      });
-
-      return res.status(200).json({
-        message: "Area of interest deleted successfully",
-        deleteAreaOfInterest,
-      });
-    }
-    return res.status(400).json({
-      Error: "Not Authorized",
-    });
-  } catch (err) {
-    return res.status(500).json({
-      Error: "Internal server Error",
-      route: "/users/delete-area-of-interest",
-    });
-  }
-};
-
-const getAreaOfInterest = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.user!;
-
-    const user = await UserInstance.findOne({
-      where: { id: id },
-    });
-
-    if (user) {
-      const getAreaOfInterest = await AreaOfInterestInstance.findAll({
-        where: {
-          userId: id,
-        },
-      });
-
-      return res.status(200).json({
-        message: "Area of interest fetched successfully",
-        getAreaOfInterest,
-      });
-    }
-    return res.status(400).json({
-      Error: "Not Authorized",
-    });
-  } catch (err) {
-    return res.status(500).json({
-      Error: "Internal server Error",
-      route: "/users/get-area-of-interest",
-    });
-  }
-};
-
 const createAvailability = async (req: Request, res: Response) => {
   try {
     const { id } = req.user!;
@@ -1213,6 +998,143 @@ const getTutorCourses = async (req: Request, res: Response) => {
   }
 };
 
+/**===================================== Edit-profile===================================== **/
+
+const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
+    const userType = req.user?.userType;
+
+    if (userType === "Student") {
+      // Use destructuring assignment to extract the properties from req.body
+      const { name, email, image, areaOfInterest } = req.body;
+      // Validate the request body using the updateStudentSchema
+      const validateResult = editprofileSchema.validate(req.body);
+      if (validateResult.error) {
+        return res.status(400).json({
+          Error: validateResult.error.details[0].message,
+        });
+      }
+      // Find the student by id
+      const student = await UserInstance.findOne({ where: { id } });
+      if (!student) {
+        return res.status(400).json({
+          Error: "You are not authorized to update your profile",
+        });
+      }
+
+      // Update the student's properties
+      await student.update({
+        image: req.file?.path,
+        name,
+        areaOfInterest,
+        email,
+      });
+
+
+      // Save the changes to the database
+      const updateStudent = await student.save();
+
+      // Return a success response with the updated student
+      return res.status(200).json({
+        message: "You have successfully updated your account",
+        student: {
+          ...student.toJSON(),
+          areaOfInterest,
+        },
+      });
+    } else if (userType === "Tutor") {
+      const { name, about, location, expertise } = req.body;
+      const joiValidateTutor = updateTutorSchema.validate(req.body);
+      if (joiValidateTutor.error) {
+        return res.status(400).json({
+          Error: joiValidateTutor.error.details[0].message,
+        });
+      }
+
+      const tutor = await UserInstance.findOne({ where: { id } });
+      if (tutor === null) {
+        return res.status(400).json({
+          Error: "You are not authorized to update your profile",
+        });
+      }
+
+      await tutor.update({
+        image: req.file?.path,
+        name,
+        about,
+        location,
+        expertise,
+      });
+
+      const updateTutor = await tutor.save();
+      console.log("---------",updateTutor);
+      if (updateTutor) {
+        // const tutor = await UserInstance.findOne({ where: { id } });
+        if (
+          //updateTutor?.areaOfInterest.length > 0 &&
+          updateTutor?.image !== null &&
+          updateTutor?.rating !== null &&
+          updateTutor?.about !== null &&
+          updateTutor?.expertise.length > 0 &&
+          updateTutor?.location !== null
+        ) {
+          await updateTutor?.update({
+            status: true,
+          });
+          const updatedTutor = await updateTutor?.save();
+          console.log(updatedTutor);
+          
+          return res.status(200).json({
+            message: "You have successfully updated your account",
+            updatedTutor,
+          });
+        } else {
+          return res.status(200).json({
+            message: "You have successfully updated your account",
+            updateTutor,
+          });
+        }
+      }else{
+        return res.status(400).json({
+          Error: "There's an error",
+        });
+      }
+    } else {
+      return res.status(400).json({
+        Error: "Invalid user type",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      error,
+    });
+  }
+};
+
+/**=====================================Scheduled Time for student===================================== **/
+
+/*const scheduledTimeForStudent = async (req:JwtPayload, res:Response) => {
+  try {
+   const { studentId, tutorId } = req.params
+   const {selectedTime} = req.body
+   const tutor = await UserInstance.findOne({ where: { id: tutorId } });
+   if (tutor == null) {
+     return res.status(400).send('cannot find such tutor')
+     //const studentScheduledtime = await UserInstance.findOne({where:{id: studentId}})
+     //if(studentScheduledtime){
+       //const ScheduledTime = await UserInstance.create()
+     }
+     const student = await UserInstance.findOne({where: {id: studentId}})
+     if (student == null){
+       return res.status(400).send('cannot find such user')
+     }
+     return res.send(`your lesson is scheduled at ${selectedTime}`)
+   } catch (error) {
+     throw new Error
+  }
+}*/
 
 const bookTutor = async (req:Request, res:Response) => {
   try {
@@ -1308,10 +1230,6 @@ export {
   getAllTutors,
   getUserNotifications,
   readNotification,
-  editprofile,
-  addAreaOfInterest,
-  deleteAreaOfInterest,
-  getAreaOfInterest,
   getTutorAvailabilities,
   getUserProfile,
   rateTutor,
@@ -1321,6 +1239,7 @@ export {
   updateCourseProgress,
   getTutorCourses,
   getTutorReviews,
+  updateProfile,
   bookTutor,
   getTutorBookings
 };

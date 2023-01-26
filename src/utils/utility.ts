@@ -95,7 +95,9 @@ export const registerSchema = Joi.object().keys({
 export const editprofileSchema = Joi.object().keys({
   email: Joi.string(),
   name: Joi.string(),
-  areaOfInterest: Joi.string(),
+  areaOfInterest: Joi.array().items(Joi.string()).allow(""),
+  image: Joi.string().allow(""),
+  
 });
 
 /**
@@ -202,10 +204,12 @@ export const resetPasswordSchema = Joi.object().keys({
 });
 
 export const updateTutorSchema = Joi.object().keys({
-  name: Joi.string(),
-  image: Joi.string(),
-  areaOfInterest: Joi.string(),
-  rating: Joi.number()
+  name: Joi.string().required(),
+  about: Joi.string().allow(""),
+  expertise: Joi.array().items(Joi.string()).allow(""),
+  location: Joi.string().allow(""),
+  status: Joi.string().allow(""),
+  image: Joi.string().allow(""),
 });
 // validate schema for creating of reminders
 
