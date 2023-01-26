@@ -26,6 +26,7 @@ export interface UserAttributes {
   expertise: Array<string>;
   location: string;
   status: boolean;
+  
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -51,7 +52,7 @@ UserInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      //defaultValue: DataTypes.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
     email: {
