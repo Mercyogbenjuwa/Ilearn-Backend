@@ -28,6 +28,7 @@ import {
   getTutorCourses,
   rateTutor,
   getTutorReviews,
+  googleLogin,
   bookTutor,
   getTutorBookings
 } from "../controller/userController";
@@ -149,6 +150,7 @@ router.get("/profile", protect, getUserProfile);
  *          description: Returns user profile.
  */
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
+router.get("/googleLogin", googleLogin)
 
 /**
  * @openapi

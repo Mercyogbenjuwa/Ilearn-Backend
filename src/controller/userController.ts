@@ -1,9 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, request } from "express";
 import { UserAttributes, UserInstance } from "../model/userModel";
 import { AvailabilityInstance } from "../model/availabilityModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
+import admin from "../Config/firebase";
+import "../utils/passport"
 import {
   forgotPasswordSchema,
   GeneratePassword,
@@ -50,6 +52,7 @@ const getAllUsers = async (req: Request, res: Response) => {
     res.status(401).send("An error occurred");
   }
 };
+
 
 /**===================================== Register User ===================================== **/
 const Register = async (req: Request, res: Response, next: NextFunction) => {
@@ -389,6 +392,71 @@ const createReminder = async (req: Request, res: Response) => {
     });
   }
 };
+
+// /**=========================== Google Login ============================== **/
+
+const googleLogin = async (req:Request, res:Response) => {
+  console.log("thos")
+  if(!req.headers.authorization){
+    return res.status(500).send({ message: "Invalid token"})
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  
+  try {
+    const decodeValue = await admin.auth().verifyIdToken(token);
+    if(!decodeValue){
+      return res.status(505).json({ message: "Unauthorized"})
+    }else{
+      //
+      const userExists = await UserInstance.findOne({where: { email: decodeValue.email}})
+      console.log(userExists);
+      
+      if(!userExists){    
+        const newUser = await UserInstance.create({
+            name: decodeValue?.name,
+            email: decodeValue?.email,
+            image: decodeValue?.picture,
+            verified: decodeValue?.email_verified,
+            userType: "Student",
+            password:Math.floor(Math.random() * 10000),
+            salt:"the quick brown fox jump over the lazy dog"
+
+        })
+        res.status(200).json({message:"user created successfully",user: newUser})
+
+      }else{
+        
+        try {
+          let result = await UserInstance.findOne({where:{ email: decodeValue.email }})
+          console.log(result);
+          result?.update({createdAt: decodeValue.createdAt})
+          
+          if (!result){
+            return res.status(400).json({message:"user could not be updated"})
+          }
+          let signature = await GenerateSignature({
+            id: result.id,
+            email: result.email,
+            verified: result.verified,
+          });
+          res.status(200).json({message: "user logged in successfully", signature})
+
+          
+        } catch (error) {
+          res.status(400).json({message: "Error updating user", error})
+        }
+      }
+        
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error }); 
+  }
+}
+
+
+
+
 
 /**=========================== Get all Reminders============================== **/
 
@@ -934,7 +1002,7 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
 
 const createAvailability = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
     const { availableDate, availableTime } = req.body;
 
     // Verify that the user exists
@@ -993,7 +1061,7 @@ const createAvailability = async (req: Request, res: Response) => {
 
 const getStudentCourses = async (req: Request, res: Response) => {
   try {
-    const { id }: { id: string } = req.user;
+    const { id } = req.user!;
 
     const courses = await StudentCoursesInstance.findAll({
       where: { studentId: id },
@@ -1030,7 +1098,7 @@ const getStudentCourses = async (req: Request, res: Response) => {
 // looks like this should be created when a user make a payment.
 const createStudentCourse = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
     const { courseId } = req.body;
 
     const validCourse = await courseInstance.findOne({
@@ -1070,7 +1138,7 @@ const createStudentCourse = async (req: Request, res: Response) => {
 
 const updateCourseProgress = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user;
+    const { id } = req.user!;
     const { courseId, currentPage, totalPages } = req.body;
     const course = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },
@@ -1228,6 +1296,7 @@ const getTutorBookings = async (req: Request, res: Response) => {
 export {
   Login,
   Register,
+  googleLogin,
   getAllUsers,
   forgotPassword,
   resetPasswordGet,

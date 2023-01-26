@@ -23,6 +23,7 @@ export interface UserAttributes {
   salt: string;
   image: string;
   rating: number;
+  
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -43,7 +44,7 @@ UserInstance.init(
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      //defaultValue: DataTypes.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
     email: {
