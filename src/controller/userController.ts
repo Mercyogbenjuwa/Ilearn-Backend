@@ -1064,7 +1064,7 @@ const getTutorCourses = async (req: Request, res: Response) => {
     const tutorId = req.params.id;
 
     const courses = await courseInstance.findAll({
-      where: { userId: tutorId },
+      where: { tutorId },
     });
     return res.status(200).json({
       message: "Courses fetched successfully",
