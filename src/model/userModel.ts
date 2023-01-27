@@ -188,6 +188,8 @@ UserInstance.hasMany(AvailabilityInstance, {
   as: "availability",
 });
 
+
+
 // UserInstance.hasMany(StudentCoursesInstance, {
 //   foreignKey: "studentId",
 //   as: "studentCourses",

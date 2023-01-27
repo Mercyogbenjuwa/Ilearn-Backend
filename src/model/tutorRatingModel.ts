@@ -1,8 +1,9 @@
 import { UUIDV4 } from "sequelize";
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config";
+import { UserInstance } from "./userModel";
 
-export interface TutorRatingAttribute{
+export interface TutorRatingAttribute {
     [x: string]: any;
     id: string;
     studentId: string;
@@ -20,21 +21,21 @@ export class TutorRatingInstance extends Model<TutorRatingAttribute>{
 }
 
 TutorRatingInstance.init({
-    id:{
+    id: {
         type: DataTypes.UUID,
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
-    studentId:{
+    studentId: {
         type: DataTypes.UUID,
         allowNull: false
     },
-    tutorId:{
+    tutorId: {
         type: DataTypes.UUID,
         allowNull: false
     },
-    ratingValue:{
+    ratingValue: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
@@ -43,7 +44,13 @@ TutorRatingInstance.init({
         allowNull: true
     }
 },
-{
-    sequelize: db,
-    tableName: "tutor_rating"
-});
+    {
+        sequelize: db,
+        tableName: "tutor_rating"
+    });
+
+TutorRatingInstance.belongsTo(UserInstance,
+    {
+        foreignKey: "studentId",
+        as: "student"
+    })

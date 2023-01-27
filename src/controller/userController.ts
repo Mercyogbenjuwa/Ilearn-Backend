@@ -395,62 +395,62 @@ const createReminder = async (req: Request, res: Response) => {
 
 // /**=========================== Google Login ============================== **/
 
-const googleLogin = async (req:Request, res:Response) => {
+const googleLogin = async (req: Request, res: Response) => {
   console.log("thos")
-  if(!req.headers.authorization){
-    return res.status(500).send({ message: "Invalid token"})
+  if (!req.headers.authorization) {
+    return res.status(500).send({ message: "Invalid token" })
   }
   const token = req.headers.authorization.split(" ")[1];
-  
+
   try {
     const decodeValue = await admin.auth().verifyIdToken(token);
-    if(!decodeValue){
-      return res.status(505).json({ message: "Unauthorized"})
-    }else{
+    if (!decodeValue) {
+      return res.status(505).json({ message: "Unauthorized" })
+    } else {
       //
-      const userExists = await UserInstance.findOne({where: { email: decodeValue.email}})
+      const userExists = await UserInstance.findOne({ where: { email: decodeValue.email } })
       console.log(userExists);
-      
-      if(!userExists){    
+
+      if (!userExists) {
         const newUser = await UserInstance.create({
-            name: decodeValue?.name,
-            email: decodeValue?.email,
-            image: decodeValue?.picture,
-            verified: decodeValue?.email_verified,
-            userType: "Student",
-            password:Math.floor(Math.random() * 10000),
-            salt:"the quick brown fox jump over the lazy dog"
+          name: decodeValue?.name,
+          email: decodeValue?.email,
+          image: decodeValue?.picture,
+          verified: decodeValue?.email_verified,
+          userType: "Student",
+          password: Math.floor(Math.random() * 10000),
+          salt: "the quick brown fox jump over the lazy dog"
 
         })
-        res.status(200).json({message:"user created successfully",user: newUser})
+        res.status(200).json({ message: "user created successfully", user: newUser })
 
-      }else{
-        
+      } else {
+
         try {
-          let result = await UserInstance.findOne({where:{ email: decodeValue.email }})
+          let result = await UserInstance.findOne({ where: { email: decodeValue.email } })
           console.log(result);
-          result?.update({createdAt: decodeValue.createdAt})
-          
-          if (!result){
-            return res.status(400).json({message:"user could not be updated"})
+          result?.update({ createdAt: decodeValue.createdAt })
+
+          if (!result) {
+            return res.status(400).json({ message: "user could not be updated" })
           }
           let signature = await GenerateSignature({
             id: result.id,
             email: result.email,
             verified: result.verified,
           });
-          res.status(200).json({message: "user logged in successfully", signature})
+          res.status(200).json({ message: "user logged in successfully", signature })
 
-          
+
         } catch (error) {
-          res.status(400).json({message: "Error updating user", error})
+          res.status(400).json({ message: "Error updating user", error })
         }
       }
-        
+
     }
   } catch (error) {
     console.log(error)
-    res.status(500).json({ message: error }); 
+    res.status(500).json({ message: error });
   }
 }
 
@@ -768,6 +768,11 @@ const getTutorReviews = async (req: Request, res: Response) => {
       where: {
         tutorId: tutorId,
       },
+      include: [{
+        model: UserInstance,
+        as: "student",
+        attributes: ["name", "image"]
+      }]
     });
     if (!tutorReviewInfo) {
       return res.status(404).json({
@@ -813,8 +818,8 @@ const createAvailability = async (req: Request, res: Response) => {
           dateToIso
       }
     })
-    
-   
+
+
     if (availabilityExists) {
       return res.status(400).json({
         Error:
@@ -823,7 +828,7 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length, selectedTime:availableTime });
+    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length, selectedTime: availableTime });
 
     // Return a success response
     return res.status(200).json({
@@ -884,7 +889,7 @@ const getStudentCourse = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const courseDetails = await StudentCoursesInstance.findOne({
-      where:{courseId: id},
+      where: { courseId: id },
       include: [
         {
           model: courseInstance,
@@ -893,8 +898,8 @@ const getStudentCourse = async (req: Request, res: Response) => {
         },
       ]
     })
-      // where: { studentId: id },
-     
+    // where: { studentId: id },
+
     //     { model: UserInstance, as: "tutor", attributes: ["name"] },
     //   ],
     //   order: [["createdAt", "DESC"]],
@@ -1143,7 +1148,7 @@ const updateProfile = async (req: Request, res: Response) => {
       });
 
       const updateTutor = await tutor.save();
-      console.log("---------",updateTutor);
+      console.log("---------", updateTutor);
       if (updateTutor) {
         // const tutor = await UserInstance.findOne({ where: { id } });
         if (
@@ -1159,7 +1164,7 @@ const updateProfile = async (req: Request, res: Response) => {
           });
           const updatedTutor = await updateTutor?.save();
           console.log(updatedTutor);
-          
+
           return res.status(200).json({
             message: "You have successfully updated your account",
             updatedTutor,
@@ -1170,7 +1175,7 @@ const updateProfile = async (req: Request, res: Response) => {
             updateTutor,
           });
         }
-      }else{
+      } else {
         return res.status(400).json({
           Error: "There's an error",
         });
@@ -1211,40 +1216,40 @@ const updateProfile = async (req: Request, res: Response) => {
   }
 }*/
 
-const bookTutor = async (req:Request, res:Response) => {
+const bookTutor = async (req: Request, res: Response) => {
   try {
-    const {availabilityId, pickedTime} = req.body
-    if(!req.user){
+    const { availabilityId, pickedTime } = req.body
+    if (!req.user) {
       return res.status(400).json({
         Error: "no user found"
       })
     }
     const { id } = req.user
-      
-    
-
-    const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
 
 
-    if(!tutorAvailability){
-      throw new Error ("no tutor availability")
+
+    const tutorAvailability = await AvailabilityInstance.findOne({ where: { id: availabilityId } })
+
+
+    if (!tutorAvailability) {
+      throw new Error("no tutor availability")
     }
-    
-    if(!tutorAvailability.availableTime.includes(pickedTime)){
-      return res.status(404).json({message:'time is not available'})
+
+    if (!tutorAvailability.availableTime.includes(pickedTime)) {
+      return res.status(404).json({ message: 'time is not available' })
     }
     const bookSession = await tutorRequestInstance.create({
       pickedTime,
-      tutorId:tutorAvailability.userId,
-      studentId:id,
+      tutorId: tutorAvailability.userId,
+      studentId: id,
       availabilityId
     })
-     const availableTime =  tutorAvailability.availableTime.filter(time=>time !== pickedTime)
+    const availableTime = tutorAvailability.availableTime.filter(time => time !== pickedTime)
 
     tutorAvailability.availableTime = availableTime
     tutorAvailability.save()
-    
-   await createNotification("session", tutorAvailability.userId, "This user request a session with you", id, null )
+
+    await createNotification("session", tutorAvailability.userId, "This user request a session with you", id, null)
 
     res.status(201).send('session booked successfully')
 
@@ -1252,7 +1257,7 @@ const bookTutor = async (req:Request, res:Response) => {
     console.log(err);
     // throw new Error
     res.status(500).send(err)
-    
+
   }
 }
 const getTutorBookings = async (req: Request, res: Response) => {
