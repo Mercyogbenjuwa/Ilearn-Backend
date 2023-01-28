@@ -956,12 +956,10 @@ const createAvailability = async (req: Request, res: Response) => {
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
       where: {
-        availableDate:
-          dateToIso
-      }
-    })
-    
-   
+        availableDate: dateToIso,
+      },
+    });
+
     if (availabilityExists) {
       return res.status(400).json({
         Error:
@@ -970,7 +968,13 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length, selectedTime:availableTime });
+    const availability = await AvailabilityInstance.create({
+      availableTime,
+      availableDate: dateToIso,
+      userId: id,
+      availableSlots: availableTime.length,
+      selectedTime: availableTime,
+    });
 
     // Return a success response
     return res.status(200).json({
@@ -1026,12 +1030,37 @@ const getStudentCourses = async (req: Request, res: Response) => {
   }
 };
 
+const getPaidCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user;
+    const { courseId } = req.params;
+
+    const courseExist = await StudentCoursesInstance.findOne({
+      where: { courseId, studentId: id },
+    });
+
+    if (!courseExist) {
+      return res.status(404).json({
+        message: "This is not a valid course",
+      });
+    }
+
+    res.status(200).json({
+      message: "course found",
+      course: courseExist,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 // test student create course
 // looks like this should be created when a user make a payment.
-const createStudentCourse = async (req: Request, res: Response) => {
+const createPaidCourse = async (req: Request, res: Response) => {
   try {
     const { id } = req.user;
     const { courseId } = req.body;
+
+    console.log(courseId, id);
 
     const validCourse = await courseInstance.findOne({
       where: { id: courseId },
@@ -1046,6 +1075,7 @@ const createStudentCourse = async (req: Request, res: Response) => {
     const courseExist = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },
     });
+
     if (courseExist) {
       return res.status(404).json({
         message: "you Already have this course",
@@ -1168,50 +1198,55 @@ const getTutorCourses = async (req: Request, res: Response) => {
   }
 }*/
 
-const bookTutor = async (req:Request, res:Response) => {
+const bookTutor = async (req: Request, res: Response) => {
   try {
-    const {availabilityId, pickedTime} = req.body
-    if(!req.user){
+    const { availabilityId, pickedTime } = req.body;
+    if (!req.user) {
       return res.status(400).json({
-        Error: "no user found"
-      })
+        Error: "no user found",
+      });
     }
-    const { id } = req.user
-      
-    
+    const { id } = req.user;
 
-    const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
+    const tutorAvailability = await AvailabilityInstance.findOne({
+      where: { id: availabilityId },
+    });
 
-
-    if(!tutorAvailability){
-      throw new Error ("no tutor availability")
+    if (!tutorAvailability) {
+      throw new Error("no tutor availability");
     }
-    
-    if(!tutorAvailability.availableTime.includes(pickedTime)){
-      return res.status(404).json({message:'time is not available'})
+
+    if (!tutorAvailability.availableTime.includes(pickedTime)) {
+      return res.status(404).json({ message: "time is not available" });
     }
     const bookSession = await tutorRequestInstance.create({
       pickedTime,
-      tutorId:tutorAvailability.userId,
-      studentId:id,
-      availabilityId
-    })
-     const availableTime =  tutorAvailability.availableTime.filter(time=>time !== pickedTime)
+      tutorId: tutorAvailability.userId,
+      studentId: id,
+      availabilityId,
+    });
+    const availableTime = tutorAvailability.availableTime.filter(
+      (time) => time !== pickedTime
+    );
 
-    tutorAvailability.availableTime = availableTime
-    tutorAvailability.save()
-    
-   await createNotification("session", tutorAvailability.userId, "This user request a session with you", id, null )
+    tutorAvailability.availableTime = availableTime;
+    tutorAvailability.save();
 
-    res.status(201).send('session booked successfully')
+    await createNotification(
+      "session",
+      tutorAvailability.userId,
+      "This user request a session with you",
+      id,
+      null
+    );
 
+    res.status(201).send("session booked successfully");
   } catch (err) {
     console.log(err);
     // throw new Error
-    res.status(500).send(err)
-    
+    res.status(500).send(err);
   }
-}
+};
 
 export {
   Login,
@@ -1236,9 +1271,10 @@ export {
   rateTutor,
   createAvailability,
   getStudentCourses,
-  createStudentCourse,
+  createPaidCourse,
   updateCourseProgress,
   getTutorCourses,
   getTutorReviews,
-  bookTutor
+  bookTutor,
+  getPaidCourse,
 };

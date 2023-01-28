@@ -12,6 +12,7 @@ import {
   errorHandler,
   notFound,
 } from "./Middlewares/errorMiddleware";
+import { verifyPayment } from "./Middlewares/authMiddleware";
 
 dotenv.config();
 

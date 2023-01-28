@@ -5,6 +5,7 @@ import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 
 import { UserAttributes, UserInstance } from "../model/userModel";
 import { UserPayload } from "../interface/user.dto";
+import axios from "axios";
 
 interface JwtExpPayload {
   expiresIn: string;
@@ -77,6 +78,30 @@ const tutor = (req: Request, res: Response, next: NextFunction) => {
     return;
   }
 };
+const verifyPayment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const transRef = req.params.reference;
+    const response = await axios.get(
+      `${process.env.PAYSTACK_DOMAIN}/transaction/verify/${transRef}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+        },
+      }
+    );
+
+    next();
+
+    // console.log(response.data.data.status);
+  } catch (error: any) {
+    console.log(error.response.data.message);
+    res.status(400).send({ message: error.response.data.message });
+  }
+};
 
 const admin = (req: Request, res: Response, next: NextFunction) => {
   if (req.user && req.user.isAdmin) {
@@ -91,4 +116,4 @@ const admin = (req: Request, res: Response, next: NextFunction) => {
 //   // if(req.user && req.user.id)
 // }
 
-export { protect, admin, tutor };
+export { protect, admin, tutor, verifyPayment };
