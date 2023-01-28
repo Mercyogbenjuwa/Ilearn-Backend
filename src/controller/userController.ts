@@ -870,7 +870,9 @@ const addAreaOfInterest = async (req: JwtPayload, res: Response) => {
 
 const deleteAreaOfInterest = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return "test";
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
     const { id } = req.user;
     const courseId = req.params.id;
 
@@ -903,7 +905,10 @@ const deleteAreaOfInterest = async (req: Request, res: Response) => {
 
 const getAreaOfInterest = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user!;
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
+    const { id } = req.user;
 
     const user = await UserInstance.findOne({
       where: { id: id },
@@ -934,6 +939,9 @@ const getAreaOfInterest = async (req: Request, res: Response) => {
 
 const createAvailability = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(404).json({ Error: "User not found" });
+    }
     const { id } = req.user;
     const { availableDate, availableTime } = req.body;
 
@@ -997,6 +1005,9 @@ const createAvailability = async (req: Request, res: Response) => {
 
 const getStudentCourses = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
     const { id }: { id: string } = req.user;
 
     const courses = await StudentCoursesInstance.findAll({
@@ -1032,6 +1043,9 @@ const getStudentCourses = async (req: Request, res: Response) => {
 
 const getPaidCourse = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
     const { id } = req.user;
     const { courseId } = req.params;
 
@@ -1057,6 +1071,10 @@ const getPaidCourse = async (req: Request, res: Response) => {
 // looks like this should be created when a user make a payment.
 const createPaidCourse = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
+
     const { id } = req.user;
     const { courseId } = req.body;
 
@@ -1100,6 +1118,9 @@ const createPaidCourse = async (req: Request, res: Response) => {
 
 const updateCourseProgress = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
     const { id } = req.user;
     const { courseId, currentPage, totalPages } = req.body;
     const course = await StudentCoursesInstance.findOne({
@@ -1202,9 +1223,7 @@ const bookTutor = async (req: Request, res: Response) => {
   try {
     const { availabilityId, pickedTime } = req.body;
     if (!req.user) {
-      return res.status(400).json({
-        Error: "no user found",
-      });
+      return res.status(404).json({ Error: "Route need to be proctected" });
     }
     const { id } = req.user;
 
