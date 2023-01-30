@@ -439,7 +439,11 @@ const googleLogin = async (req:Request, res:Response) => {
             email: result.email,
             verified: result.verified,
           });
-          res.status(200).json({message: "user logged in successfully", signature})
+          res.status(200).json({
+            message: "user logged in successfully", 
+            signature, 
+            user: result 
+          })
 
           
         } catch (error) {
