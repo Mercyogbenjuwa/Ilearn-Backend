@@ -579,6 +579,8 @@ const getAllTutors = async (req: Request, res: Response) => {
         userType: "Tutor",
         [Op.or]: [
           { name: { [Op.like]: `${query}` } },
+          { name: { [Op.substring]: `${query}` } },
+          { email: { [Op.substring]: `${query}` } },
           { email: { [Op.like]: `${query}` } },
         ],
       };
