@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { courseAttributes, courseInstance } from "../model/courseModel";
-import path from "path";
-import { HttpError } from "http-errors";
+import { courseInstance } from "../model/courseModel";
+
 import { courseRequestInstance } from "../model/courseRequestsModel";
 import { NotificationInstance } from "../model/notificationModel";
 import { UserInstance } from "../model/userModel";
-import { Includeable } from "sequelize";
+
 import { CourseRatingInstance } from "../model/courseRatingModel";
 import { option, ratingCourseSchema } from "../utils/utility";
 import { Op } from "sequelize";
@@ -122,12 +121,14 @@ const getAllCourses = async (req: Request, res: Response) => {
 const createCourse = async (req: JwtPayload, res: Response) => {
   try {
     //const userId = req.user?.id;
-
-    console.log(req.files);
-
     const { title, description, category, pricing } = req.body;
-    console.log("body is ", req.body);
-
+    const course = await courseInstance.findOne({ where: { title } });
+    console.log("course is ", course);
+    if (course) {
+      return res.status(400).json({
+        Error: "This course title already exist, choose another title",
+      });
+    }
     const newCourse = await courseInstance.create({
       title,
       description,
@@ -145,53 +146,49 @@ const createCourse = async (req: JwtPayload, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       route: "/users/create-courses",
-      error: error.errors[0].message,
+      Error: error.errors[0].message,
     });
   }
 };
 
-const updateCourse = async (req: Request, res: Response) => {
+const updateCourse = async (req: JwtPayload, res: Response) => {
   try {
     const { id } = req.params;
-    const {
+    const { title, description, category, pricing } = req.body;
+
+    const course = await courseInstance.findOne({ where: { id } });
+    if (!course) {
+      return res.status(400).json({ Error: "This course does not exist" });
+    }
+
+    let fileImg = req.files.course_image
+      ? req.files?.course_image[0]?.path
+      : course.course_image;
+    let fileMaterial = req.files.course_material
+      ? req.files?.course_material[0]?.path
+      : course.course_material;
+
+    await course.update({
       title,
       description,
-      pricing,
       category,
-      course_image,
-      tutorId,
-      tutor_Name,
-    } = req.body;
-    console.log("req.body is ", req.body);
-    console.log("params is ", req.params);
-
-    // updating course
-    const updateCourse = await courseInstance.update(
-      {
-        title,
-        description,
-        course_image,
-        pricing: pricing.toLocaleString(),
-        category,
-        tutorId: req.user?.id,
-        tutor_Name,
-      },
-      {
-        where: { id: id },
-      }
-    );
-    console.log("updated course is ", updateCourse);
-    return res.status(200).json({
-      message: "You have successfully updated a course",
-      course: updateCourse,
+      pricing,
+      course_image: fileImg,
+      course_material: fileMaterial,
     });
+    await course.save();
 
-    const courses = await courseInstance.findAll();
-    console.log(courses);
-
-    res.send(courses);
+    const newlyUpdatedCourse = await courseInstance.findOne({ where: { id } });
+    return res.status(200).json({
+      message: "Your course has been successfully updated",
+      course: newlyUpdatedCourse,
+    });
   } catch (error) {
-    res.send(error);
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/update-courses",
+      error,
+    });
   }
 };
 

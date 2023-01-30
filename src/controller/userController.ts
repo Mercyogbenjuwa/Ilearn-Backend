@@ -540,6 +540,7 @@ const getUserProfile = async (req: Request, res: Response) => {
       where: { id, verified: true },
       attributes: { exclude: ["salt", "password"] },
       include: ["courses"],
+      order: [["createdAt", "DESC"]]
     });
     if (!userDetails) {
       return res.status(400).json({
