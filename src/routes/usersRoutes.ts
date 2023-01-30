@@ -9,30 +9,28 @@ import {
   resetPasswordGet,
   resetPasswordPost,
   getTutorDetails,
-  updateTutorProfile,
   getAllTutors,
   tutorRating,
   verifyUser,
   getUserNotifications,
   readNotification,
-  addAreaOfInterest,
-  deleteAreaOfInterest,
-  getAreaOfInterest,
   getTutorAvailabilities,
   getUserProfile,
-  editprofile,
+  updateProfile,
   createAvailability,
   getStudentCourses,
-  createStudentCourse,
   updateCourseProgress,
   getTutorCourses,
   rateTutor,
   getTutorReviews,
+  createPaidCourse,
+  getPaidCourse,
+  getStudentCourse,
   googleLogin,
   bookTutor,
-  getTutorBookings
+  getTutorBookings,
 } from "../controller/userController";
-import { protect } from "../Middlewares/authMiddleware";
+import { protect, verifyPayment } from "../Middlewares/authMiddleware";
 import { upload } from "../utils/multer";
 
 const router = express.Router();
@@ -40,25 +38,25 @@ const router = express.Router();
  * @openapi
  * '/users/signup':
  *  post:
- *    tags: 
+ *    tags:
  *      - Auth
  *    summary: Register a user
- *    requestBody: 
+ *    requestBody:
  *      required: true
- *      content: 
+ *      content:
  *        application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateUserInput'
  *    responses:
  *       201:
  *         description: you have sucessfully registered a user, check your email
- *         content: 
+ *         content:
  *           application/json:
  *              schema:
  *                 $ref: '#/components/schemas/CreateUserResponse'
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.post("/signup", Register);
 
@@ -66,25 +64,25 @@ router.post("/signup", Register);
  * @openapi
  * '/users/login':
  *  post:
- *    tags: 
+ *    tags:
  *      - Auth
  *    summary: Login a user
- *    requestBody: 
+ *    requestBody:
  *      required: true
- *      content: 
+ *      content:
  *        application/json:
  *           schema:
  *             $ref: '#/components/schemas/LoginUserInput'
  *    responses:
  *       201:
  *         description: you have sucessfully logged in
- *         content: 
+ *         content:
  *           application/json:
  *              schema:
  *                 $ref: '#/components/schemas/LoginUserResponse'
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.post("/login", Login);
 
@@ -104,7 +102,6 @@ router.post("/login", Login);
  *          description: Returns verified true.
  */
 router.get("/verify/:signature", verifyUser);
-
 
 /**
  * @openapi
@@ -150,7 +147,7 @@ router.get("/profile", protect, getUserProfile);
  *          description: Returns user profile.
  */
 router.get("/atutordetail/:tutorid", protect, getTutorDetails);
-router.get("/googleLogin", googleLogin)
+router.get("/googleLogin", googleLogin);
 
 /**
  * @openapi
@@ -205,8 +202,7 @@ router.post("/tutors/:id/rate", protect, rateTutor);
  *        200:
  *          description: Returns user profile.
  */
-router.get("/tutors/:id/review", getTutorReviews);  //if any conflict, inquire the id to be used
-
+router.get("/tutors/:id/review", getTutorReviews); //if any conflict, inquire the id to be used
 
 /**
  * @openapi
@@ -231,7 +227,7 @@ router.get("/tutors/:id/review", getTutorReviews);  //if any conflict, inquire t
  *                type: string
  *              image:
  *                type: string
- *                format: binary   
+ *                format: binary
  *    responses:
  *       201:
  *         description: you have sucessfully updated your course
@@ -252,13 +248,6 @@ router.get("/tutors/:id/review", getTutorReviews);  //if any conflict, inquire t
  *         description: internal server error
  *
  */
-router.put(
-  "/updatetutorprofile",
-  protect,
-  upload.single("image"),
-  updateTutorProfile
-);
-
 
 /**
  * @openapi
@@ -289,27 +278,27 @@ router.post("/resetpassword/:id/:token", resetPasswordPost);
  * @openapi
  * '/users/reminders':
  *  post:
- *    tags: 
+ *    tags:
  *      - Users
  *    security:
  *       - Authorization: []
  *    summary: create a reminder for a user
- *    requestBody: 
+ *    requestBody:
  *      required: true
- *      content: 
+ *      content:
  *        application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateReminderInput'
  *    responses:
  *       201:
  *         description: you have sucessfully registered a user, check your email
- *         content: 
+ *         content:
  *           application/json:
  *              schema:
  *                 $ref: '#/components/schemas/CreateReminderResponse'
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.post("/reminders", protect, createReminder);
 
@@ -325,7 +314,6 @@ router.post("/reminders", protect, createReminder);
  */
 router.get("/all-tutors", getAllTutors);
 
-
 /**
  * @openapi
  * /users/feature-tutors:
@@ -338,7 +326,6 @@ router.get("/all-tutors", getAllTutors);
  */
 router.get("/feature-tutors", tutorRating);
 //router.post("/request", protect, requestTutor);
-
 
 /**
  * @openapi
@@ -359,7 +346,6 @@ router.get("/feature-tutors", tutorRating);
  */
 router.get("/recommended/:category", protect, getRecommendedCourses);
 
-
 /**
  * @openapi
  * /users/notifications:
@@ -374,7 +360,6 @@ router.get("/recommended/:category", protect, getRecommendedCourses);
  */
 router.get("/notifications", protect, getUserNotifications);
 
-
 /**
  * @openapi
  * '/notifications/{id}':
@@ -387,13 +372,12 @@ router.get("/notifications", protect, getUserNotifications);
  *    requestBody:
  *       content:
  *         application/json:
- *          schema: 
+ *          schema:
  *    responses:
  *       201:
  *        sucessfull read notificcation
  */
 router.put("/notifications/:id", protect, readNotification); //this may be a get request, confirm !!!
-
 
 /**
  * @openapi
@@ -418,7 +402,7 @@ router.put("/notifications/:id", protect, readNotification); //this may be a get
  *                type: string
  *              image:
  *                type: string
- *                format: binary   
+ *                format: binary
  *    responses:
  *       201:
  *         description: user updated successfully
@@ -439,90 +423,8 @@ router.put("/notifications/:id", protect, readNotification); //this may be a get
  *         description: internal server error
  *
  */
-router.post(
-  "/edit-profile/:signature",
-  upload.single("imageUrl"),
-  protect,
-  editprofile
-);
 
-
-/**
- * @openapi
- * '/users/add-area-of-interest':
- *  post:
- *    tags: 
- *      - Users
- *    summary: Add area of Interest by student
- *    requestBody: 
- *      required: true
- *      content: 
- *        application/json:
- *           schema:
- *             type:  object
- *             properties:
- *               id:
- *                 type: string
- *               coursesName:
- *                 type: string
- *               UserId:
- *                 type: string
- *    responses:
- *       201:
- *         description: you have sucessfully added new area of interest
- *         content: 
- *           application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  areaOfInterest:
- *                    type: string
- *       500:
- *         description: internal server error
- * 
- */
-router.post("/add-area-of-interest", protect, addAreaOfInterest);
-
-
-/**
- * @openapi
- * /users/delete-area-of-interest/{id}:
- *  delete:
- *      tags: [Users]
- *      description: to delete an area of interest by student
- *      security:
- *       - Authorization: []
- *      parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         type: string
- *      responses:
- *        200:
- *          description: you have sucessfully deleted an area of interest
- */
-router.delete("/delete-area-of-interest/:id", protect, deleteAreaOfInterest);
-
-
-
-/**
- * @openapi
- * /users/get-area-of-interest/:
- *   get:
- *      tags: [Users]
- *      security:
- *       - Authorization: []
- *      description: get area of interest for student
- *      parameters:
- *       - name: tutorid
- *         in: path
- *         required: true
- *         type: string
- *      responses:
- *        200:
- *          description: Returns user profile.
- */
-router.get("/get-area-of-interest", protect, getAreaOfInterest);
+router.put("/edit-profile", upload.single("image"), protect, updateProfile);
 
 /**
  * @openapi
@@ -532,8 +434,8 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  *    security:
  *       - Authorization: []
  *    summary: create a reminder for a user
- *    requestBody: 
- *      content: 
+ *    requestBody:
+ *      content:
  *        application/json:
  *           schema:
  *             type:  object
@@ -544,7 +446,7 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  *                 type: string
  *               dateToIso:
  *                 type: string
- *               userId: 
+ *               userId:
  *                 type: string
  *               vailableSlots:
  *                 type: stringstring
@@ -553,7 +455,7 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  *    responses:
  *       201:
  *         description: You have already created availability for this date
- *         content: 
+ *         content:
  *           application/json:
  *              schema:
  *                type: object
@@ -562,7 +464,7 @@ router.get("/get-area-of-interest", protect, getAreaOfInterest);
  *                    type: string
  *       500:
  *         description: internal server error
- * 
+ *
  */
 router.post("/tutors/availablity", protect, createAvailability);
 
@@ -570,11 +472,12 @@ router.post("/tutors/availablity", protect, createAvailability);
 router
   .route("/students/courses")
   .get(protect, getStudentCourses)
-  .post(protect, createStudentCourse)
+  .post(protect, createPaidCourse)
   .patch(protect, updateCourseProgress);
 
-router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
+router.get("/students/courses/:id", protect, getStudentCourse);
 
+router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
 
 /**
  * @openapi
@@ -594,7 +497,11 @@ router.get("/get-available-tutors/:tutorId", protect, getTutorAvailabilities);
  *          description: Returns tutor courses.
  */
 router.get("/tutors/:id/course", protect, getTutorCourses);
-router.post('/book-session', protect, bookTutor)
+router.post("/book-session", protect, bookTutor);
+
+router.get("/student/courses/:courseId", protect, getPaidCourse);
+
+router.post("/payments/:reference", protect, verifyPayment, createPaidCourse);
 router.get("/tutors/bookings", protect, getTutorBookings);
 
 export default router;

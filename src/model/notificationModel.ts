@@ -90,7 +90,7 @@ NotificationInstance.init(
   }
 );
 
-NotificationInstance.belongsTo(courseInstance, {
+/*NotificationInstance.belongsTo(courseInstance, {
   as: "course",
 });
 
@@ -102,4 +102,4 @@ NotificationInstance.belongsTo(UserInstance, {
 NotificationInstance.belongsTo(UserInstance, {
   foreignKey: "receiver",
   as: "theReceiver",
-});
+});*/

@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { courseAttributes, courseInstance } from "../model/courseModel";
-import path from "path";
-import { HttpError } from "http-errors";
+import { courseInstance } from "../model/courseModel";
+
 import { courseRequestInstance } from "../model/courseRequestsModel";
 import { NotificationInstance } from "../model/notificationModel";
 import { UserInstance } from "../model/userModel";
-import { Includeable } from "sequelize";
+
 import { CourseRatingInstance } from "../model/courseRatingModel";
 import { option, ratingCourseSchema } from "../utils/utility";
 import { Op } from "sequelize";
@@ -83,18 +82,28 @@ const getAllCourses = async (req: Request, res: Response) => {
     }
     const findCourse = await courseInstance.findAndCountAll({
       where: queryPage,
-      attributes: ["category","course_image", "title", "description", "rating", "pricing", "id"],
-      include: [{
-        model: UserInstance,
-        as: "tutor",
-        attributes: ["name"]
-      }],
+      attributes: [
+        "category",
+        "course_image",
+        "title",
+        "description",
+        "rating",
+        "pricing",
+        "id",
+      ],
+      include: [
+        {
+          model: UserInstance,
+          as: "tutor",
+          attributes: ["name"],
+        },
+      ],
       limit: limitPerPage,
       offset,
     });
-    // Calculate the total number of pages      
+    // Calculate the total number of pages
     const totalPages = Math.ceil(findCourse.count / limitPerPage);
-    // Return the results in a JSON response        
+    // Return the results in a JSON response
     return res.status(200).json({
       courseNumber: findCourse.count,
       findCourse: findCourse.rows,
@@ -112,12 +121,14 @@ const getAllCourses = async (req: Request, res: Response) => {
 const createCourse = async (req: JwtPayload, res: Response) => {
   try {
     //const userId = req.user?.id;
-
-    console.log(req.files);
-
     const { title, description, category, pricing } = req.body;
-    console.log("body is ", req.body);
-
+    const course = await courseInstance.findOne({ where: { title } });
+    console.log("course is ", course);
+    if (course) {
+      return res.status(400).json({
+        Error: "This course title already exist, choose another title",
+      });
+    }
     const newCourse = await courseInstance.create({
       title,
       description,
@@ -135,53 +146,49 @@ const createCourse = async (req: JwtPayload, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       route: "/users/create-courses",
-      error: error.errors[0].message,
+      Error: error.errors[0].message,
     });
   }
 };
 
-const updateCourse = async (req: Request, res: Response) => {
+const updateCourse = async (req: JwtPayload, res: Response) => {
   try {
     const { id } = req.params;
-    const {
+    const { title, description, category, pricing } = req.body;
+
+    const course = await courseInstance.findOne({ where: { id } });
+    if (!course) {
+      return res.status(400).json({ Error: "This course does not exist" });
+    }
+
+    let fileImg = req.files.course_image
+      ? req.files?.course_image[0]?.path
+      : course.course_image;
+    let fileMaterial = req.files.course_material
+      ? req.files?.course_material[0]?.path
+      : course.course_material;
+
+    await course.update({
       title,
       description,
-      pricing,
       category,
-      course_image,
-      tutorId,
-      tutor_Name,
-    } = req.body;
-console.log("req.body is ", req.body)
-console.log("params is ", req.params)
-
-    // updating course
-    const updateCourse = await courseInstance.update(
-      {
-        title,
-        description,
-        course_image,
-        pricing: pricing.toLocaleString(),
-        category,
-        tutorId: req.user?.id,
-        tutor_Name,
-      },
-      {
-        where: { id: id },
-      }
-    );
-      console.log("updated course is ", updateCourse)
-    return res.status(200).json({
-      message: "You have successfully updated a course",
-      course: updateCourse,
+      pricing,
+      course_image: fileImg,
+      course_material: fileMaterial,
     });
+    await course.save();
 
-    const courses = await courseInstance.findAll();
-    console.log(courses);
-
-    res.send(courses);
+    const newlyUpdatedCourse = await courseInstance.findOne({ where: { id } });
+    return res.status(200).json({
+      message: "Your course has been successfully updated",
+      course: newlyUpdatedCourse,
+    });
   } catch (error) {
-    res.send(error);
+    return res.status(500).json({
+      Error: "Internal server Error",
+      route: "/users/update-courses",
+      error,
+    });
   }
 };
 
@@ -266,22 +273,22 @@ const courseRequest = async (req: Request, res: Response) => {
   }
 };
 
-const getCourseById = async(req: Request, res: Response) => {
+const getCourseById = async (req: Request, res: Response) => {
   try {
-      const { id } = req.params
-      const course = await courseInstance.findOne({where: 
-        {id},
-        include: ["tutor"]
-      }) 
-      if(!course){
-        return res.status(400).json({
-          Error: "This course does not exist"
-        })
-      }
-      return res.status(200).json({
-        message: "Successfully fetched course",
-        course
-      })
+    const { id } = req.params;
+    const course = await courseInstance.findOne({
+      where: { id },
+      include: ["tutor"],
+    });
+    if (!course) {
+      return res.status(400).json({
+        Error: "This course does not exist",
+      });
+    }
+    return res.status(200).json({
+      message: "Successfully fetched course",
+      course,
+    });
   } catch (error) {
     return res.status(500).json({
       Error: "Internal server Error",
@@ -289,23 +296,23 @@ const getCourseById = async(req: Request, res: Response) => {
       error,
     });
   }
-}
-const requestCourseById = async(req: Request, res: Response) => {
+};
+const requestCourseById = async (req: Request, res: Response) => {
   const id = req.user?.id;
   const courseId = req.params.id;
-  const user = await UserInstance.findOne({where:{id}})
-  if(!user){
-    res.status(401)
-    throw new Error("Not Authorized")
+  const user = await UserInstance.findOne({ where: { id } });
+  if (!user) {
+    res.status(401);
+    throw new Error("Not Authorized");
   }
-  const course = await courseInstance.findOne({where:{id: courseId}})
-  if(course){
-    res.status(200).json(course)
-  }else{
-    res.status(404)
-    throw new Error("Course Not Found")
+  const course = await courseInstance.findOne({ where: { id: courseId } });
+  if (course) {
+    res.status(200).json(course);
+  } else {
+    res.status(404);
+    throw new Error("Course Not Found");
   }
-}
+};
 
 // ================================= Course Rating ==============================
 const rateCourses = async (req: Request, res: Response) => {
@@ -335,9 +342,8 @@ const rateCourses = async (req: Request, res: Response) => {
       return res
         .status(401)
         .send({ message: "You cannot rate a course more than once" });
-      
     }
-    
+
     const rateCourse = await CourseRatingInstance.create({
       ratingValue,
       description,
@@ -348,8 +354,7 @@ const rateCourses = async (req: Request, res: Response) => {
     const courseRatings = await CourseRatingInstance.findAll({
       where: { courseId: req.params.id },
     });
-    const totalRating = courseRatings.reduce((acc, curr) =>
-    {
+    const totalRating = courseRatings.reduce((acc, curr) => {
       return acc + curr.ratingValue;
     }, 0);
     let averageRating = totalRating / courseRatings.length;
@@ -363,7 +368,6 @@ const rateCourses = async (req: Request, res: Response) => {
       message: "Course rated successfully",
       rateCourse,
     });
-
   } catch (err) {
     return res.status(500).json({
       Error: "Internal server Error",
@@ -372,8 +376,6 @@ const rateCourses = async (req: Request, res: Response) => {
     });
   }
 };
-
-
 
 export {
   getAllCourses,
@@ -385,5 +387,5 @@ export {
   addCourse,
   courseRequest,
   rateCourses,
-  requestCourseById
+  requestCourseById,
 };

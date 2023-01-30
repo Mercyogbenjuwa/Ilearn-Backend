@@ -170,7 +170,10 @@ router.post(
  *         description: internal server error
  *
  */
-router.patch("/updateCourse/:id", protect, updateCourse);
+router.patch("/updateCourse/:id", protect, upload.fields([
+  { name: "course_image", maxCount: 1 },
+  { name: "course_material", maxCount: 2 },
+]), updateCourse);
 
 /**
  * @openapi
