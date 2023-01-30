@@ -163,13 +163,6 @@ const updateCourse = async (req: JwtPayload, res: Response) => {
     if (!course) {
       return res.status(400).json({ Error: "This course does not exist" });
     }
-    if (course.title === title) {
-      return res
-        .status(400)
-        .json({
-          Error: "You cannot update your course with the same course title",
-        });
-    }
 
     let fileImg = req.files.course_image
       ? req.files?.course_image[0]?.path
