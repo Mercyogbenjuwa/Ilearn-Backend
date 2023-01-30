@@ -8,8 +8,6 @@ import { AvailabilityInstance } from "./availabilityModel";
 import { NotificationInstance } from "./notificationModel";
 import { StudentCoursesInstance } from "./users/students/studentCoursesModel";
 
-
-
 export interface UserAttributes {
   [x: string]: any;
   id: string;

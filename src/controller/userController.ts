@@ -5,7 +5,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import admin from "../Config/firebase";
-import "../utils/passport"
+import "../utils/passport";
 import {
   forgotPasswordSchema,
   GeneratePassword,
@@ -52,7 +52,6 @@ const getAllUsers = async (req: Request, res: Response) => {
     res.status(401).send("An error occurred");
   }
 };
-
 
 /**===================================== Register User ===================================== **/
 const Register = async (req: Request, res: Response, next: NextFunction) => {
@@ -395,68 +394,68 @@ const createReminder = async (req: Request, res: Response) => {
 
 // /**=========================== Google Login ============================== **/
 
-const googleLogin = async (req:Request, res:Response) => {
-  console.log("thos")
-  if(!req.headers.authorization){
-    return res.status(500).send({ message: "Invalid token"})
+const googleLogin = async (req: Request, res: Response) => {
+  console.log("thos");
+  if (!req.headers.authorization) {
+    return res.status(500).send({ message: "Invalid token" });
   }
   const token = req.headers.authorization.split(" ")[1];
-  
+
   try {
     const decodeValue = await admin.auth().verifyIdToken(token);
-    if(!decodeValue){
-      return res.status(505).json({ message: "Unauthorized"})
-    }else{
+    if (!decodeValue) {
+      return res.status(505).json({ message: "Unauthorized" });
+    } else {
       //
-      const userExists = await UserInstance.findOne({where: { email: decodeValue.email}})
+      const userExists = await UserInstance.findOne({
+        where: { email: decodeValue.email },
+      });
       console.log(userExists);
-      
-      if(!userExists){    
+
+      if (!userExists) {
         const newUser = await UserInstance.create({
-            name: decodeValue?.name,
-            email: decodeValue?.email,
-            image: decodeValue?.picture,
-            verified: decodeValue?.email_verified,
-            userType: "Student",
-            password:Math.floor(Math.random() * 10000),
-            salt:"the quick brown fox jump over the lazy dog"
-
-        })
-        res.status(200).json({message:"user created successfully",user: newUser})
-
-      }else{
-        
+          name: decodeValue?.name,
+          email: decodeValue?.email,
+          image: decodeValue?.picture,
+          verified: decodeValue?.email_verified,
+          userType: "Student",
+          password: Math.floor(Math.random() * 10000),
+          salt: "the quick brown fox jump over the lazy dog",
+        });
+        res
+          .status(200)
+          .json({ message: "user created successfully", user: newUser });
+      } else {
         try {
-          let result = await UserInstance.findOne({where:{ email: decodeValue.email }})
+          let result = await UserInstance.findOne({
+            where: { email: decodeValue.email },
+          });
           console.log(result);
-          result?.update({createdAt: decodeValue.createdAt})
-          
-          if (!result){
-            return res.status(400).json({message:"user could not be updated"})
+          result?.update({ createdAt: decodeValue.createdAt });
+
+          if (!result) {
+            return res
+              .status(400)
+              .json({ message: "user could not be updated" });
           }
           let signature = await GenerateSignature({
             id: result.id,
             email: result.email,
             verified: result.verified,
           });
-          res.status(200).json({message: "user logged in successfully", signature})
-
-          
+          res
+            .status(200)
+            .json({ message: "user logged in successfully", signature });
         } catch (error) {
-          res.status(400).json({message: "Error updating user", error})
+          res.status(400).json({ message: "Error updating user", error });
         }
       }
-        
     }
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: error }); 
+    console.log(error);
+    res.status(500).json({ message: error });
   }
-}
-
-
-
-
+};
 
 /**=========================== Get all Reminders============================== **/
 
@@ -540,7 +539,7 @@ const getUserProfile = async (req: Request, res: Response) => {
       where: { id, verified: true },
       attributes: { exclude: ["salt", "password"] },
       include: ["courses"],
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
     });
     if (!userDetails) {
       return res.status(400).json({
@@ -788,7 +787,10 @@ const getTutorReviews = async (req: Request, res: Response) => {
 
 const createAvailability = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user!;
+    if (!req.user) {
+      return res.status(404).json({ Error: "User not found" });
+    }
+    const { id } = req.user;
     const { availableDate, availableTime } = req.body;
 
     // Verify that the user exists
@@ -810,12 +812,10 @@ const createAvailability = async (req: Request, res: Response) => {
     // CHECK IF THE USER HAS ALREADY CREATED AVAILABILITY
     const availabilityExists = await AvailabilityInstance.findOne({
       where: {
-        availableDate:
-          dateToIso
-      }
-    })
-    
-   
+        availableDate: dateToIso,
+      },
+    });
+
     if (availabilityExists) {
       return res.status(400).json({
         Error:
@@ -824,7 +824,13 @@ const createAvailability = async (req: Request, res: Response) => {
     }
 
     // create the user's availability
-    const availability = await AvailabilityInstance.create({ availableTime, availableDate: dateToIso, userId: id, availableSlots: availableTime.length, selectedTime:availableTime });
+    const availability = await AvailabilityInstance.create({
+      availableTime,
+      availableDate: dateToIso,
+      userId: id,
+      availableSlots: availableTime.length,
+      selectedTime: availableTime,
+    });
 
     // Return a success response
     return res.status(200).json({
@@ -885,17 +891,17 @@ const getStudentCourse = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const courseDetails = await StudentCoursesInstance.findOne({
-      where:{courseId: id},
+      where: { courseId: id },
       include: [
         {
           model: courseInstance,
           as: "course",
           attributes: ["title", "course_image", "course_material"],
         },
-      ]
-    })
-      // where: { studentId: id },
-     
+      ],
+    });
+    // where: { studentId: id },
+
     //     { model: UserInstance, as: "tutor", attributes: ["name"] },
     //   ],
     //   order: [["createdAt", "DESC"]],
@@ -919,10 +925,12 @@ const getStudentCourse = async (req: Request, res: Response) => {
   }
 };
 
-
 const getStudentCourses = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user!;
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
+    const { id }: { id: string } = req.user;
 
     const courses = await StudentCoursesInstance.findAll({
       where: { studentId: id },
@@ -955,12 +963,44 @@ const getStudentCourses = async (req: Request, res: Response) => {
   }
 };
 
+const getPaidCourse = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
+    const { id } = req.user;
+    const { courseId } = req.params;
+
+    const courseExist = await StudentCoursesInstance.findOne({
+      where: { courseId, studentId: id },
+    });
+
+    if (!courseExist) {
+      return res.status(404).json({
+        message: "This is not a valid course",
+      });
+    }
+
+    res.status(200).json({
+      message: "course found",
+      course: courseExist,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 // test student create course
 // looks like this should be created when a user make a payment.
-const createStudentCourse = async (req: Request, res: Response) => {
+const createPaidCourse = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user!;
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
+
+    const { id } = req.user;
     const { courseId } = req.body;
+
+    console.log(courseId, id);
 
     const validCourse = await courseInstance.findOne({
       where: { id: courseId },
@@ -975,6 +1015,7 @@ const createStudentCourse = async (req: Request, res: Response) => {
     const courseExist = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },
     });
+
     if (courseExist) {
       return res.status(404).json({
         message: "you Already have this course",
@@ -999,7 +1040,10 @@ const createStudentCourse = async (req: Request, res: Response) => {
 
 const updateCourseProgress = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user!;
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
+    }
+    const { id } = req.user;
     const { courseId, currentPage, totalPages } = req.body;
     const course = await StudentCoursesInstance.findOne({
       where: { courseId, studentId: id },
@@ -1107,7 +1151,6 @@ const updateProfile = async (req: Request, res: Response) => {
         email,
       });
 
-
       // Save the changes to the database
       const updateStudent = await student.save();
 
@@ -1144,7 +1187,7 @@ const updateProfile = async (req: Request, res: Response) => {
       });
 
       const updateTutor = await tutor.save();
-      console.log("---------",updateTutor);
+      console.log("---------", updateTutor);
       if (updateTutor) {
         // const tutor = await UserInstance.findOne({ where: { id } });
         if (
@@ -1160,7 +1203,7 @@ const updateProfile = async (req: Request, res: Response) => {
           });
           const updatedTutor = await updateTutor?.save();
           console.log(updatedTutor);
-          
+
           return res.status(200).json({
             message: "You have successfully updated your account",
             updatedTutor,
@@ -1171,7 +1214,7 @@ const updateProfile = async (req: Request, res: Response) => {
             updateTutor,
           });
         }
-      }else{
+      } else {
         return res.status(400).json({
           Error: "There's an error",
         });
@@ -1191,51 +1234,50 @@ const updateProfile = async (req: Request, res: Response) => {
 
 /**=====================================Scheduled Time for student===================================== **/
 
-const bookTutor = async (req:Request, res:Response) => {
+const bookTutor = async (req: Request, res: Response) => {
   try {
-    const {availabilityId, pickedTime} = req.body
-    if(!req.user){
-      return res.status(400).json({
-        Error: "no user found"
-      })
+    const { availabilityId, pickedTime } = req.body;
+    if (!req.user) {
+      return res.status(404).json({ Error: "Route need to be proctected" });
     }
-    const { id } = req.user
-    const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
-    if(!tutorAvailability){
-      throw new Error ("no tutor availability")
+    const { id } = req.user;
+    const tutorAvailability = await AvailabilityInstance.findOne({
+      where: { id: availabilityId },
+    });
+    if (!tutorAvailability) {
+      throw new Error("no tutor availability");
     }
-    if(!tutorAvailability.availableTime.includes(pickedTime)){
-      return res.status(404).json({message:'time is not available'})
+    if (!tutorAvailability.availableTime.includes(pickedTime)) {
+      return res.status(404).json({ message: "time is not available" });
     }
     const bookSession = await tutorRequestInstance.create({
       pickedTime,
-      tutorId:tutorAvailability.userId,
-      studentId:id,
-      availabilityId
-    })
-     const availableTime =  tutorAvailability.availableTime.filter(time=>time !== pickedTime)
-    tutorAvailability.availableTime = availableTime
-    tutorAvailability.save()
-
-
+      tutorId: tutorAvailability.userId,
+      studentId: id,
+      availabilityId,
+    });
+    const availableTime = tutorAvailability.availableTime.filter(
+      (time) => time !== pickedTime
+    );
+    tutorAvailability.availableTime = availableTime;
+    tutorAvailability.save();
 
     const createNotification = await NotificationInstance.create({
-      sender:id,
-      receiver:tutorAvailability.userId,
-      notificationType:'session',
-      status:'unread',
-      createdAt:Date.now().toLocaleString(),
-      description:`A user has requested booked a session with you on ${bookSession.pickedTime}`
-    })
-    res.status(201).send('session booked successfully')
-
+      sender: id,
+      receiver: tutorAvailability.userId,
+      notificationType: "session",
+      status: "unread",
+      createdAt: Date.now().toLocaleString(),
+      description: `A user has requested booked a session with you on ${bookSession.pickedTime}`,
+    });
+    res.status(201).send("session booked successfully");
   } catch (error) {
     return res.status(500).json({
       Error: "Internal server error",
       error,
     });
   }
-}
+};
 const getTutorBookings = async (req: Request, res: Response) => {
   const tutorId = req.user?.id;
   try {
@@ -1272,38 +1314,32 @@ const getTutorBookings = async (req: Request, res: Response) => {
 
 /*******************************tutor booking notification************************ */
 
- const tutorNotification = async (req:Request, res:Response) => {
-
+const tutorNotification = async (req: Request, res: Response) => {
   try {
-    const {availabilityId, pickedTime} = req.body
-    if(!req.user){
+    const { availabilityId, pickedTime } = req.body;
+    if (!req.user) {
       return res.status(400).json({
-        Error: "no user found"
-      })
+        Error: "no user found",
+      });
     }
-    const { id } = req.user
-    const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
-    if(!tutorAvailability){
-      throw new Error ("no tutor availability")
+    const { id } = req.user;
+    const tutorAvailability = await AvailabilityInstance.findOne({
+      where: { id: availabilityId },
+    });
+    if (!tutorAvailability) {
+      throw new Error("no tutor availability");
     }
-    if(!tutorAvailability.availableTime.includes(pickedTime)){
-      return res.status(404).json({message:'time is not available'})
+    if (!tutorAvailability.availableTime.includes(pickedTime)) {
+      return res.status(404).json({ message: "time is not available" });
     }
 
-    res.status(201).send('notification created successfully')
+    res.status(201).send("notification created successfully");
   } catch (err) {
     console.log(err);
     // throw new Error
-    res.status(500).send(err) 
+    res.status(500).send(err);
   }
- }
-
-
-
-
-
-
-
+};
 
 export {
   Login,
@@ -1326,11 +1362,12 @@ export {
   createAvailability,
   getStudentCourse,
   getStudentCourses,
-  createStudentCourse,
+  createPaidCourse,
   updateCourseProgress,
   getTutorCourses,
   getTutorReviews,
+  getPaidCourse,
   updateProfile,
   bookTutor,
-  getTutorBookings
+  getTutorBookings,
 };

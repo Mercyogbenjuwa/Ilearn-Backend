@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { courseAttributes, courseInstance } from "../model/courseModel";
-import path from "path";
-import { HttpError } from "http-errors";
+import { courseInstance } from "../model/courseModel";
+
 import { courseRequestInstance } from "../model/courseRequestsModel";
 import { NotificationInstance } from "../model/notificationModel";
 import { UserInstance } from "../model/userModel";
-import { Includeable } from "sequelize";
+
 import { CourseRatingInstance } from "../model/courseRatingModel";
 import { option, ratingCourseSchema } from "../utils/utility";
 import { Op } from "sequelize";
@@ -124,13 +123,11 @@ const createCourse = async (req: JwtPayload, res: Response) => {
     //const userId = req.user?.id;
     const { title, description, category, pricing } = req.body;
     const course = await courseInstance.findOne({ where: { title } });
-    console.log("course is ", course)
+    console.log("course is ", course);
     if (course) {
-      return res
-        .status(400)
-        .json({
-          Error: "This course title already exist, choose another title",
-        });
+      return res.status(400).json({
+        Error: "This course title already exist, choose another title",
+      });
     }
     const newCourse = await courseInstance.create({
       title,

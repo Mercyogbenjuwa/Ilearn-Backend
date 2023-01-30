@@ -12,10 +12,10 @@ import {
   errorHandler,
   notFound,
 } from "./Middlewares/errorMiddleware";
+import { verifyPayment } from "./Middlewares/authMiddleware";
 import passport from "passport";
 import session from "express-session";
-import "./utils/passport"
-
+import "./utils/passport";
 
 dotenv.config();
 
@@ -27,9 +27,9 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(logger("dev"));
 app.use(cookieParser());
-app.use(session({secret: `${process.env.sessionSecret}`}))
-app.use(passport.initialize())
-app.use(passport.session())
+app.use(session({ secret: `${process.env.sessionSecret}` }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 swaggerDoc(app);
 
