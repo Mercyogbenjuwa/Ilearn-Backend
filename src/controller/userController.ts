@@ -1199,16 +1199,10 @@ const bookTutor = async (req:Request, res:Response) => {
       })
     }
     const { id } = req.user
-      
-    
-
     const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
-
-
     if(!tutorAvailability){
       throw new Error ("no tutor availability")
     }
-    
     if(!tutorAvailability.availableTime.includes(pickedTime)){
       return res.status(404).json({message:'time is not available'})
     }
@@ -1219,26 +1213,26 @@ const bookTutor = async (req:Request, res:Response) => {
       availabilityId
     })
      const availableTime =  tutorAvailability.availableTime.filter(time=>time !== pickedTime)
-
     tutorAvailability.availableTime = availableTime
     tutorAvailability.save()
 
+
+
     const createNotification = await NotificationInstance.create({
-      id:tutorAvailability.userId,
       sender:id,
       receiver:tutorAvailability.userId,
       notificationType:'session',
-      status:'unread'
+      status:'unread',
+      createdAt:Date.now().toLocaleString(),
+      description:`A user has requested booked a session with you on ${bookSession.pickedTime}`
     })
-    
-    
     res.status(201).send('session booked successfully')
 
-  } catch (err) {
-    console.log(err);
-    // throw new Error
-    res.status(500).send(err)
-    
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      error,
+    });
   }
 }
 const getTutorBookings = async (req: Request, res: Response) => {
