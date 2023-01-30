@@ -1191,27 +1191,6 @@ const updateProfile = async (req: Request, res: Response) => {
 
 /**=====================================Scheduled Time for student===================================== **/
 
-/*const scheduledTimeForStudent = async (req:JwtPayload, res:Response) => {
-  try {
-   const { studentId, tutorId } = req.params
-   const {selectedTime} = req.body
-   const tutor = await UserInstance.findOne({ where: { id: tutorId } });
-   if (tutor == null) {
-     return res.status(400).send('cannot find such tutor')
-     //const studentScheduledtime = await UserInstance.findOne({where:{id: studentId}})
-     //if(studentScheduledtime){
-       //const ScheduledTime = await UserInstance.create()
-     }
-     const student = await UserInstance.findOne({where: {id: studentId}})
-     if (student == null){
-       return res.status(400).send('cannot find such user')
-     }
-     return res.send(`your lesson is scheduled at ${selectedTime}`)
-   } catch (error) {
-     throw new Error
-  }
-}*/
-
 const bookTutor = async (req:Request, res:Response) => {
   try {
     const {availabilityId, pickedTime} = req.body
@@ -1221,16 +1200,10 @@ const bookTutor = async (req:Request, res:Response) => {
       })
     }
     const { id } = req.user
-      
-    
-
     const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
-
-
     if(!tutorAvailability){
       throw new Error ("no tutor availability")
     }
-    
     if(!tutorAvailability.availableTime.includes(pickedTime)){
       return res.status(404).json({message:'time is not available'})
     }
@@ -1241,19 +1214,26 @@ const bookTutor = async (req:Request, res:Response) => {
       availabilityId
     })
      const availableTime =  tutorAvailability.availableTime.filter(time=>time !== pickedTime)
-
     tutorAvailability.availableTime = availableTime
     tutorAvailability.save()
-    
-   await createNotification("session", tutorAvailability.userId, "This user request a session with you", id, null )
 
+
+
+    const createNotification = await NotificationInstance.create({
+      sender:id,
+      receiver:tutorAvailability.userId,
+      notificationType:'session',
+      status:'unread',
+      createdAt:Date.now().toLocaleString(),
+      description:`A user has requested booked a session with you on ${bookSession.pickedTime}`
+    })
     res.status(201).send('session booked successfully')
 
-  } catch (err) {
-    console.log(err);
-    // throw new Error
-    res.status(500).send(err)
-    
+  } catch (error) {
+    return res.status(500).json({
+      Error: "Internal server error",
+      error,
+    });
   }
 }
 const getTutorBookings = async (req: Request, res: Response) => {
@@ -1289,6 +1269,40 @@ const getTutorBookings = async (req: Request, res: Response) => {
     });
   }
 };
+
+/*******************************tutor booking notification************************ */
+
+ const tutorNotification = async (req:Request, res:Response) => {
+
+  try {
+    const {availabilityId, pickedTime} = req.body
+    if(!req.user){
+      return res.status(400).json({
+        Error: "no user found"
+      })
+    }
+    const { id } = req.user
+    const tutorAvailability = await AvailabilityInstance.findOne({where:{id:availabilityId}})
+    if(!tutorAvailability){
+      throw new Error ("no tutor availability")
+    }
+    if(!tutorAvailability.availableTime.includes(pickedTime)){
+      return res.status(404).json({message:'time is not available'})
+    }
+
+    res.status(201).send('notification created successfully')
+  } catch (err) {
+    console.log(err);
+    // throw new Error
+    res.status(500).send(err) 
+  }
+ }
+
+
+
+
+
+
 
 
 export {
