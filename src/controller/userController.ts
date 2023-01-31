@@ -443,9 +443,13 @@ const googleLogin = async (req: Request, res: Response) => {
             email: result.email,
             verified: result.verified,
           });
-          res
-            .status(200)
-            .json({ message: "user logged in successfully", signature });
+          res.status(200).json({
+            message: "user logged in successfully", 
+            signature, 
+            user: result 
+          })
+
+          
         } catch (error) {
           res.status(400).json({ message: "Error updating user", error });
         }
