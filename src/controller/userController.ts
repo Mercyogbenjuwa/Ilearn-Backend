@@ -76,7 +76,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
     // await mailSent("Ilearn App", email, "Ilearn User Verification", html);
     if (User) {
       return res.status(400).json({
-        message: "User already exist!",
+        Error: "User already exist!",
       });
     }
     //Create User
@@ -96,7 +96,7 @@ const Register = async (req: Request, res: Response, next: NextFunction) => {
       });
 
       if (!createdUser) {
-        return res.status(500).send({ message: "unable to create user" });
+        return res.status(500).send({ Error: "unable to create user" });
       }
 
       let signature = await GenerateSignature({

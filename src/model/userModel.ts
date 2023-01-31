@@ -142,11 +142,14 @@ UserInstance.init(
       type: DataTypes.ARRAY(DataTypes.STRING),
     defaultValue: ["Mathematics"],
     validate: {
-      customValidator: (value: any) => {
-        const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
-        if (!enums.includes(value)) {
-          throw new Error("not a valid option");
-        }
+      customValidator: (values: []) => {
+        values.forEach((value)=>{
+          const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
+          if (!enums.includes(value)) {
+            throw new Error("not a valid option");
+          }
+        })
+       
       },
     },
   },
