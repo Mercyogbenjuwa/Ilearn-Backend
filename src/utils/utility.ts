@@ -4,14 +4,13 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthPayload } from "../interface/auth.dto";
 import { APP_SECRET } from "../Config";
 
-
 /**
  * @openapi
  * components:
  *  schemas:
  *    CreateUserInput:
  *       type:  object
- *       required: 
+ *       required:
  *        - email
  *        - name
  *        - password
@@ -54,7 +53,7 @@ export const registerSchema = Joi.object().keys({
   name: Joi.string().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
   userType: Joi.string().required(),
-  areaOfInterest: Joi.string().required(),
+  areaOfInterest: Joi.array().required(),
   // confirm_password: Joi.any()
   //   .equal(Joi.ref("password"))
   //   .required()
@@ -68,7 +67,7 @@ export const registerSchema = Joi.object().keys({
  *  schemas:
  *    EditUserProfile:
  *       type:  object
- *       required: 
+ *       required:
  *        - email
  *        - name
  *        - areaOfInterest
@@ -97,7 +96,6 @@ export const editprofileSchema = Joi.object().keys({
   name: Joi.string(),
   areaOfInterest: Joi.array().items(Joi.string()).allow(""),
   image: Joi.string().allow(""),
-  
 });
 
 /**
@@ -106,7 +104,7 @@ export const editprofileSchema = Joi.object().keys({
  *  schemas:
  *    LoginUserInput:
  *       type:  object
- *       required: 
+ *       required:
  *        - email
  *        - password
  *       properties:
@@ -173,7 +171,7 @@ export const validatePassword = async (
  *  schemas:
  *    ForgetPasswordInput:
  *       type:  object
- *       required: 
+ *       required:
  *        - email
  *       properties:
  *         email:
@@ -212,7 +210,6 @@ export const updateTutorSchema = Joi.object().keys({
   image: Joi.string().allow(""),
 });
 // validate schema for creating of reminders
-
 
 /**
  * @openapi
@@ -278,7 +275,7 @@ export const ratingCourseSchema = Joi.object().keys({
  *  schemas:
  *    CourseInput:
  *       type:  object
- *       required: 
+ *       required:
  *        - title
  *        - description
  *        - price
@@ -335,4 +332,3 @@ export const createCourseSchema = Joi.object().keys({
   video: Joi.string().required(),
   file: Joi.string().required(),
 });
-

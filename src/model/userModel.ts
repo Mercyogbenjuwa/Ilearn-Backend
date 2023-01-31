@@ -24,7 +24,6 @@ export interface UserAttributes {
   expertise: Array<string>;
   location: string;
   status: boolean;
-  
 }
 
 export class UserInstance extends Model<UserAttributes> {
@@ -42,7 +41,6 @@ export class UserInstance extends Model<UserAttributes> {
   declare expertise: Array<string>;
   declare location: string;
   declare status: boolean;
-
 }
 
 UserInstance.init(
@@ -91,21 +89,26 @@ UserInstance.init(
         notEmpty: { msg: "Provide a salt" },
       },
     },
-    areaOfInterest:{
+    areaOfInterest: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: ["Mathematics"],
-    validate: {
-      customValidator: (values: []) => {
-        values.forEach((value)=>{
-          const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
-          if (!enums.includes(value)) {
-            throw new Error("not a valid option");
-          }
-        })
-       
+      validate: {
+        customValidator: (values: []) => {
+          values.forEach((value) => {
+            const enums = [
+              "Mathematics",
+              "Physics",
+              "Coding",
+              "Graphics Design",
+              "Video Editing",
+              "Chemistry",
+            ];
+            if (!enums.includes(value)) {
+              throw new Error("not a valid option");
+            }
+          });
+        },
       },
     },
-  },
     userType: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -138,18 +141,27 @@ UserInstance.init(
       type: DataTypes.BOOLEAN,
       allowNull: true,
     },
-    expertise:{
+    expertise: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: ["Mathematics"],
-    validate: {
-      customValidator: (value: any) => {
-        const enums = ["Mathematics","Physics", "Coding", "Graphics Design", "Video Editing", "Chemistry"];
-        if (!enums.includes(value)) {
-          throw new Error("not a valid option");
-        }
+      defaultValue: ["Mathematics"],
+      validate: {
+        customValidator: (values: []) => {
+          values.forEach((value) => {
+            const enums = [
+              "Mathematics",
+              "Physics",
+              "Coding",
+              "Graphics Design",
+              "Video Editing",
+              "Chemistry",
+            ];
+            if (!enums.includes(value)) {
+              throw new Error("not a valid option");
+            }
+          });
+        },
       },
     },
-  },
   },
   {
     sequelize: db,
