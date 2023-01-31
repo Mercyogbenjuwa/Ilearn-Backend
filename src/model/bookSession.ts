@@ -1,23 +1,21 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
-
+import { AvailabilityInstance } from "./availabilityModel";
+import { UserInstance } from "./userModel";
 export interface tutorRequestAttributes {
   [x: string]: any;
   id: string;
   tutorId: string;
   studentId: string;
   pickedTime: string;
-  pickedDate: string;
+  availabilityId: string;
 }
-
 export class tutorRequestInstance extends Model<tutorRequestAttributes> {
   declare id: string;
   declare tutorId: string;
   declare studentId: string;
-  declare pickedTime: string
-  declare pickedDate: string
-}
-
+  declare pickedTime: string;
+  declare availabilityId: string}
 tutorRequestInstance.init(
   {
     id: {
@@ -42,9 +40,15 @@ tutorRequestInstance.init(
       allowNull: false,
     }
   },
-
   {
     sequelize: db,
     tableName: "scheduleTime",
   }
 );
+tutorRequestInstance.belongsTo(UserInstance, 
+  {
+     foreignKey: "studentId",
+      as: "student"})
+tutorRequestInstance.belongsTo(AvailabilityInstance, 
+  {foreignKey: "availabilityId",
+  as: "availableTime"})
