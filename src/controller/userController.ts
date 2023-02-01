@@ -583,6 +583,8 @@ const getAllTutors = async (req: Request, res: Response) => {
         userType: "Tutor",
         [Op.or]: [
           { name: { [Op.like]: `${query}` } },
+          { name: { [Op.substring]: `${query}` } },
+          { email: { [Op.substring]: `${query}` } },
           { email: { [Op.like]: `${query}` } },
         ],
       };
@@ -772,6 +774,11 @@ const getTutorReviews = async (req: Request, res: Response) => {
       where: {
         tutorId: tutorId,
       },
+      include: [{
+        model: UserInstance,
+        as: "student",
+        attributes: ["name", "image"]
+      }]
     });
     if (!tutorReviewInfo) {
       return res.status(404).json({
@@ -1108,7 +1115,7 @@ const getTutorCourses = async (req: Request, res: Response) => {
     const tutorId = req.params.id;
 
     const courses = await courseInstance.findAll({
-      where: { userId: tutorId },
+      where: { tutorId },
     });
     return res.status(200).json({
       message: "Courses fetched successfully",
