@@ -444,12 +444,10 @@ const googleLogin = async (req: Request, res: Response) => {
             verified: result.verified,
           });
           res.status(200).json({
-            message: "user logged in successfully", 
-            signature, 
-            user: result 
-          })
-
-          
+            message: "user logged in successfully",
+            signature,
+            user: result,
+          });
         } catch (error) {
           res.status(400).json({ message: "Error updating user", error });
         }
@@ -1273,7 +1271,6 @@ const bookTutor = async (req: Request, res: Response) => {
       availableSlots: newAvailableTime.length,
     });
 
-    //tutorAvailability.availableTime = availableTime;
     tutorAvailability.save();
 
     const createNotification = await NotificationInstance.create({
@@ -1281,7 +1278,7 @@ const bookTutor = async (req: Request, res: Response) => {
       receiver: tutorAvailability.userId,
       notificationType: "session",
       status: "unread",
-      createdAt: Date.now().toLocaleString(),
+
       description: `A user has requested booked a session with you on ${bookSession.pickedTime}`,
     });
     res.status(201).send("session booked successfully");
