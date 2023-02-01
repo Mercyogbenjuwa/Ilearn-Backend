@@ -20,6 +20,7 @@ export interface UserAttributes {
   salt: string;
   image: string;
   rating: number;
+  facebookId:string
   about: string;
   expertise: Array<string>;
   location: string;
@@ -37,6 +38,7 @@ export class UserInstance extends Model<UserAttributes> {
   declare salt: string;
   declare image: string;
   declare rating: number;
+  declare facebookId:string
   declare about: string;
   declare expertise: Array<string>;
   declare location: string;
@@ -50,6 +52,9 @@ UserInstance.init(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
+    },
+    facebookId:{
+      type: DataTypes.STRING,
     },
     email: {
       type: DataTypes.STRING,
