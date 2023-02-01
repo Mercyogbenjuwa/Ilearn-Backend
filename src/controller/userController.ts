@@ -444,12 +444,10 @@ const googleLogin = async (req: Request, res: Response) => {
             verified: result.verified,
           });
           res.status(200).json({
-            message: "user logged in successfully", 
-            signature, 
-            user: result 
-          })
-
-          
+            message: "user logged in successfully",
+            signature,
+            user: result,
+          });
         } catch (error) {
           res.status(400).json({ message: "Error updating user", error });
         }
@@ -1101,6 +1099,10 @@ const getTutorAvailabilities = async (req: Request, res: Response) => {
     const availabilities = await AvailabilityInstance.findAll({
       where: { userId: tutorId },
     });
+
+    const availabilitiesWithSlots = availabilities.filter(
+      (time) => time.availableTime.length > 0
+    );
     res.json({ availabilities });
   } catch (error) {
     res
@@ -1267,10 +1269,15 @@ const bookTutor = async (req: Request, res: Response) => {
       studentId: id,
       availabilityId,
     });
-    const availableTime = tutorAvailability.availableTime.filter(
+    const newAvailableTime = tutorAvailability.availableTime.filter(
       (time) => time !== pickedTime
     );
-    tutorAvailability.availableTime = availableTime;
+
+    tutorAvailability.update({
+      availableTime: newAvailableTime,
+      availableSlots: newAvailableTime.length,
+    });
+
     tutorAvailability.save();
 
     const createNotification = await NotificationInstance.create({
@@ -1278,7 +1285,7 @@ const bookTutor = async (req: Request, res: Response) => {
       receiver: tutorAvailability.userId,
       notificationType: "session",
       status: "unread",
-      createdAt: Date.now().toLocaleString(),
+
       description: `A user has requested booked a session with you on ${bookSession.pickedTime}`,
     });
     res.status(201).send("session booked successfully");
