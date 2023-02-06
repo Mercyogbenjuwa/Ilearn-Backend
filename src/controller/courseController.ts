@@ -282,7 +282,7 @@ const getCourseById = async (req: Request, res: Response) => {
         "tutor",
         {
           model: CourseRatingInstance,
-          as: "course_rating",
+          as: "course_ratings",
           attributes: ["id", "description", "ratingValue"],
         },
       ],
