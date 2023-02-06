@@ -89,5 +89,5 @@ courseInstance.init(
 
 courseInstance.hasMany(CourseRatingInstance, {
   foreignKey: "courseId",
-  as: "course-rating",
+  as: "course_ratings",
 });
