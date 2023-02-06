@@ -413,27 +413,30 @@ const googleLogin = async (req: Request, res: Response) => {
       console.log(userExists);
 
       if (!userExists) {
+        const salt = await GenerateSalt();
         const newUser = await UserInstance.create({
           name: decodeValue?.name,
           email: decodeValue?.email,
           image: decodeValue?.picture,
           verified: decodeValue?.email_verified,
           userType: "Student",
-          password: Math.floor(Math.random() * 10000),
+          password: await GeneratePassword(
+            Math.floor(Math.random() * 10000) + "",
+            salt
+          ),
           salt: "the quick brown fox jump over the lazy dog",
         });
+
         let signature = await GenerateSignature({
           id: newUser.id,
           email: newUser.email,
           verified: newUser.verified,
         });
-        res
-          .status(200)
-          .json({
-            message: "user created successfully",
-            user: newUser,
-            signature,
-          });
+        res.status(200).json({
+          message: "user created successfully",
+          user: newUser,
+          signature,
+        });
       } else {
         try {
           let result = await UserInstance.findOne({
