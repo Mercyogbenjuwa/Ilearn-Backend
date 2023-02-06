@@ -1,6 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
 import { UserInstance } from "./userModel";
+import { CourseRatingInstance } from "./courseRatingModel";
 
 export interface courseAttributes {
   [x: string]: any;
@@ -80,3 +81,13 @@ courseInstance.init(
     tableName: "courses",
   }
 );
+
+// UserInstance.hasMany(ReminderInstance, {
+//   foreignKey: "userId",
+//   as: "reminder",
+// });
+
+courseInstance.hasMany(CourseRatingInstance, {
+  foreignKey: "courseId",
+  as: "course-rating",
+});

@@ -278,7 +278,14 @@ const getCourseById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const course = await courseInstance.findOne({
       where: { id },
-      include: ["tutor"],
+      include: [
+        "tutor",
+        {
+          model: CourseRatingInstance,
+          as: "course-rating",
+          attributes: ["id", "description", "ratingValue"],
+        },
+      ],
     });
     if (!course) {
       return res.status(400).json({

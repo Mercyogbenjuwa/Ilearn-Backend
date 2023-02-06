@@ -7,6 +7,7 @@ import { AreaOfInterestInstance } from "./areaOfInterestModel";
 import { AvailabilityInstance } from "./availabilityModel";
 import { NotificationInstance } from "./notificationModel";
 import { StudentCoursesInstance } from "./users/students/studentCoursesModel";
+import { CourseRatingInstance } from "./courseRatingModel";
 
 export interface UserAttributes {
   [x: string]: any;
@@ -198,7 +199,7 @@ UserInstance.hasMany(AvailabilityInstance, {
   as: "availability",
 });
 
-// UserInstance.hasMany(StudentCoursesInstance, {
-//   foreignKey: "studentId",
-//   as: "studentCourses",
-// });
+UserInstance.hasOne(CourseRatingInstance, {
+  foreignKey: "studentId",
+  as: "student",
+});
