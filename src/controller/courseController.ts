@@ -10,9 +10,13 @@ import { CourseRatingInstance } from "../model/courseRatingModel";
 import { option, ratingCourseSchema } from "../utils/utility";
 import { Op } from "sequelize";
 
-UserInstance;
 interface requestedCourse extends courseInstance {
   tutor: UserInstance;
+}
+
+interface CourseWithTutorCount extends courseInstance {
+  count: number;
+  tutorCoursesCount: number;
 }
 
 const addCourse = async (req: Request, res: Response) => {
@@ -276,7 +280,7 @@ const courseRequest = async (req: Request, res: Response) => {
 const getCourseById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const course = await courseInstance.findOne({
+    let course = (await courseInstance.findOne({
       where: { id },
       include: [
         "tutor",
@@ -286,12 +290,22 @@ const getCourseById = async (req: Request, res: Response) => {
           attributes: ["id", "description", "ratingValue"],
         },
       ],
-    });
+    })) as CourseWithTutorCount;
     if (!course) {
       return res.status(400).json({
         Error: "This course does not exist",
       });
     }
+
+    const tutorCoursesCount = await courseInstance.count({
+      where: { tutorId: course.tutorId },
+    });
+    course = {
+      ...course.toJSON(),
+      tutorCoursesCount,
+    } as CourseWithTutorCount;
+    //console.log(resp);
+
     return res.status(200).json({
       message: "Successfully fetched course",
       course,
