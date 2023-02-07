@@ -1,5 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 import { db } from "../Config/index";
+import { courseRequestInstance } from "./courseRequestsModel";
+import { UserInstance } from "./userModel";
 
 export interface CourseRatingAttributes {
   [x: string]: any;
@@ -52,3 +54,8 @@ CourseRatingInstance.init(
     tableName: "rating",
   }
 );
+
+// UserInstance.hasOne(courseRequestInstance, {
+//   foreignKey: "studentId",
+//   as: "student",
+// });

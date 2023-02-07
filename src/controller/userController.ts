@@ -413,18 +413,30 @@ const googleLogin = async (req: Request, res: Response) => {
       console.log(userExists);
 
       if (!userExists) {
+        const salt = await GenerateSalt();
         const newUser = await UserInstance.create({
           name: decodeValue?.name,
           email: decodeValue?.email,
           image: decodeValue?.picture,
           verified: decodeValue?.email_verified,
           userType: "Student",
-          password: Math.floor(Math.random() * 10000),
+          password: await GeneratePassword(
+            Math.floor(Math.random() * 10000) + "",
+            salt
+          ),
           salt: "the quick brown fox jump over the lazy dog",
         });
-        res
-          .status(200)
-          .json({ message: "user created successfully", user: newUser });
+
+        let signature = await GenerateSignature({
+          id: newUser.id,
+          email: newUser.email,
+          verified: newUser.verified,
+        });
+        res.status(200).json({
+          message: "user created successfully",
+          user: newUser,
+          signature,
+        });
       } else {
         try {
           let result = await UserInstance.findOne({
@@ -772,11 +784,13 @@ const getTutorReviews = async (req: Request, res: Response) => {
       where: {
         tutorId: tutorId,
       },
-      include: [{
-        model: UserInstance,
-        as: "student",
-        attributes: ["name", "image"]
-      }]
+      include: [
+        {
+          model: UserInstance,
+          as: "student",
+          attributes: ["name", "image"],
+        },
+      ],
     });
     if (!tutorReviewInfo) {
       return res.status(404).json({
@@ -843,7 +857,7 @@ const createAvailability = async (req: Request, res: Response) => {
 
     // Return a success response
     return res.status(200).json({
-      message: "Availability updated successfully",
+      message: "Availability created successfully",
       availability,
     });
   } catch (err) {
