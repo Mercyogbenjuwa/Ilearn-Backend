@@ -7,7 +7,7 @@ import coursesRouter from "./routes/coursesRoutes";
 import { connectDB } from "./Config/index";
 import dotenv from "dotenv";
 import { swaggerDoc } from "./utils";
-import  https from "https";
+import https from "https";
 import fs from "fs";
 
 import {
@@ -25,8 +25,8 @@ import { fboauthBackend } from "./utils/fb-auth/fbAuth";
 dotenv.config();
 
 const options = {
-  key: fs.readFileSync(process.env.HTTP_KEY as string, 'utf8'),
-  cert: fs.readFileSync(process.env.HTTP_CERT as string, 'utf8'),
+  key: fs.readFileSync(process.env.HTTP_KEY as string, "utf8"),
+  cert: fs.readFileSync(process.env.HTTP_CERT as string, "utf8"),
 };
 
 // this calls the database connection
@@ -42,7 +42,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 swaggerDoc(app);
-fboauthBackend(app)
+fboauthBackend(app);
 app.use(json());
 app.use("/", router);
 
@@ -60,13 +60,13 @@ app.use(notFound);
 app.use(errorHandler);
 // app.use(appError);
 
-// const PORT = process.env.PORT || 4000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
-// });
-
-https.createServer(options, app).listen(4000, () => {
-  console.log(`HTTPS server started on port 4000`);
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// https.createServer(options, app).listen(4000, () => {
+//   console.log(`HTTPS server started on port 4000`);
+// });
 
 export default app;
