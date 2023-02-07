@@ -8,7 +8,10 @@ import {
   userSubject,
 } from "../Config";
 import nodemailer from "nodemailer";
-import { NotificationAttributes, NotificationInstance } from "../model/notificationModel";
+import {
+  NotificationAttributes,
+  NotificationInstance,
+} from "../model/notificationModel";
 
 export const GenerateOTP = () => {
   const otp = Math.floor(1000 + Math.random() * 9000);
@@ -86,7 +89,7 @@ export const mailSent2 = async (
   try {
     const response = await transport.sendMail({
       from: FromAdminMail,
-      subject: userSubject,
+      subject: "Reset Your Password",
       to,
       html,
     });
@@ -112,7 +115,7 @@ export const emailHtml2 = (link: string): string => {
     iLearn
     </h2>
     <p>Hi there, follow the link to reset your password. The link expires in 10 minutes below.</p>
-     ${link}
+     <a href=${link}>Reset Password</a>
      <h3>DO NOT DISCLOSE TO ANYONE<h3>
      </div>`;
 
@@ -142,16 +145,18 @@ export const emailHtml3 = (link: string): string => {
   return response;
 };
 
-
-
-export const createNotification = async(notificationType:string,receiver:string,description:string,sender:string,courseId:string|null) => {
-
-
- return await NotificationInstance.create({
+export const createNotification = async (
+  notificationType: string,
+  receiver: string,
+  description: string,
+  sender: string,
+  courseId: string | null
+) => {
+  return await NotificationInstance.create({
     notificationType,
     receiver,
     description,
     sender,
-    courseId: courseId || null
+    courseId: courseId || null,
   });
-}
+};
