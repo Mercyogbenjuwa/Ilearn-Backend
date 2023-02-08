@@ -761,7 +761,7 @@ const rateTutor = async (req: Request, res: Response) => {
     }, 0);
     const tutorAverageRating = tutorTotalRating / tutorRatings.length;
 
-    await courseInstance.update(
+    await UserInstance.update(
       { rating: tutorAverageRating },
       { where: { id: req.params.id } }
     );
@@ -1054,6 +1054,13 @@ const createPaidCourse = async (req: Request, res: Response) => {
       studentId: id,
       tutorId: validCourse.tutorId,
     });
+    createNotification(
+      "payment",
+      validCourse.tutorId,
+      "ordered your course",
+      id,
+      courseId
+    );
 
     res.status(201).json({
       message: "course added successfully",
