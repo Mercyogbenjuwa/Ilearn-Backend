@@ -266,7 +266,12 @@ const forgotPassword = async (req: Request, res: Response) => {
     const link = `${process.env.CLIENT_URL}/users/resetpassword/?userId=${oldUser.id}&token=${token}`;
     if (oldUser) {
       const html = emailHtml2(link);
-      await mailSent2(FromAdminMail, oldUser.email, userSubject, html);
+      await mailSent2(
+        FromAdminMail,
+        oldUser.email,
+        "Reset your password",
+        html
+      );
       return res.status(200).json({
         message: "password reset link sent to email",
         link,
@@ -584,7 +589,7 @@ const getAllTutors = async (req: Request, res: Response) => {
       limit?: string;
     };
     const currentPage = page ? parseInt(page) : 1;
-    const limitPerPage = limit ? parseInt(limit) : 10;
+    const limitPerPage = limit ? parseInt(limit) : 20;
     const offset = (currentPage - 1) * limitPerPage;
 
     let queryPage;
