@@ -589,7 +589,7 @@ const getAllTutors = async (req: Request, res: Response) => {
       limit?: string;
     };
     const currentPage = page ? parseInt(page) : 1;
-    const limitPerPage = limit ? parseInt(limit) : 10;
+    const limitPerPage = limit ? parseInt(limit) : 20;
     const offset = (currentPage - 1) * limitPerPage;
 
     let queryPage;
