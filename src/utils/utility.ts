@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthPayload } from "../interface/auth.dto";
 import { APP_SECRET } from "../Config";
-import { joiPassword } from "joi-password";
 
 /**
  * @openapi
