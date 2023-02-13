@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthPayload } from "../interface/auth.dto";
 import { APP_SECRET } from "../Config";
+import { joiPassword } from "joi-password";
 
 /**
  * @openapi
@@ -51,7 +52,12 @@ import { APP_SECRET } from "../Config";
 export const registerSchema = Joi.object().keys({
   email: Joi.string().required(),
   name: Joi.string().required(),
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
+  password: Joi.string()
+    .pattern(new RegExp("[ A-Za-z0-9_@./#&+-]*$"))
+    .min(8)
+    .required(),
+  // ,
+
   userType: Joi.string().required(),
   areaOfInterest: Joi.array().required(),
   // confirm_password: Joi.any()
