@@ -11,7 +11,7 @@ import {
   rateCourses,
 } from "../controller/courseController";
 import { getAllUsers, Login, Register } from "../controller/userController";
-import { protect } from "../Middlewares/authMiddleware";
+import { admin, protect, tutor } from "../Middlewares/authMiddleware";
 import { getStudentHistory } from "../controller/courseController";
 import { upload } from "../utils/multer";
 const router = express.Router();
@@ -118,6 +118,7 @@ router.get("/getStudentHistory", protect, getStudentHistory);
 router.post(
   "/createCourse",
   protect,
+  tutor,
   upload.fields([
     { name: "course_image", maxCount: 1 },
     { name: "course_material", maxCount: 2 },
@@ -170,10 +171,16 @@ router.post(
  *         description: internal server error
  *
  */
-router.patch("/updateCourse/:id", protect, upload.fields([
-  { name: "course_image", maxCount: 1 },
-  { name: "course_material", maxCount: 2 },
-]), updateCourse);
+router.patch(
+  "/updateCourse/:id",
+  protect,
+  tutor,
+  upload.fields([
+    { name: "course_image", maxCount: 1 },
+    { name: "course_material", maxCount: 2 },
+  ]),
+  updateCourse
+);
 
 /**
  * @openapi
@@ -192,7 +199,7 @@ router.patch("/updateCourse/:id", protect, upload.fields([
  *        200:
  *          description: you have sucessfully deleted a courses
  */
-router.delete("/deleteCourse/:id", protect, deleteCourse);
+router.delete("/deleteCourse/:id", protect, tutor, deleteCourse);
 
 /**
  * @openapi
